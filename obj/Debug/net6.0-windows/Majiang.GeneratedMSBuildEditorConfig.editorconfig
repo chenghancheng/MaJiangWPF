@@ -8,4 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Majiang
-build_property.ProjectDir = E:\BUPT_2024\C#\MaJiang\MaJiangWPF\
+build_property.ProjectDir = D:\Mycode\MaJiangWPF\MaJiangWPF\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
