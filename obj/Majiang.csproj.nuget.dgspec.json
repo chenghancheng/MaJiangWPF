@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\BUPT_2024\\C#\\MaJiang\\Majiang\\Majiang.csproj": {}
+    "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj": {}
   },
   "projects": {
-    "E:\\BUPT_2024\\C#\\MaJiang\\Majiang\\Majiang.csproj": {
+    "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BUPT_2024\\C#\\MaJiang\\Majiang\\Majiang.csproj",
+        "projectUniqueName": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj",
         "projectName": "Majiang",
-        "projectPath": "E:\\BUPT_2024\\C#\\MaJiang\\Majiang\\Majiang.csproj",
+        "projectPath": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj",
         "packagesPath": "C:\\Users\\jiacheng\\.nuget\\packages\\",
-        "outputPath": "E:\\BUPT_2024\\C#\\MaJiang\\Majiang\\obj\\",
+        "outputPath": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\jiacheng\\AppData\\Roaming\\NuGet\\NuGet.Config",

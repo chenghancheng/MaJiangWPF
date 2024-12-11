@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BKIxZZobE46TfLE6qrQtaua+HMJ+VpEkeK5t9D1UAa/cHO7Z8jVem+TBCN605VkbIcuHmOhCbaMq6RH52P15Kw==",
+  "dgSpecHash": "qk05gCWTz41icu+IkHcVhF6In+W3ZR2wnmpDjQ9FfZKqUyyDanJ5C/5yajspuik9u/I8LDLErCiHLS5++ldNVw==",
   "success": true,
-  "projectFilePath": "E:\\BUPT_2024\\C#\\MaJiang\\Majiang\\Majiang.csproj",
+  "projectFilePath": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }
