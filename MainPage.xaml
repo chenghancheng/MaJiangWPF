@@ -9,6 +9,9 @@
       Title="MainPage">
 
     <Grid>
+        <StackPanel x:Name="test">
+            
+        </StackPanel>
         <!-- 主界面内容 -->
         <TabControl Name="tabControl" Grid.ZIndex="1" Background="Transparent">
             <TabItem Header="主界面">
