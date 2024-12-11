@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj": {}
+    "D:\\Mycode\\MaJiangWPF\\MaJiangWPF\\Majiang.csproj": {}
   },
   "projects": {
-    "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj": {
+    "D:\\Mycode\\MaJiangWPF\\MaJiangWPF\\Majiang.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj",
+        "projectUniqueName": "D:\\Mycode\\MaJiangWPF\\MaJiangWPF\\Majiang.csproj",
         "projectName": "Majiang",
-        "projectPath": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\Majiang.csproj",
-        "packagesPath": "C:\\Users\\jiacheng\\.nuget\\packages\\",
-        "outputPath": "E:\\BUPT_2024\\C#\\MaJiang\\MaJiangWPF\\obj\\",
+        "projectPath": "D:\\Mycode\\MaJiangWPF\\MaJiangWPF\\Majiang.csproj",
+        "packagesPath": "C:\\Users\\xsd\\.nuget\\packages\\",
+        "outputPath": "D:\\Mycode\\MaJiangWPF\\MaJiangWPF\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\jiacheng\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\xsd\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -58,7 +58,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }

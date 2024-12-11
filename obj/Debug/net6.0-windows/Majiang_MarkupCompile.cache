@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-E:\BUPT_2024\C#\MaJiang\MaJiangWPF\obj\Debug\net6.0-windows\
+D:\Mycode\MaJiangWPF\MaJiangWPF\obj\Debug\net6.0-windows\
 Majiang
 none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
-E:\BUPT_2024\C#\MaJiang\MaJiangWPF\App.xaml
-31072958949
+D:\Mycode\MaJiangWPF\MaJiangWPF\App.xaml
+52022788245
 1031694159539
-111843600679
-194-1617825143
-MainWindow.xaml;Resources\Styles.xaml;View\GameScene.xaml;
+131291068535
+194258113564
+GamePage.xaml;MainPage.xaml;MainWindow.xaml;Resources\Styles.xaml;View\GameScene.xaml;
 
 False
 

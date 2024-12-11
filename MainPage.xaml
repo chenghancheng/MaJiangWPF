@@ -1,0 +1,84 @@
+﻿<Page x:Class="Majiang.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Majiang"
+      mc:Ignorable="d" 
+      d:DesignHeight="648" d:DesignWidth="1152"
+      Title="MainPage">
+
+    <Grid>
+        <!-- 主界面内容 -->
+        <TabControl Name="tabControl" Grid.ZIndex="1" Background="Transparent">
+            <TabItem Header="主界面">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Button Name="startGameButton" Width="346" Height="70" Margin="0,0,0,20" Click="startGameButton_Click">
+                        <!-- 使用 Border 和 Image 实现按钮背景 -->
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">进行游戏</TextBlock>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Name="introduceButton" Width="346" Height="70" Margin="0,100,0,20" Click="introduceButton_Click">
+                        <!-- 使用 Border 和 Image 实现按钮背景 -->
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">麻将介绍</TextBlock>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Name="exitGameButton" Width="346" Height="70" Margin="0,100,0,20" Click="exitGameButton_Click">
+                        <UIElement.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </UIElement.RenderTransform>
+                        <!-- 使用 Border 和 Image 实现按钮背景 -->
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">退出游戏</TextBlock>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="麻将介绍" HorizontalAlignment="Right" Margin="0,-2,-2,0" Width="64">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Button Name="backToMainButton" Width="50" Height="50" Click="backToMainButton_Click">
+                        <!-- 使用 Border 和 Image 实现按钮背景 -->
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <Image Source="pack://application:,,,/Resources/Images/others/btn,png" 
+                                           Stretch="Fill"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="游戏界面">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Name="gameStatus" Text="游戏正在进行..." FontSize="30" HorizontalAlignment="Center"/>
+                    <!-- 这里是游戏界面的其他内容 -->
+                </StackPanel>
+            </TabItem>
+
+
+        </TabControl>
+    </Grid>
+</Page>
