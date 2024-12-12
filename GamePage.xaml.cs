@@ -160,10 +160,6 @@ namespace Majiang
             selfCardLabel = new List<Label>();
             othersCard = new List<List<Label>>();
             handCard = new List<KeyValuePair<int, int>>();
-            chiChoice = new List<List<Button>>();
-            guoChiPengGangHuBtn = new List<Button>();
-
-
 
             game = new Game("谭杰");
 
@@ -191,8 +187,6 @@ namespace Majiang
             LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
             InitCardUI();
             InitDirectionUI();
-            InitChiPengGangUI();
-            InitDiscardedCardUI();
         }
 
         public void StartGame()
@@ -321,11 +315,11 @@ namespace Majiang
 
             // 初始化 othersCardBox（其他玩家卡片布局）
             othersCardBox = new List<StackPanel>
-    {
-        new StackPanel { Orientation = Orientation.Vertical },  // 右
-        new StackPanel { Orientation = Orientation.Horizontal }, // 上
-        new StackPanel { Orientation = Orientation.Vertical }    // 左
-    };
+            {
+                new StackPanel { Orientation = Orientation.Vertical ,HorizontalAlignment=HorizontalAlignment.Center  },  // 右
+                new StackPanel { Orientation = Orientation.Horizontal ,VerticalAlignment=VerticalAlignment.Center }, // 上
+                new StackPanel { Orientation = Orientation.Vertical ,HorizontalAlignment=HorizontalAlignment.Center }    // 左
+            };
 
             selfCardBox = new StackPanel { Orientation = Orientation.Horizontal };
 
@@ -338,11 +332,11 @@ namespace Majiang
 
             // 加载图片资源
             othersCardImages = new List<BitmapImage>
-    {
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/right_normal.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png"))
-    };
+            {
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/right_normal.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png"))
+            };
 
             // 检查图片加载
             foreach (var imageUri in othersCardImages)
@@ -354,27 +348,38 @@ namespace Majiang
             }
 
             // 设置图片显示
-            for (int i = 0; i < othersCardImages.Count; i++)
-            {
-                var image = new Image
-                {
-                    Source = othersCardImages[i],
-                    Stretch = Stretch.Uniform, // 确保图片按比例缩放
-                    Width = 100,  // 可以调整宽度
-                    Height = 100  // 可以调整高度
-                };
+            //for (int i = 0; i < othersCardImages.Count; i++)
+            //{
+            //    //var image = new Image
+            //    //{
+            //    //    Source = othersCardImages[i],
+            //    //    Stretch = Stretch.Uniform, // 确保图片按比例缩放
+            //    //    Width = 50,  // 可以调整宽度
+            //    //    Height = 50  // 可以调整高度
+            //    //};
 
-                var label = new Label
-                {
-                    Content = image,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Width = 120,  // 设置 Label 宽度，保证空间足够
-                    Height = 120  // 设置 Label 高度，保证空间足够
-                };
+            //    //var label = new Label
+            //    //{
+            //    //    Content = image,
+            //    //    HorizontalAlignment = HorizontalAlignment.Center,
+            //    //    VerticalAlignment = VerticalAlignment.Center,
+            //    //    Width = 120,  // 设置 Label 宽度，保证空间足够
+            //    //    Height = 120  // 设置 Label 高度，保证空间足够
+            //    //};
 
-                othersCard[i % 3].Add(label); // 分别加入对应的 StackPanel
-            }
+            //    Label label = new Label();
+
+            //    // 创建 Image 控件并设置图片源
+            //    Image image = new Image
+            //    {
+            //        Source = othersCardImages[i] // 设置图片路径
+            //    };
+
+            //    // 设置 Label 的 Content 为 Image 控件
+            //    label.Content = image;
+
+            //    othersCard[i % 3].Add(label); // 分别加入对应的 StackPanel
+            //}
 
             // 初始化按钮组
             buttonGroup = new ButtonGroup();
@@ -391,11 +396,13 @@ namespace Majiang
             // 设置列和行的伸展比例
             for (int i = 0; i < 38; i++)
             {
-                totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             }
             for (int i = 0; i < 27; i++)
             {
-                totalCardBox.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             }
 
             // 添加布局到 Grid
@@ -466,22 +473,33 @@ namespace Majiang
             // 创建4个方向标签并将图像设置为内容
             for (int i = 0; i < 4; i++)
             {
-                var label = new Label
+                //var label = new Label
+                //{
+                //    HorizontalAlignment = HorizontalAlignment.Center, // 水平居中
+                //    VerticalAlignment = VerticalAlignment.Center, // 垂直居中
+                //    Width = 80,  // 设定Label的宽度
+                //    Height = 80  // 设定Label的高度
+                //};
+
+                //// 创建Image并设置Stretch属性
+                //var image = new Image
+                //{
+                //    Source = directionPic[i],  // 将BitmapImage设置为Image的Source
+                //    Stretch = Stretch.UniformToFill // 确保图像能适应Label的大小
+                //};
+
+                //label.Content = image;  // 将图像控件设置为Label的内容
+
+                Label label = new Label();
+
+                // 创建 Image 控件并设置图片源
+                Image image = new Image
                 {
-                    HorizontalAlignment = HorizontalAlignment.Center, // 水平居中
-                    VerticalAlignment = VerticalAlignment.Center, // 垂直居中
-                    Width = 80,  // 设定Label的宽度
-                    Height = 80  // 设定Label的高度
+                    Source = directionPic[i] // 设置图片路径
                 };
 
-                // 创建Image并设置Stretch属性
-                var image = new Image
-                {
-                    Source = directionPic[i],  // 将BitmapImage设置为Image的Source
-                    Stretch = Stretch.UniformToFill // 确保图像能适应Label的大小
-                };
-
-                label.Content = image;  // 将图像控件设置为Label的内容
+                // 设置 Label 的 Content 为 Image 控件
+                label.Content = image;
                 direction.Add(label);
             }
 
@@ -496,26 +514,26 @@ namespace Majiang
 
             // 将4个方向图片添加到网格 (与 Qt 的 QGridLayout 定位相同)
             // 下 右 上 左
-            Grid.SetRow(direction[0], 0);
-            Grid.SetColumn(direction[0], 0);
+            Grid.SetRow(direction[0], 12);
+            Grid.SetColumn(direction[0], 17);
             Grid.SetRowSpan(direction[0], 1); // 设置行跨度
             Grid.SetColumnSpan(direction[0], 3); // 设置列跨度
             totalCardBox.Children.Add(direction[0]);
 
-            Grid.SetRow(direction[1], 0);
-            Grid.SetColumn(direction[1], 0);
+            Grid.SetRow(direction[1], 10);
+            Grid.SetColumn(direction[1], 19);
             Grid.SetRowSpan(direction[1], 3);
             Grid.SetColumnSpan(direction[1], 1);
             totalCardBox.Children.Add(direction[1]);
 
-            Grid.SetRow(direction[2], 13);
-            Grid.SetColumn(direction[2], 14);
+            Grid.SetRow(direction[2], 10);
+            Grid.SetColumn(direction[2], 17);
             Grid.SetRowSpan(direction[2], 1);
             Grid.SetColumnSpan(direction[2], 3);
             totalCardBox.Children.Add(direction[2]);
 
-            Grid.SetRow(direction[3], 14);
-            Grid.SetColumn(direction[3], 13);
+            Grid.SetRow(direction[3], 10);
+            Grid.SetColumn(direction[3], 17);
             Grid.SetRowSpan(direction[3], 3);
             Grid.SetColumnSpan(direction[3], 1);
             totalCardBox.Children.Add(direction[3]);
@@ -563,8 +581,8 @@ namespace Majiang
             // 创建按钮
             var button = new Button
             {
-                Width = 74,
-                Height = 106,
+                Width = 46,
+                Height = 66,
                 Content = new Image(),
                 HorizontalAlignment = HorizontalAlignment.Center
             };
@@ -587,6 +605,8 @@ namespace Majiang
 
             selfCard.Add(stackPanel);
             selfCardButton.Add(button);
+            selfCardLabel.Add(label);
+            selfCardBox.Children.Add(selfCard[index]);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -601,7 +621,12 @@ namespace Majiang
             {
                 Width = width,
                 Height = height,
-                Content = new Image { Source = pic }
+                Content = new Image { Source = pic, Stretch = Stretch.Uniform },
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                //BorderBrush = Brushes.Transparent, // 去除边框
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                //Background =Brushes.AliceBlue
             };
 
             // 将标签添加到其他卡片集合中
@@ -660,21 +685,30 @@ namespace Majiang
                 // 设置卡片的宽高
                 if (i == 1)
                 {
-                    width = 74;
-                    length = 106;
+                    width = 46;
+                    length = 66;
                 }
                 else
                 {
-                    width = 71;
-                    length = 50;
+                    width = 53;
+                    length = 36;
                 }
 
                 // 清空原有卡片，重新布局
                 othersCardBox[i].Children.Clear();
+                //othersCardBox[i].Margin = new Thickness(0);
+
 
                 // 添加 Stretch（伸缩空间），类似于 Qt 中的 addStretch()
-                var stretchTop = new FrameworkElement { Height = 20 };  // 使用 FrameworkElement 来模拟
-                othersCardBox[i].Children.Add(stretchTop);
+                //var stretchTop = new FrameworkElement { Height = 20 };  // 使用 FrameworkElement 来模拟
+                //othersCardBox[i].Children.Add(stretchTop);
+
+                // 左边的“伸缩空间”元素
+                //othersCardBox[i].Children.Add(new FrameworkElement
+                //{
+                //    HorizontalAlignment = HorizontalAlignment.Stretch,
+                //    VerticalAlignment=VerticalAlignment.Stretch
+                //});
 
                 // 创建13张卡片并添加到对应的 StackPanel 中
                 for (int j = 0; j < 13; ++j)
@@ -684,19 +718,33 @@ namespace Majiang
                 }
 
                 // 添加一个间距（Spacing），类似 Qt 中的 addSpacing
-                var spacing = new FrameworkElement { Height = 15 };  // 设置间距为 15，可以根据需要调整
-                othersCardBox[i].Children.Add(spacing);
+                // var spacing = new FrameworkElement { Height = 15 };  // 设置间距为 15，可以根据需要调整
+                //othersCardBox[i].Children.Add(spacing);
 
                 // 创建一张空卡片（这可能是用于显示某种空白状态）
                 createOtherCard(i, null, width, length, 13);
 
                 // 再添加一个伸缩空间（类似于 addStretch()）
-                var stretchEnd = new FrameworkElement { Height = 20 }; // 再添加一个伸缩空间
-                othersCardBox[i].Children.Add(stretchEnd);
+                //var stretchEnd = new FrameworkElement { Height = 20 }; // 再添加一个伸缩空间
+                //othersCardBox[i].Children.Add(stretchEnd);
+
+                // 左边的“伸缩空间”元素
+                //othersCardBox[i].Children.Add(new FrameworkElement
+                //{
+                //    HorizontalAlignment = HorizontalAlignment.Stretch,
+                //    VerticalAlignment = VerticalAlignment.Stretch
+                //});
             }
 
 
         }
+
+
+
+
+
+
+
 
         public void InitChiPengGangUI()
         {
