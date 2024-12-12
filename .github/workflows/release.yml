@@ -18,8 +18,8 @@ jobs:
 
     - name: Set up .NET Core
       uses: actions/setup-dotnet@v4.1.0
-        with:
-            dotnet-version: 8.X
+      with:
+        dotnet-version: 8.X
     
     - name: Restore NuGet Packages
       run: dotnet restore MaJiang.csproj
@@ -35,7 +35,7 @@ jobs:
       shell: pwsh
 
     - name: Upload release assets
-        uses: softprops/action-gh-release@v2.0.8
-        if: startsWith(github.ref, 'refs/tags/')
-          with:
-            files: ./release/*
+      uses: softprops/action-gh-release@v2.0.8
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+          files: ./release/*
