@@ -48,6 +48,7 @@ public class Card
         return rand.Next(1, n + 1);
     }
 
+    //洗牌
     public void Start()
     {
         for (int i = 1; i <= tot; i++)

@@ -64,7 +64,6 @@ namespace Majiang
             NavigationService.Navigate(gamePage);
             gamePage.StartGame();
             // 切换到游戏界面
-            tabControl.SelectedIndex = 2;
 
             StartGame();
         }
@@ -72,7 +71,6 @@ namespace Majiang
         private void introduceButton_Click(object sender, RoutedEventArgs e)
         {
             // 切换到麻将介绍界面
-            tabControl.SelectedIndex = 1;
         }
 
         private void exitGameButton_Click(object sender, RoutedEventArgs e)
@@ -84,13 +82,11 @@ namespace Majiang
         private void backToMainButton_Click(object sender, RoutedEventArgs e)
         {
             // 返回主界面
-            tabControl.SelectedIndex = 0;
         }
 
 
         private void StartGame()
         {
-            gameStatus.Text = "游戏开始了！";
         }
     }
 }
