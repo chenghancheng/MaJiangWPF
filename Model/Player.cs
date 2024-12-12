@@ -5,9 +5,9 @@ using System.Linq;
 public class Player
 {
     public HashSet<int> OwnCard { get; set; }
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public int CurNum { get; set; }
-    public Card Card { get; set; }
+    public Card? Card { get; set; }
     public HashSet<string> MyPeng { get; set; }
 
     public Player()

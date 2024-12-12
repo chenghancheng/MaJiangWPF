@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Majiang.View;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +25,12 @@ namespace Majiang
         {
             InitializeComponent();
         }
+
+
+        int Transition(int i)
+        {
+            return (i <= 108) ? ((i - 1) / 36 * 9 + (i - 1) % 9 + 1) : ((i - 1) / 4 + 1);
+        }
+
     }
 }
