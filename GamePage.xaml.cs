@@ -18,27 +18,51 @@ using System.Windows.Threading;
 
 namespace Majiang
 {
+    using System.Collections.Generic;
+    using System.Windows.Controls;
+
     public class ButtonGroup
     {
-        public List<RadioButton> Buttons { get; set; }
+        // 存储所有的按钮
+        public List<Button> Buttons { get; set; }
+
+        // 构造函数
         public ButtonGroup()
         {
-            Buttons = new List<RadioButton>();
+            Buttons = new List<Button>();
         }
 
-        public void AddButton(RadioButton button)
+        // 添加按钮到 ButtonGroup
+        public void AddButton(Button button, int id = -1)
         {
+            button.Tag = id; // 使用 Tag 存储 ID
             Buttons.Add(button);
         }
 
+        // 清除所有按钮的选中状态
         public void ClearSelection()
         {
             foreach (var button in Buttons)
             {
-                button.IsChecked = false;
+                button.IsEnabled = true; // 你可以根据需要启用/禁用按钮
             }
         }
+
+        // 获取选中的按钮的 ID
+        public int? GetSelectedButtonId()
+        {
+            foreach (var button in Buttons)
+            {
+                if (button.IsEnabled) // 判断按钮是否被启用，可以替换为其他标识选中状态的属性
+                {
+                    return (int)button.Tag;
+                }
+            }
+            return null;
+        }
     }
+
+
 
 
 
@@ -116,6 +140,10 @@ namespace Majiang
         private List<KeyValuePair<int, int>> handCard;
 
 
+        // 用于等待用户选择的 TaskCompletionSource
+        private TaskCompletionSource<int> tcs = null;
+
+
 
 
         public GamePage()
@@ -132,6 +160,10 @@ namespace Majiang
             selfCardLabel = new List<Label>();
             othersCard = new List<List<Label>>();
             handCard = new List<KeyValuePair<int, int>>();
+            chiChoice = new List<List<Button>>();
+            guoChiPengGangHuBtn = new List<Button>();
+
+
 
             game = new Game("谭杰");
 
@@ -159,6 +191,8 @@ namespace Majiang
             LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
             InitCardUI();
             InitDirectionUI();
+            InitChiPengGangUI();
+            InitDiscardedCardUI();
         }
 
         public void StartGame()
@@ -281,8 +315,8 @@ namespace Majiang
             // 创建 GridLayout 控件，并设置大小
             totalCardBox = new Grid
             {
-                Width = 648,
-                Height = 1152
+                Width = 1035,
+                Height = 618
             };
 
             // 初始化 othersCardBox（其他玩家卡片布局）
@@ -663,6 +697,343 @@ namespace Majiang
 
 
         }
+
+        public void InitChiPengGangUI()
+        {
+            //-----------吃碰杠胡等--------------
+            chiPengGangBox = new StackPanel();
+            chiPengGangBox.Orientation = Orientation.Horizontal;
+
+            guoChiPengGangHuPic = new List<BitmapImage>
+    {
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/guo.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/peng.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/gang.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/hu.png"))
+    };
+
+            // 创建按钮组
+            buttonGroupChiPengPang = new ButtonGroup();
+            multiChiChoiceBtn = new ButtonGroup();
+
+            // 按钮点击事件处理
+            foreach (var button in buttonGroupChiPengPang.Buttons)
+            {
+                button.Click += async (sender, e) =>
+                {
+                    var btnId = (int)(button.Tag); // 获取按钮的自定义 ID
+
+                    if (btnId < guoChiPengGangHuPic.Count && waitUserOtherChoice)
+                    {
+                        tcs = new TaskCompletionSource<int>();
+
+                        switch (guoChiPengGangHu[btnId])
+                        {
+                            case 0:
+                                Console.WriteLine("guo");
+                                guoChiPengGangHuChoice = 0;
+                                waitUserOtherChoice = false;
+                                await tcs.Task;
+                                break;
+                            case 1 when !multiChi:
+                                Console.WriteLine("chi");
+                                guoChiPengGangHuChoice = 1;
+                                waitUserOtherChoice = false;
+                                await tcs.Task;
+                                break;
+                            case 2:
+                                Console.WriteLine("peng");
+                                guoChiPengGangHuChoice = 2;
+                                waitUserOtherChoice = false;
+                                await tcs.Task;
+                                break;
+                            case 3:
+                                Console.WriteLine("gang");
+                                guoChiPengGangHuChoice = 3;
+                                waitUserOtherChoice = false;
+                                await tcs.Task;
+                                break;
+                            case 4:
+                                Console.WriteLine("hu");
+                                guoChiPengGangHuChoice = 4;
+                                waitUserOtherChoice = false;
+                                await tcs.Task;
+                                break;
+                        }
+                    }
+                };
+            }
+
+            // 创建吃碰杠按钮
+            for (int i = 0; i < 5; i++)
+            {
+                CreateChiPengGangBtn(i); // 创建按钮并加入布局
+            }
+            for(int i = 0; i < 3; i++)
+{
+                // 创建一个新的 List<Button> 实例，并添加到 chiChoice 中
+                List<Button> qvbtn = new List<Button>();
+                chiChoice.Add(qvbtn);
+            }
+
+            // 创建 multiChiChoiceBtn 按钮并添加到按钮组
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    var button = new Button
+                    {
+                        Width = 35,
+                        Height = 50,
+                        Content = $"Button {i}-{j}",  // 设置按钮显示内容
+                        IsEnabled = true,
+                    };
+
+                    button.Tag = i;
+                    multiChiChoiceBtn.AddButton(button, i); // 将按钮加入 ButtonGroup
+                    chiChoice[i].Add(button);
+                }
+            }
+
+            // 连接多选按钮的点击事件
+            foreach (var button in multiChiChoiceBtn.Buttons)
+            {
+                button.Click += (sender, e) =>
+                {
+                    if (multiChi)
+                    {
+                        var btnId = (int)button.Tag; // 获取按钮的自定义 ID
+                        Console.WriteLine(btnId);
+                        if (waitUserOtherChoice)
+                        {
+                            multiChiChoice = btnId;
+                            guoChiPengGangHuChoice = 1; // 选择 "吃"
+                            waitUserOtherChoice = false;
+                        }
+                    }
+                };
+            }
+
+            // 将按钮添加到布局中
+            chiPengGangBox.Children.Add(new UIElement()); // 占位符，适配原布局的空白
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    // 使用 Margin 控制按钮之间的间距
+                    chiChoice[i][j].Margin = new Thickness(5);  // 设置按钮之间的间距
+                    chiPengGangBox.Children.Add(chiChoice[i][j]);
+                }
+
+                if (i != 2)
+                    chiPengGangBox.Children.Add(new UIElement()); // 空白
+            }
+
+            // 添加按钮和间距
+            for (int i = 4; i >= 0; i--)
+            {
+                guoChiPengGangHuBtn[i].Margin = new Thickness(5);  // 设置按钮之间的间距
+                chiPengGangBox.Children.Add(guoChiPengGangHuBtn[i]);
+                if (i != 0)
+                    chiPengGangBox.Children.Add(new UIElement()); // 空白
+            }
+
+            // 使用 Grid 或 WrapPanel 来替代 StackPanel
+            // WrapPanel 可以帮助自动换行并支持间距
+            var wrapPanel = new WrapPanel();
+            wrapPanel.Children.Add(chiPengGangBox);
+
+            // 将布局添加到父布局中（假设 totalCardBox 是你的父布局）
+            totalCardBox.Children.Add(wrapPanel);  // 使用 wrapPanel 而不是直接使用 StackPanel
+        }
+
+
+
+
+        // 创建按钮的方法
+        private void CreateChiPengGangBtn(int id)
+        {
+            // 创建一个 Button，代替 RadioButton
+            Button button = new Button
+            {
+                Width = 40,
+                Height = 40,
+                Content = new Image
+                {
+                    Source = new BitmapImage(), // 图像路径，可以根据需要设置具体的图片路径
+                    Stretch = Stretch.Fill
+                },
+                Tag = id // 将按钮的 ID 存储在 Tag 属性中
+            };
+
+            // 按钮点击事件绑定
+            button.Click += (sender, e) =>
+            {
+                var btnId = (int)((Button)sender).Tag; // 获取按钮的自定义 ID
+                                                       // 处理点击事件，根据按钮的 ID 进行逻辑处理
+                Console.WriteLine($"Button {btnId} clicked");
+
+                // 在这里执行按钮点击后的逻辑
+            };
+
+            // 将 Button 添加到 StackPanel 或者其他容器中
+            guoChiPengGangHuBtn.Add(button); // 将 Button 加入到按钮列表中
+            buttonGroupChiPengPang.AddButton(button, id);
+        }
+
+
+
+
+        private void CompleteUserChoice()
+        {
+            // 完成用户选择时，设置 TaskCompletionSource 的结果
+            if (tcs != null && !tcs.Task.IsCompleted)
+            {
+                tcs.SetResult(guoChiPengGangHuChoice); // 传递用户的选择
+            }
+        }
+
+
+        private void InitDiscardedCardUI()
+        {
+            // 初始化丢弃的卡牌（方向上4个）
+            discarded = new List<List<Label>>();
+            for (int i = 0; i < 4; i++)
+            {
+                discarded.Add(new List<Label>());
+            }
+
+            discardedNowIndex = new List<int> { 0, 0, 0, 0 };
+
+            // 上方丢弃的卡牌
+            for (int i = 7, j = 23, index = 0; i >= 5 && j >= 13; --j, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 44,
+                    Height = 60,
+                    Background = Brushes.Gray,  // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Content = new TextBlock
+                    {
+                        Text = "占位符", // 可以显示一些文本内容作为占位符
+                        Foreground = Brushes.White
+                    }
+                };
+
+                discarded[2].Add(label);
+
+                // 在 Grid 中添加控件，假设 `totalCardBox` 是一个 Grid 控件
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);   // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (j == 13 && i > 5)
+                {
+                    j = 24;
+                    i--;
+                }
+            }
+
+            // 左侧丢弃的卡牌
+            for (int i = 8, j = 12, index = 0; i <= 15 && j >= 9; ++i, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 60,
+                    Height = 44,
+                    Background = Brushes.Gray, // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Content = new TextBlock
+                    {
+                        Text = "占位符", // 可以显示一些文本内容作为占位符
+                        Foreground = Brushes.White
+                    }
+                };
+
+                discarded[3].Add(label);
+
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);    // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (i == 15 && j > 9)
+                {
+                    i = 7;
+                    j--;
+                }
+            }
+
+            // 右侧丢弃的卡牌
+            for (int i = 15, j = 24, index = 0; i >= 8 && j <= 27; --i, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 600,
+                    Height = 444,
+                    Background = Brushes.Gray, // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Content = new TextBlock
+                    {
+                        Text = "占位符dasjdadoajdoijqoi wdio jqwiod oqwidj oisajdoiasjdiojasodjoqiwjdqdwiojqwiodjoqwdqw", // 可以显示一些文本内容作为占位符
+                        Foreground = Brushes.Red
+                    }
+                };
+
+                discarded[1].Add(label);
+
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);    // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (i == 8 && j < 27)
+                {
+                    i = 16;
+                    j++;
+                }
+            }
+
+            // 下方丢弃的卡牌
+            for (int i = 16, j = 13, index = 0; i <= 18 && j <= 23; ++j, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 44,
+                    Height = 60,
+                    Background = Brushes.Gray, // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Content = new TextBlock
+                    {
+                        Text = "占位符", // 可以显示一些文本内容作为占位符
+                        Foreground = Brushes.White
+                    }
+                };
+
+                discarded[0].Add(label);
+
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);    // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (j == 23 && i < 18)
+                {
+                    j = 12;
+                    i++;
+                }
+            }
+
+            // 设置 Grid 的间距（你可以根据需要设置）
+            totalCardBox.Margin = new Thickness(2);
+        }
+
+
+
 
 
 
