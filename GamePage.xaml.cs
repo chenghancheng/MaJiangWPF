@@ -40,16 +40,14 @@ namespace Majiang
         }
     }
 
-    public class Game
-    {
-        // 游戏核心类（此处作为占位，具体实现需要根据需求补充）
-    }
+
 
     /// <summary>
     /// GamePage.xaml 的交互逻辑
     /// </summary>
     public partial class GamePage : Page
     {
+
         // 定义界面控件
         private StackPanel selfCardBox;
         private Grid totalCardBox;
@@ -61,14 +59,14 @@ namespace Majiang
         private ButtonGroup buttonGroup;
         private int choiceBtn = -1;
 
-        private List<Image> totalCardSelf;
-        private List<Image> totalDiscardedCard;
-        private Image biaoZhi;
-        private List<Image> othersCardImages;
+        private List<BitmapImage> totalCardSelf;
+        private List<BitmapImage> totalDiscardedCard;
+        private BitmapImage biaoZhi;
+        private List<BitmapImage> othersCardImages;
 
         private StackPanel chiPengGangBox;
         private List<Button> guoChiPengGangHuBtn;
-        private List<Image> guoChiPengGangHuPic;
+        private List<BitmapImage> guoChiPengGangHuPic;
         private List<List<Button>> chiChoice;
         private ButtonGroup buttonGroupChiPengPang;
         private ButtonGroup multiChiChoiceBtn;
@@ -76,7 +74,7 @@ namespace Majiang
         private List<Dictionary<int, int>> pengAlready;
 
         private List<Label> direction;
-        private List<Image> directionPic;
+        private List<BitmapImage> directionPic;
         private List<List<Label>> discarded;
         private List<int> discardedNowIndex;
 
@@ -93,6 +91,7 @@ namespace Majiang
         private string statement;
         private bool statu = true;
 
+        private string gameName;
         private Game game;
         private bool waitUserChoice = false;
         private bool waitUserOtherChoice = false;
@@ -113,6 +112,12 @@ namespace Majiang
 
         private List<BitmapImage> total_card_self;
         private List<BitmapImage> total_discarded_card;
+
+        private List<KeyValuePair<int, int>> handCard;
+
+
+
+
         public GamePage()
         {
             // StackPanel用于自定义布局
@@ -127,6 +132,8 @@ namespace Majiang
             selfCardLabel = new List<Label>();
             othersCard = new List<List<Label>>();
 
+            game = new Game("谭杰");
+
             // 布局的控件
             mainLayout.Children.Add(selfCardBox);
             mainLayout.Children.Add(totalCardBox);
@@ -139,7 +146,7 @@ namespace Majiang
             timer.Interval = TimeSpan.FromSeconds(1);
 
             // 创建Game类的实例
-            game = new Game();
+            game = new Game("谭杰");
 
             InitializeComponent();
 
@@ -153,6 +160,13 @@ namespace Majiang
             InitDirectionUI();
 
         }
+
+        public void StartGame()
+        {
+            game = new Game("谭杰");
+        }
+
+
 
         private void TimerTick(object sender, EventArgs e)
         {
@@ -289,14 +303,14 @@ namespace Majiang
             }
 
             // 加载图片资源
-            othersCardImages = new List<Image>
+            othersCardImages = new List<BitmapImage>
             {
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/right_normal.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png")) }
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/right_normal.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")) ,
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png"))
             };
 
-            biaoZhi = new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/xia_biao.png")) };
+            biaoZhi = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/xia_biao.png")) ;
 
             // 初始化按钮组
             buttonGroup = new ButtonGroup();
@@ -407,66 +421,260 @@ namespace Majiang
             this.Content = totalCardBox;
         }
 
+
+        //todo: 调整长宽
         private void InitDirectionUI()
         {
-            // Initialize the list of direction images (same as the original Qt images)
-            directionPic = new List<Image>
-            {
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down1.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right1.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up1.png")) },
-                new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left1.png")) }
-            };
+            // 初始化方向图像列表 (与原始 Qt 图像相同)
+            directionPic = new List<BitmapImage>
+    {
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down1.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right1.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up1.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left1.png"))
+    };
 
             direction = new List<Label>();
 
-            // Create 4 direction labels and set images as content
+            // 创建4个方向标签并将图像设置为内容
             for (int i = 0; i < 4; i++)
             {
                 var label = new Label
                 {
-                    Content = directionPic[i],  // Set the image as the label's content
-                    Width = directionPic[i].Source.Width,  // Set size to match the image size
-                    Height = directionPic[i].Source.Height
+                    HorizontalAlignment = HorizontalAlignment.Center, // 水平居中
+                    VerticalAlignment = VerticalAlignment.Center, // 垂直居中
+                    Width = 80,  // 设定Label的宽度
+                    Height = 80  // 设定Label的高度
                 };
+
+                // 创建Image并设置Stretch属性
+                var image = new Image
+                {
+                    Source = directionPic[i],  // 将BitmapImage设置为Image的Source
+                    Stretch = Stretch.UniformToFill // 确保图像能适应Label的大小
+                };
+
+                label.Content = image;  // 将图像控件设置为Label的内容
                 direction.Add(label);
             }
 
-            // Initialize the total card box (Grid layout)
+            // 初始化总卡片框 (Grid 布局)
             totalCardBox = new Grid();
 
-            // Add 4 direction images to the grid (same as Qt's QGridLayout positioning)
-            Grid.SetRow(direction[0], 12);
-            Grid.SetColumn(direction[0], 17);
-            //direction[0].SetValue(Grid.RowSpanProperty, 1);
-            //direction[0].SetValue(Grid.ColumnSpanProperty, 3);
+            // 设置 Grid 的行列
+            for (int i = 0; i < 30; i++) // 设置 30 行
+                totalCardBox.RowDefinitions.Add(new RowDefinition());
+            for (int i = 0; i < 30; i++) // 设置 30 列
+                totalCardBox.ColumnDefinitions.Add(new ColumnDefinition());
+
+            // 将4个方向图片添加到网格 (与 Qt 的 QGridLayout 定位相同)
+
+            //下 右 上 左
+            Grid.SetRow(direction[0], 15);
+            Grid.SetColumn(direction[0], 14);
+            Grid.SetRowSpan(direction[0], 1); // 设置行跨度
+            Grid.SetColumnSpan(direction[0], 3); // 设置列跨度
             totalCardBox.Children.Add(direction[0]);
 
-            Grid.SetRow(direction[1], 10);
-            Grid.SetColumn(direction[1], 19);
-            //direction[1].SetValue(Grid.RowSpanProperty, 3);
-            //direction[1].SetValue(Grid.ColumnSpanProperty, 1);
+            Grid.SetRow(direction[1], 14);
+            Grid.SetColumn(direction[1], 15);
+            Grid.SetRowSpan(direction[1], 3);
+            Grid.SetColumnSpan(direction[1], 1);
             totalCardBox.Children.Add(direction[1]);
 
-            Grid.SetRow(direction[2], 10);
-            Grid.SetColumn(direction[2], 17);
-            //direction[2].SetValue(Grid.RowSpanProperty, 1);
-            //direction[2].SetValue(Grid.ColumnSpanProperty, 3);
+            Grid.SetRow(direction[2], 13);
+            Grid.SetColumn(direction[2], 14);
+            Grid.SetRowSpan(direction[2], 1);
+            Grid.SetColumnSpan(direction[2], 3);
             totalCardBox.Children.Add(direction[2]);
 
-            Grid.SetRow(direction[3], 10);
-            Grid.SetColumn(direction[3], 17);
-            //direction[3].SetValue(Grid.RowSpanProperty, 3);
-            //direction[3].SetValue(Grid.ColumnSpanProperty, 1);
+            Grid.SetRow(direction[3], 14);
+            Grid.SetColumn(direction[3], 13);
+            Grid.SetRowSpan(direction[3], 3);
+            Grid.SetColumnSpan(direction[3], 1);
             totalCardBox.Children.Add(direction[3]);
 
-            // Set totalCardBox as the window content
+            // 设置 totalCardBox 为窗口内容
             this.Content = totalCardBox;
         }
+
+
+
+        // 卡牌排序和转换
+        private void selfCardTransition()
+        {
+            handCard.Clear();
+            var gg = game.player[0].OwnCard;
+            foreach (var card in game.player[0].OwnCard)
+            {
+                handCard.Add(new KeyValuePair<int, int>(Transition(card), card));
+            }
+
+            // 排序
+            handCard.Sort((a, b) => a.Key.CompareTo(b.Key));
+        }
+
+        // 创建玩家自己的卡牌
+        private void createSelfCard(int index)
+        {
+            // 创建 StackPanel 来代替 QVBoxLayout
+            var stackPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            // 创建一个 Image 用于显示卡牌图像
+            var label = new Label();
+            var image = new Image
+            {
+                Width = 17,
+                Height = 21
+            };
+            label.Content = image;
+
+            // 创建按钮
+            var button = new Button
+            {
+                Width = 74,
+                Height = 106,
+                Content = new Image(),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            selfCardTransition();
+
+            if (index >= 0 && index < 13)
+            {
+                var cardIndex = handCard[index].Key;
+                var cardImage = totalCardSelf[cardIndex];
+                (button.Content as Image).Source = cardImage;
+            }
+
+            button.Click += Button_Click; // 可选的按钮点击事件处理
+
+            // 将控件添加到 StackPanel
+            stackPanel.Children.Add(label);
+            stackPanel.Children.Add(button);
+
+            selfCard.Add(stackPanel);
+            selfCardButton.Add(button);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            // 处理按钮点击事件
+        }
+
+        // 创建其他玩家的卡牌
+        private void createOtherCard(int type, BitmapImage pic, int width, int height, int index)
+        {
+            var label = new Label
+            {
+                Width = width,
+                Height = height,
+                Content = new Image { Source = pic }
+            };
+
+            // 将标签添加到其他卡片集合中
+            othersCard[type].Add(label);
+            othersCardBox[type].Children.Add(label);
+        }
+
+
+        private void ResetCardUI()
+        {
+            bool statu = true;
+
+            // 清除自己卡片的按钮和图片
+            //for (int i = selfCardButton.Count - 1; i >= 0; --i)
+            //{
+            //    selfCardPanel.Children.Remove(selfCardButtons[i]);
+            //    selfCardButtons[i].ClearValue(Button.ContentProperty);
+            //    selfCardButtons[i].ClearValue(Button.BackgroundProperty);
+            //    selfCardButtons[i] = null;
+            //    selfCardImages[i].Source = null;
+            //    selfCardPanel.Children.Remove(selfCardImages[i]);
+            //    selfCardImages[i] = null;
+            //}
+
+            //selfCardButtons.Clear();
+            //selfCardImages.Clear();
+
+            //// 清除其他玩家卡片
+            //foreach (var panel in othersCardPanels)
+            //{
+            //    panel.Children.Clear();
+            //}
+            //foreach (var cardList in othersCards)
+            //{
+            //    cardList.Clear();
+            //}
+
+            // 重建自己卡片
+            for (int i = 0; i < 13; ++i)
+            {
+                createSelfCard(i);
+            }
+
+            // 在自己卡片区添加间隔
+            selfCardBox.Children.Add(new Button { Content = "Space" }); // 可自定义空白控件
+            createSelfCard(13);
+
+            // 禁用最后一个卡片的按钮
+            selfCardButton[13].IsEnabled = false;
+
+            // 初始化其他玩家卡片
+            for (int i = 0; i < 3; ++i)
+            {
+                int width, length;
+
+                // 设置卡片的宽高
+                if (i == 1)
+                {
+                    width = 74;
+                    length = 106;
+                }
+                else
+                {
+                    width = 71;
+                    length = 50;
+                }
+
+                // 清空原有卡片，重新布局
+                othersCardBox[i].Children.Clear();
+
+                // 添加 Stretch（伸缩空间），类似于 Qt 中的 addStretch()
+                var stretchTop = new FrameworkElement { Height = 20 };  // 使用 FrameworkElement 来模拟
+                othersCardBox[i].Children.Add(stretchTop);
+
+                // 创建13张卡片并添加到对应的 StackPanel 中
+                for (int j = 0; j < 13; ++j)
+                {
+                    // 创建一个新的卡片
+                    createOtherCard(i, othersCardImages[i], width, length, j);
+                }
+
+                // 添加一个间距（Spacing），类似 Qt 中的 addSpacing
+                var spacing = new FrameworkElement { Height = 15 };  // 设置间距为 15，可以根据需要调整
+                othersCardBox[i].Children.Add(spacing);
+
+                // 创建一张空卡片（这可能是用于显示某种空白状态）
+                createOtherCard(i, null, width, length, 13);
+
+                // 再添加一个伸缩空间（类似于 addStretch()）
+                var stretchEnd = new FrameworkElement { Height = 20 }; // 再添加一个伸缩空间
+                othersCardBox[i].Children.Add(stretchEnd);
+            }
+
+
+        }
+
+
 
 
     }
