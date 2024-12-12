@@ -110,8 +110,8 @@ namespace Majiang
 
         private DispatcherTimer timer;
 
-        private List<BitmapImage> total_card_self;
-        private List<BitmapImage> total_discarded_card;
+        //private List<BitmapImage> total_card_self;
+        //private List<BitmapImage> total_discarded_card;
 
         private List<KeyValuePair<int, int>> handCard;
 
@@ -131,6 +131,7 @@ namespace Majiang
             selfCardButton = new List<Button>();
             selfCardLabel = new List<Label>();
             othersCard = new List<List<Label>>();
+            handCard = new List<KeyValuePair<int, int>>();
 
             game = new Game("谭杰");
 
@@ -150,15 +151,14 @@ namespace Majiang
 
             InitializeComponent();
 
-            total_card_self = new List<BitmapImage>();
-            total_discarded_card = new List<BitmapImage>();
-            total_card_self.Add(new BitmapImage());
-            total_discarded_card.Add(new BitmapImage());
-            LoadImages(total_card_self, @"./Resources/Images/selfcard2", false);
-            LoadImages(total_discarded_card, @"./Resources/Images/card2", true);
+            totalCardSelf = new List<BitmapImage>();
+            totalDiscardedCard = new List<BitmapImage>();
+            totalCardSelf.Add(new BitmapImage());
+            totalDiscardedCard.Add(new BitmapImage());
+            LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
+            LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
             InitCardUI();
             InitDirectionUI();
-
         }
 
         public void StartGame()
@@ -287,11 +287,11 @@ namespace Majiang
 
             // 初始化 othersCardBox（其他玩家卡片布局）
             othersCardBox = new List<StackPanel>
-            {
-                new StackPanel { Orientation = Orientation.Vertical },  // 右
-                new StackPanel { Orientation = Orientation.Horizontal }, // 上
-                new StackPanel { Orientation = Orientation.Vertical }    // 左
-            };
+    {
+        new StackPanel { Orientation = Orientation.Vertical },  // 右
+        new StackPanel { Orientation = Orientation.Horizontal }, // 上
+        new StackPanel { Orientation = Orientation.Vertical }    // 左
+    };
 
             selfCardBox = new StackPanel { Orientation = Orientation.Horizontal };
 
@@ -304,50 +304,48 @@ namespace Majiang
 
             // 加载图片资源
             othersCardImages = new List<BitmapImage>
-            {
-                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/right_normal.png")),
-                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")) ,
-                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png"))
-            };
+    {
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/right_normal.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")),
+        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png"))
+    };
 
-            biaoZhi = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/xia_biao.png")) ;
+            // 检查图片加载
+            foreach (var imageUri in othersCardImages)
+            {
+                if (imageUri == null || string.IsNullOrEmpty(imageUri.ToString()))
+                {
+                    MessageBox.Show("图片加载失败: " + imageUri.ToString());
+                }
+            }
+
+            // 设置图片显示
+            for (int i = 0; i < othersCardImages.Count; i++)
+            {
+                var image = new Image
+                {
+                    Source = othersCardImages[i],
+                    Stretch = Stretch.Uniform, // 确保图片按比例缩放
+                    Width = 100,  // 可以调整宽度
+                    Height = 100  // 可以调整高度
+                };
+
+                var label = new Label
+                {
+                    Content = image,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Width = 120,  // 设置 Label 宽度，保证空间足够
+                    Height = 120  // 设置 Label 高度，保证空间足够
+                };
+
+                othersCard[i % 3].Add(label); // 分别加入对应的 StackPanel
+            }
 
             // 初始化按钮组
             buttonGroup = new ButtonGroup();
-            //buttonGroup.Exclusive = true; // 设置按钮组为互斥
 
-            // 事件处理：按钮点击时的行为
-            //foreach (var button in buttonGroup.Buttons)
-            //{
-            //    button.Click += (sender, e) =>
-            //    {
-            //        var clickedButton = sender as Button;
-            //        if (statu && waitUserChoice)
-            //        {
-            //            if (clickedButton.IsChecked == true)
-            //            {
-            //                if (choiceBtn == buttonGroup.CheckedId)
-            //                {
-            //                    selfCardLabel[choiceBtn].Content = null; // 清除标识
-            //                    waitUserChoice = false;
-            //                    discardIndex = choiceBtn;
-            //                    choiceBtn = -1;
-            //                }
-            //                else
-            //                {
-            //                    if (choiceBtn != -1)
-            //                    {
-            //                        selfCardLabel[choiceBtn].Content = null; // 清除标识
-            //                    }
-            //                    choiceBtn = buttonGroup.CheckedId;
-            //                    selfCardLabel[choiceBtn].Content = biaoZhi; // 显示标识
-            //                }
-            //            }
-            //        }
-            //    };
-            //}
-
-            //ResetCardUI(); // 重新设置卡片 UI
+            ResetCardUI(); // 重新设置卡片 UI
 
             // 设置布局间距
             foreach (var layout in othersCardBox)
@@ -357,14 +355,6 @@ namespace Majiang
             selfCardBox.Margin = new Thickness(0);
 
             // 设置列和行的伸展比例
-            //for (int i = 0; i < 38; i++)
-            //{
-            //    totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1*) });
-            //}
-            //for (int i = 0; i < 27; i++)
-            //{
-            //    totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1*) });
-            //}
             for (int i = 0; i < 38; i++)
             {
                 totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -421,8 +411,7 @@ namespace Majiang
             this.Content = totalCardBox;
         }
 
-
-        //todo: 调整长宽
+        // 初始化方向图像
         private void InitDirectionUI()
         {
             // 初始化方向图像列表 (与原始 Qt 图像相同)
@@ -462,26 +451,25 @@ namespace Majiang
                 direction.Add(label);
             }
 
-            // 初始化总卡片框 (Grid 布局)
-            totalCardBox = new Grid();
+            //// 初始化总卡片框 (Grid 布局)
+            //totalCardBox = new Grid();
 
-            // 设置 Grid 的行列
-            for (int i = 0; i < 30; i++) // 设置 30 行
-                totalCardBox.RowDefinitions.Add(new RowDefinition());
-            for (int i = 0; i < 30; i++) // 设置 30 列
-                totalCardBox.ColumnDefinitions.Add(new ColumnDefinition());
+            //// 设置 Grid 的行列
+            //for (int i = 0; i < 30; i++) // 设置 30 行
+            //    totalCardBox.RowDefinitions.Add(new RowDefinition());
+            //for (int i = 0; i < 30; i++) // 设置 30 列
+            //    totalCardBox.ColumnDefinitions.Add(new ColumnDefinition());
 
             // 将4个方向图片添加到网格 (与 Qt 的 QGridLayout 定位相同)
-
-            //下 右 上 左
-            Grid.SetRow(direction[0], 15);
-            Grid.SetColumn(direction[0], 14);
+            // 下 右 上 左
+            Grid.SetRow(direction[0], 0);
+            Grid.SetColumn(direction[0], 0);
             Grid.SetRowSpan(direction[0], 1); // 设置行跨度
             Grid.SetColumnSpan(direction[0], 3); // 设置列跨度
             totalCardBox.Children.Add(direction[0]);
 
-            Grid.SetRow(direction[1], 14);
-            Grid.SetColumn(direction[1], 15);
+            Grid.SetRow(direction[1], 0);
+            Grid.SetColumn(direction[1], 0);
             Grid.SetRowSpan(direction[1], 3);
             Grid.SetColumnSpan(direction[1], 1);
             totalCardBox.Children.Add(direction[1]);
@@ -499,7 +487,7 @@ namespace Majiang
             totalCardBox.Children.Add(direction[3]);
 
             // 设置 totalCardBox 为窗口内容
-            this.Content = totalCardBox;
+            //this.Content = totalCardBox;
         }
 
 
@@ -509,6 +497,7 @@ namespace Majiang
         {
             handCard.Clear();
             var gg = game.player[0].OwnCard;
+            Console.WriteLine(gg);
             foreach (var card in game.player[0].OwnCard)
             {
                 handCard.Add(new KeyValuePair<int, int>(Transition(card), card));
@@ -550,6 +539,7 @@ namespace Majiang
 
             if (index >= 0 && index < 13)
             {
+                int siz = handCard.Count;
                 var cardIndex = handCard[index].Key;
                 var cardImage = totalCardSelf[cardIndex];
                 (button.Content as Image).Source = cardImage;

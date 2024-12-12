@@ -23,6 +23,7 @@ public class Game
         player[0] = new Player(name, card);
         cur = card.GenerateRandomNumber(4) - 1;
         card.Start();
+        DistributeCards();
     }
 
     public void DistributeCards()
