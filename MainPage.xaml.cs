@@ -60,7 +60,9 @@ namespace Majiang
 
         private void startGameButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Majiang.GamePage());
+            GamePage gamePage = new GamePage();
+            NavigationService.Navigate(gamePage);
+            gamePage.StartGame();
             // 切换到游戏界面
             tabControl.SelectedIndex = 2;
 
