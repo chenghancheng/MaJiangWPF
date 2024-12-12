@@ -1,0 +1,41 @@
+name: release
+
+on:
+  release:
+    types: published
+
+permissions:
+  contents: write
+
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v4.1.0
+        with:
+            dotnet-version: 8.X
+    
+    - name: Restore NuGet Packages
+      run: dotnet restore MaJiang.csproj
+
+    - name: Dotnet publish
+      run: dotnet publish -c Release -o ./publish
+      
+    - name: Create Release Zip
+      run: |
+        mkdir release
+        $zipPath = "./release/MaJiang.zip"
+        Compress-Archive -Path ./publish/* -DestinationPath $zipPath
+      shell: pwsh
+
+    - name: Upload release assets
+        uses: softprops/action-gh-release@v2.0.8
+        if: startsWith(github.ref, 'refs/tags/')
+          with:
+            files: ./release/*
