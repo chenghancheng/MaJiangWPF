@@ -160,6 +160,9 @@ namespace Majiang
             selfCardLabel = new List<Label>();
             othersCard = new List<List<Label>>();
             handCard = new List<KeyValuePair<int, int>>();
+            guoChiPengGangHuBtn = new List<Button>();
+            chiChoice = new List<List<Button>>();
+            othersCardImages = new List<BitmapImage>();
 
             game = new Game("谭杰");
 
@@ -187,6 +190,9 @@ namespace Majiang
             LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
             InitCardUI();
             InitDirectionUI();
+            InitChiPengGangUI();
+            InitDiscardedCardUI();
+            InitCheckoutUI();
         }
 
         public void StartGame()
@@ -1081,10 +1087,455 @@ namespace Majiang
         }
 
 
+        // 初始化结算界面
+        private void InitCheckoutUI()
+        {
+            // 创建 Grid 作为容器
+            checkout = new Grid
+            {
+                Width = 700,
+                Height = 400
+            };
+
+            // 设置 Grid 背景为图像
+            var pix = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"));
+            var brush = new ImageBrush(pix)
+            {
+                Stretch = Stretch.Fill
+            };
+            checkout.Background = brush;
+
+            // 创建并设置结算状态的 Label
+            settlementPic = new Label
+            {
+                Width = 535,
+                Height = 160,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+            Grid.SetRow(settlementPic, 2); // 设置它在 Grid 中的行
+            Grid.SetColumn(settlementPic, 3); // 设置它在 Grid 中的列
+            checkout.Children.Add(settlementPic);
+
+            // 设置结算状态文本
+            settlementState = new Label
+            {
+                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                FontSize = 15,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+            Grid.SetRow(settlementState, 4); // 设置它在 Grid 中的行
+            Grid.SetColumn(settlementState, 6); // 设置它在 Grid 中的列
+            checkout.Children.Add(settlementState);
+
+            // 创建按钮布局
+            checkoutBtn = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            Grid.SetRow(checkoutBtn, 2); // 设置它在 Grid 中的行
+            Grid.SetColumn(checkoutBtn, 0); // 设置它在 Grid 中的列
+
+            continueGame = new Button
+            {
+                Content = "继续游戏",
+                Width = 240,
+                Height = 50,
+                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                FontSize = 10
+            };
+            continueGame.Style = (Style)Application.Current.Resources["ButtonStyle"]; // 设置按钮样式
+            checkoutBtn.Children.Add(continueGame);
+
+            backToMainStage = new Button
+            {
+                Content = "返回菜单",
+                Width = 240,
+                Height = 50,
+                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                FontSize = 10
+            };
+            backToMainStage.Style = (Style)Application.Current.Resources["ButtonStyle"];
+            checkoutBtn.Children.Add(backToMainStage);
+
+            checkout.Children.Add(checkoutBtn);
+
+            // 创建隐藏按钮
+            hideCheckOut = new Button
+            {
+                Width = 40,
+                Height = 40,
+                Background = Brushes.Transparent
+            };
+            hideCheckOut.Click += HideCheckOut_Click;
+
+            // 隐藏按钮放置位置2
+            Grid.SetRow(checkout, 15);
+            Grid.SetColumn(checkout, 15);
+            Grid.SetRowSpan(checkout, 30);
+            Grid.SetColumnSpan(checkout, 10);
+            totalCardBox.Children.Add(checkout);  // 将按钮添加到容器中
+
+            // 注册按钮点击事件
+            continueGame.Click += ContinueGame_Click;
+            backToMainStage.Click += BackToMainStage_Click;
+
+            //// 添加 checkout 到当前页面
+            //this.Content = checkout;
+        }
+
+        // 继续游戏按钮点击事件
+        private void ContinueGame_Click(object sender, RoutedEventArgs e)
+        {
+            // 清除状态和重置游戏
+            statement = "";
+            game = new Game("于洋");
+            game.DistributeCards();
+            ResetCardUI();
+            ResetDirectionUI();
+            ResetDiscardedUI();
+            hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
+            checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
+            StartGame();
+        }
+
+        // 返回菜单按钮点击事件
+        private void BackToMainStage_Click(object sender, RoutedEventArgs e)
+        {
+            // 清除状态和重置游戏
+            statement = "";
+            game = new Game("谭杰");
+            game.DistributeCards();
+            ResetCardUI();
+            ResetDirectionUI();
+            ResetDiscardedUI();
+            hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
+                                                            // 跳转到主菜单
+            NavigateToMainPage();
+            checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
+        }
+
+        // 隐藏或显示结算界面
+        private void HideCheckOut_Click(object sender, RoutedEventArgs e)
+        {
+            if (!statu)
+            {
+                if (checkout.Visibility == Visibility.Hidden)
+                    checkout.Visibility = Visibility.Visible;
+                else
+                    checkout.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void ResetDirectionUI() { }
+        private void ResetDiscardedUI() { }
+
+        private void NavigateToMainPage()
+        {
+            // 这里写主菜单跳转逻辑
+        }
 
 
+        public void ChiSelf(List<int> chiCard)
+        {
+            // 清空当前选中的按钮
+            if (choiceBtn != -1)
+            {
+                // 清除按钮和标签
+                selfCardLabel[choiceBtn].Content = null; // 清空卡片标签
+                choiceBtn = -1;
+            }
+
+            // 移除最后两个按钮和标签
+            if (selfCardButton.Count > 1)
+            {
+                int lastIndex = selfCardButton.Count - 2;
+
+                // 移除按钮和标签
+                selfCardButton[lastIndex].Click -= Button_Click; // 移除点击事件
+                selfCardBox.Children.Remove(selfCardButton[lastIndex]);
+                selfCardLabel[lastIndex].Content = null; // 清空标签
+                selfCardBox.Children.Remove(selfCardLabel[lastIndex]);
+
+                // 从列表中删除
+                selfCardButton.RemoveAt(lastIndex);
+                selfCardLabel.RemoveAt(lastIndex);
+                selfCard.RemoveAt(lastIndex);
+            }
+
+            // 插入新的卡片
+            for (int i = 0; i < 3; ++i)
+            {
+                // 创建新的卡片标签
+                var label = new Label
+                {
+                    Width = 55,
+                    Height = 78,
+                    Content = new Image
+                    {
+                        Source = totalDiscardedCard[chiCard[i]], // 假设你已经准备好卡片的图片列表
+                        Stretch = Stretch.Uniform
+                    }
+                };
+
+                selfCardBox.Children.Insert(selfCardBox.Children.Count - 1, label);
+                selfCardLabel.Add(label);
+
+                // 创建新的按钮
+                var button = new Button
+                {
+                    Content = $"Card {i}",
+                    Width = 55,
+                    Height = 78
+                };
+                button.Click += Button_Click; // 绑定按钮点击事件
+                selfCardBox.Children.Insert(selfCardBox.Children.Count - 1, button);
+                selfCardButton.Add(button);
+
+                // 将按钮添加到 ButtonGroup 中
+                buttonGroup.AddButton(button, i);
+            }
+
+            // 更新 UI
+            Dispatcher.Invoke(() =>
+            {
+                // 强制刷新 UI 界面
+                selfCardBox.UpdateLayout();
+            });
+        }
+
+        public void ChiOthers(int type, List<int> chiCard)
+        {
+            // 移除最后两个卡片
+            if (othersCard[type].Count > 1)
+            {
+                int lastIndex = othersCard[type].Count - 2;
+
+                // 移除卡片并清空
+                othersCardBox[type].Children.Remove(othersCard[type][lastIndex]);
+                othersCard[type][lastIndex].Content = null; // 清空卡片标签
+
+                // 从列表中删除
+                othersCard[type].RemoveAt(lastIndex);
+            }
+
+            // 插入新的卡片
+            for (int i = 0; i < 3; ++i)
+            {
+                // 创建新的卡片标签
+                var label = new Label
+                {
+                    Width = (type == 1) ? 55 : 60,
+                    Height = (type == 1) ? 78 : 44,
+                };
+
+                // 旋转图片
+                var rotateTransform = new RotateTransform(-90 * (type + 1));
+
+                var image = new Image
+                {
+                    Source = totalDiscardedCard[chiCard[i]], // 假设你已经准备好卡片的图片列表
+                    Stretch = Stretch.Uniform,
+                    RenderTransform = rotateTransform // 应用旋转
+                };
+
+                label.Content = image;
+
+                // 按照类型调整缩放
+                image.Stretch = Stretch.UniformToFill;
+
+                // 将新的卡片标签添加到对应的 StackPanel 中
+                othersCardBox[type].Children.Insert(othersCardBox[type].Children.Count - 1, label);
+                othersCard[type].Add(label); // 将新的标签添加到列表中
+            }
+
+            // 强制刷新 UI
+            Dispatcher.Invoke(() =>
+            {
+                othersCardBox[type].UpdateLayout();
+            });
+        }
+
+        public void PengGangSelf(bool choice, int pengGangCard)
+        {
+            // 取消当前选中的按钮
+            buttonGroup.ClearSelection();
+
+            if (choiceBtn != -1)
+            {
+                // 清除当前选择的按钮
+                selfCardLabel[choiceBtn].Content = null; // 清除内容
+                choiceBtn = -1;
+            }
+
+            // 根据 choice 决定是碰（3张卡）还是杠（4张卡）
+            int num = choice ? 3 : 4;
+
+            // 移除旧的卡片
+            if (selfCard.Count > 1)
+            {
+                int lastIndex = selfCard.Count - 2;
+
+                // 移除卡片标签和按钮
+                selfCardBox.Children.Remove(selfCard[lastIndex]);
+                selfCardButton[lastIndex].IsEnabled = false; // 禁用按钮（可以选择是否删除）
+                selfCardButton[lastIndex].Content = null;
+
+                selfCard.RemoveAt(lastIndex);
+                selfCardButton.RemoveAt(lastIndex);
+                selfCardLabel.RemoveAt(lastIndex);
+            }
+
+            // 插入新的卡片
+            for (int i = 0; i < num; ++i)
+            {
+                // 创建新的 StackPanel，用于容纳 Image
+                var stackPanel = new StackPanel
+                {
+                    Width = 55,
+                    Height = 78,
+                    Orientation = Orientation.Vertical // 根据需求调整布局方向
+                };
+
+                // 创建一个 Image 控件显示卡片
+                var image = new Image
+                {
+                    Source = totalDiscardedCard[pengGangCard], // 假设 totalDiscardedCard 是 BitmapImage 列表
+                    Stretch = Stretch.Uniform
+                };
+
+                // 将 Image 添加到 StackPanel 中
+                stackPanel.Children.Add(image);
+
+                // 将新的 StackPanel 添加到自定义的 StackPanel 控件（selfCardBox）
+                selfCardBox.Children.Insert(selfCardBox.Children.Count - 1, stackPanel);
+                selfCard.Add(stackPanel);
+
+                // 如果是碰，记录该卡片的位置
+                if (choice && i == 0)
+                {
+                    pengAlready[0][pengGangCard] = selfCardBox.Children.IndexOf(stackPanel) - selfCardButton.Count;
+                }
+            }
+
+            // 更新按钮 ID
+            buttonGroup.AddButton(selfCardButton[selfCardButton.Count - 1], selfCardButton.Count - 1);
+
+            // 强制刷新 UI
+            Dispatcher.Invoke(() =>
+            {
+                selfCardBox.UpdateLayout();
+            });
+        }
 
 
+        public void AddGangSelf(int pengGangCard)
+        {
+            // 计算插入位置
+            int index = pengAlready[0][pengGangCard] + selfCardButton.Count;
+
+            // 创建新的 Image 控件用于显示卡片
+            var image = new Image
+            {
+                Width = 55,
+                Height = 78,
+                Stretch = Stretch.Uniform,
+                Source = totalDiscardedCard[pengGangCard] // 假设 totalDiscardedCard 是 BitmapImage 列表
+            };
+
+            // 将 Image 控件插入到指定位置
+            selfCardBox.Children.Insert(index, image);
+
+            // 将此卡片的 StackPanel 信息存入 selfCard 中
+            var stackPanel = new StackPanel
+            {
+                Width = 55,
+                Height = 78,
+                Orientation = Orientation.Vertical
+            };
+
+            stackPanel.Children.Add(image); // 将 Image 添加到 StackPanel 中
+            selfCard.Add(stackPanel); // 将 StackPanel 添加到 selfCard 列表中
+        }
+
+        public void PengGangOthers(bool choice, int type, int pengGangCard)
+        {
+            int num = choice ? 3 : 4; // 根据选择来确定数字
+
+            // 移除之前的卡片控件
+            for (int i = 0; i < 3; ++i)
+            {
+                if (othersCard[type].Count > 1)
+                {
+                    // 移除 StackPanel 中的控件
+                    othersCard[type].RemoveAt(othersCard[type].Count - 2);
+                }
+            }
+
+            // 向 StackPanel 插入间隔
+            othersCardBox[type].Children.Insert(othersCardBox[type].Children.Count - 1, new UIElement()); // 添加空元素来模拟间隔
+
+            // 进行旋转变换
+            var transform = new RotateTransform(-90 * (type + 1));
+
+            // 创建图片控件，并设置相关属性
+            for (int i = 0; i < num; ++i)
+            {
+                var image = new Image
+                {
+                    Width = type == 1 ? 55 : 60,
+                    Height = type == 1 ? 78 : 44,
+                    Stretch = Stretch.Uniform,
+                    Source = totalDiscardedCard[pengGangCard] // 假设 totalDiscardedCard 是 BitmapImage 列表
+                };
+
+                // 对图片应用旋转变换
+                image.RenderTransform = transform;
+
+                // 插入图片控件到 StackPanel 中
+                othersCardBox[type].Children.Insert(othersCardBox[type].Children.Count - 1, image);
+
+                // 如果选择了“碰”并且是第二张卡片
+                if (choice && i == 1)
+                {
+                    // 保存卡片在其它玩家卡片中的位置
+                    pengAlready[type][pengGangCard] = othersCardBox[type].Children.IndexOf(image) - othersCard[type].Count;
+                }
+            }
+
+            // 强制刷新界面更新
+            Dispatcher.Invoke(() => { });
+        }
+
+
+        public void AddGangOthers(int type, int pengGangCard)
+        {
+            // 计算要插入的位置
+            int index = pengAlready[type][pengGangCard] + othersCard[type].Count;
+
+            // 进行旋转变换
+            var transform = new RotateTransform(-90 * (type + 1));
+
+            // 创建 Image 控件，并设置其大小
+            var image = new Image
+            {
+                Width = (type == 1) ? 55 : 60,
+                Height = (type == 1) ? 78 : 44,
+                Stretch = Stretch.Uniform
+            };
+
+            // 获取卡片图片并应用旋转变换
+            var pixmap = totalDiscardedCard[pengGangCard]; // 假设 totalDiscardedCard 是 BitmapImage 列表
+            image.Source = pixmap; // 设置图片源
+
+            // 对图片进行旋转
+            image.RenderTransform = transform;
+
+            // 插入控件到对应的 StackPanel 中
+            othersCardBox[type].Children.Insert(index, image);
+        }
 
     }
 }

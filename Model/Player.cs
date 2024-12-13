@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Majiang;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,7 +38,9 @@ public class Player
         OwnCard.Add(p);
         return p;
     }
+   
 
+    //查找1的个数
     public int CountOne(int n)
     {
         int count = 0;
@@ -320,4 +323,201 @@ public class Player
 
         return null;
     }
+
+
+    public int Ctz(int x)
+    {
+        int cnt = 0;
+        if (x == 0) return 0;
+        while ((x & 1) == 0)
+        {
+            x >>= 1;
+            cnt++;
+        }
+        return cnt;
+    }
+
+    public List<List<int>> CheckChi(int n)
+    {
+        List<int> curCard = new List<int>(OwnCard);
+        List<List<int>> res = new List<List<int>>();
+        int j = (1 << 2) - 1;
+        List<List<int>> ans = new List<List<int>>();
+
+        while (j < (1 << CurNum))
+        {
+            int jj = j;
+            int lb = j & -j;
+            int cur = lb + j;
+            j = ((cur ^ j) >> (Ctz(j) + 2)) + cur;
+            int cnt = CountOne(jj);
+            if (cnt != 2) continue;
+
+            int c1 = Ctz(jj);
+            jj ^= jj & -jj;
+            int c2 = Ctz(jj);
+
+            int n1 = curCard[c1], n2 = curCard[c2], n3 = n;
+            if (n1 > 108 || n2 > 108 || n3 > 108) continue;
+
+            int p1 = (n1 - 1) / 36, p2 = (n2 - 1) / 36, p3 = (n3 - 1) / 36;
+            if (p1 != p2 || p1 != p3) continue;
+
+            int num1 = (n1 - 1) % 9 + 1, num2 = (n2 - 1) % 9 + 1, num3 = (n3 - 1) % 9 + 1;
+            if (num1 > num2) Swap(ref num1, ref num2);
+            if (num2 > num3) Swap(ref num2, ref num3);
+            if (num1 > num2) Swap(ref num1, ref num2);
+
+            if (num1 + 1 != num2 || num2 + 1 != num3) continue;
+
+            res.Add(new List<int> { n1, n2 });
+        }
+
+        HashSet<Tuple<string, string>> st = new HashSet<Tuple<string, string>>();
+        foreach (var p in res)
+        {
+            int x = p[0], y = p[1];
+            string s1 = Card.GetName(x), s2 = Card.GetName(y);
+            var pair1 = new Tuple<string, string>(s1, s2);
+            var pair2 = new Tuple<string, string>(s2, s1);
+            if (st.Contains(pair1) || st.Contains(pair2)) continue;
+            ans.Add(p);
+            st.Add(pair1);
+        }
+
+        return ans;
+    }
+
+    // C++ 版的 chi 方法转为 C# 版本
+    public void Chi(List<int> n)
+    {
+        //music.PlayChiSound();
+        for (int i = 0; i < 2; ++i)
+        {
+            DiscardChi(n[i]);
+        }
+    }
+
+    // C++ 版的 check_peng 方法转为 C# 版本
+    public bool CheckPeng(int n)
+    {
+        Dictionary<string, int> cnt = new Dictionary<string, int>();
+        foreach (var card in OwnCard)
+        {
+            string cardName = this.Card.GetName(card);
+            if (cnt.ContainsKey(cardName))
+                cnt[cardName]++;
+            else
+                cnt.Add(cardName, 1);
+        }
+        return cnt.ContainsKey(this.Card.GetName(n)) && cnt[this.Card.GetName(n)] >= 2;
+    }
+
+    // C++ 版的 peng 方法转为 C# 版本
+    public void Peng(int n)
+    {
+        //music.PlayPengSound();
+        int cnt = 2;
+        CurNum -= 2;
+        MyPeng.Add(Card.GetName(n));
+        List<int> p = new List<int>();
+
+        foreach (var card in OwnCard)
+        {
+            if (card == n && cnt > 0)
+            {
+                p.Add(card);
+                cnt--;
+            }
+        }
+
+        foreach (var item in p)
+        {
+            OwnCard.Remove(item);
+        }
+    }
+
+    // C++ 版的 check_gang 方法转为 C# 版本
+    public int CheckGang()
+    {
+        Dictionary<string, int> cnt = new Dictionary<string, int>();
+        int p = -1;
+        foreach (var card in OwnCard)
+        {
+            string cardName = this.Card.GetName(card);
+            if (++cnt[cardName] >= 4)
+                p = card;
+        }
+        return p;
+    }
+
+    // C++ 版的 check_gang (重载) 方法转为 C# 版本
+    public bool CheckGang(int n)
+    {
+        Dictionary<string, int> cnt = new Dictionary<string, int>();
+        foreach (var card in OwnCard)
+        {
+            string cardName = this.Card.GetName(card);
+            if (cnt.ContainsKey(cardName))
+                cnt[cardName]++;
+            else
+                cnt.Add(cardName, 1);
+        }
+        return cnt.ContainsKey(this.Card.GetName(n)) && cnt[this.Card.GetName(n)] >= 3;
+    }
+
+    // C++ 版的 check_add_gang 方法转为 C# 版本
+    public bool CheckAddGang(int n)
+    {
+        return MyPeng.Contains(this.Card.GetName(n));
+    }
+
+    // C++ 版的 gang 方法转为 C# 版本
+    public int Gang(int n, int type)
+    {
+        //music.PlayGangSound();
+        int cnt = type == 1 ? 3 : 4;
+        CurNum -= cnt;
+        List<int> p = new List<int>();
+
+        foreach (var card in OwnCard)
+        {
+            if (card == n && cnt > 0)
+            {
+                p.Add(card);
+                cnt--;
+            }
+        }
+
+        foreach (var item in p)
+        {
+            OwnCard.Remove(item);
+        }
+
+        return 0;
+    }
+
+    // C++ 版的 add_gang 方法转为 C# 版本
+    public void AddGang(int n)
+    {
+        //music.PlayGangSound();
+        DiscardChi(n);
+    }
+
+    // C++ 版的 get_name 方法转为 C# 版本
+    public string GetName()
+    {
+        return this.Name;
+    }
+
+
+    // 辅助方法：交换两个值
+    private void Swap(ref int a, ref int b)
+    {
+        int temp = a;
+        a = b;
+        b = temp;
+    }
+
+
 }
