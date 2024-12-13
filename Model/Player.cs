@@ -21,7 +21,7 @@ public class Player
     {
         Name = name;
         CurNum = 0;
-        Card = card;
+        this.Card = card;
         OwnCard = new HashSet<int>();
         MyPeng = new HashSet<string>();
     }

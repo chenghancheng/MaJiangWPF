@@ -166,6 +166,7 @@ namespace Majiang
             guoChiPengGangHu = new List<int>();
             totalDiscardedCard = new List<BitmapImage>();
             discardedNowIndex = new List<int>();
+            pengAlready = new List<Dictionary<int, int>>();
 
             game = new Game("谭杰");
 
@@ -657,7 +658,14 @@ namespace Majiang
                 int siz = handCard.Count;
                 var cardIndex = handCard[index].Key;
                 var cardImage = totalCardSelf[cardIndex];
-                (button.Content as Image).Source = cardImage;
+                Task.Run(() =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        (button.Content as Image).Source = cardImage;
+                    });
+                });
+                
             }
 
             button.Click += Button_Click; // 可选的按钮点击事件处理
@@ -732,6 +740,7 @@ namespace Majiang
             {
                 createSelfCard(i);
             }
+            //
 
             // 在自己卡片区添加间隔
             selfCardBox.Children.Add(new Button { Content = "Space" }); // 可自定义空白控件
@@ -881,6 +890,12 @@ namespace Majiang
             {
                 CreateChiPengGangBtn(i); // 创建按钮并加入布局
             }
+            for (int i = 0; i < 4; i++)
+            {
+                pengAlready.Add(new Dictionary<int, int>());
+            }
+
+
             for(int i = 0; i < 3; i++)
 {
                 // 创建一个新的 List<Button> 实例，并添加到 chiChoice 中
@@ -1492,6 +1507,10 @@ namespace Majiang
         public void AddGangSelf(int pengGangCard)
         {
             // 计算插入位置
+            if (!pengAlready[0].ContainsKey(pengGangCard))
+            {
+                pengAlready[0][pengGangCard] = 0;
+            }
             int index = pengAlready[0][pengGangCard] + selfCardButton.Count;
 
             // 创建新的 Image 控件用于显示卡片
@@ -1559,6 +1578,10 @@ namespace Majiang
                 if (choice && i == 1)
                 {
                     // 保存卡片在其它玩家卡片中的位置
+                    if (!pengAlready[type].ContainsKey(pengGangCard))
+                    {
+                        pengAlready[type][pengGangCard] = 0;
+                    }
                     pengAlready[type][pengGangCard] = othersCardBox[type].Children.IndexOf(image) - othersCard[type].Count;
                 }
             }
@@ -1570,6 +1593,10 @@ namespace Majiang
 
         public void AddGangOthers(int type, int pengGangCard)
         {
+            if (!pengAlready[type].ContainsKey(pengGangCard))
+            {
+                pengAlready[type][pengGangCard] = 0;
+            }
             // 计算要插入的位置
             int index = pengAlready[type][pengGangCard] + othersCard[type].Count;
 
@@ -1875,7 +1902,14 @@ namespace Majiang
                             for (int i = 0; i < 3; i++)
                                 temp[i] = Transition(temp[i]);
                             temp.Sort();
-                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                            Task.Run(() =>
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                });
+                            });
+
                             ChiOthers(0, temp);
                             //todo
                             //QCoreApplication::processEvents();

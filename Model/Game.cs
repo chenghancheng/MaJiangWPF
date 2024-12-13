@@ -28,10 +28,12 @@ public class Game
 
     public void DistributeCards()
     {
-        for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 13; j++)
         {
-            for (int j = 0; j < 13; j++)
+            for (int i = 0; i < 4; i++)
+            {
                 player[i].GetCard();
+            }
         }
     }
 
