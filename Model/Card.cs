@@ -85,7 +85,8 @@ public class Card
 
     public string GetName(int n)
     {
-        return card_name[n];
+        if (n > 0) return card_name[n];
+        else return "";
     }
 
     public bool IsEmpty()

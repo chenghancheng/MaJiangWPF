@@ -14,6 +14,7 @@ public class Player
     public Player()
     {
         OwnCard = new HashSet<int>();
+        MyPeng = new HashSet<string>();
     }
 
     public Player(string name, Card card) : this()
@@ -21,6 +22,8 @@ public class Player
         Name = name;
         CurNum = 0;
         Card = card;
+        OwnCard = new HashSet<int>();
+        MyPeng = new HashSet<string>();
     }
 
     public int GetCard()
@@ -102,7 +105,12 @@ public class Player
 
     public int DiscardRobot()
     {
+        CurNum = OwnCard.Count + 1;
         var curCard2 = new List<int>(CurNum);
+        for (int i = 0; i < CurNum; i++)
+        {
+            curCard2.Add(0); // 你可以用需要的初始值来填充 List
+        }
         int pos = 0;
         foreach (var it in OwnCard)
             curCard2[pos++] = it;
@@ -128,6 +136,10 @@ public class Player
 
         int ans = 0;
         var curCard = new List<int>(CurNum);
+        for (int i = 0; i < CurNum; i++)
+        {
+            curCard.Add(0); // 你可以用需要的初始值来填充 List
+        }
         int idx = 0;
         foreach (var it in OwnCard)
             curCard[idx++] = it;
@@ -174,7 +186,12 @@ public class Player
 
     public bool CheckWin()
     {
+        CurNum = OwnCard.Count + 1;
         var curCard = new List<int>(CurNum);
+        for (int i = 0; i < CurNum; i++)
+        {
+            curCard.Add(0); // 你可以用需要的初始值来填充 List
+        }
         int ii = 0;
         foreach (var it in OwnCard)
             curCard[ii++] = it;
@@ -187,6 +204,10 @@ public class Player
     public bool CheckWin(int n)
     {
         var curCard = new List<int>(CurNum);
+        for (int i = 0; i < CurNum; i++)
+        {
+            curCard.Add(0); // 你可以用需要的初始值来填充 List
+        }
         int ii = 0;
         foreach (var it in OwnCard)
             curCard[ii++] = it;
@@ -304,24 +325,87 @@ public class Player
 
     public List<int> CheckChiRot(int n)
     {
-        var curCard = new List<int>(CurNum);
-        int idx = 0;
-        foreach (var it in OwnCard)
-            curCard[idx++] = it;
-
-        int left = CountOne(n);
-        if (left == 3)
+        List<int> curCard = new List<int>(CurNum);  // 初始化当前卡牌
+        for (int i = 0; i < CurNum; i++)
         {
-            var st = new List<int>();
-            for (int j = 0; j < CurNum; j++)
-            {
-                if ((1 << j & n) == 0) st.Add(curCard[j]);
-            }
-
-            return st;
+            curCard.Add(0);
+        }
+        int ii = 0;
+        foreach (var card in OwnCard)  // 复制当前牌到 curCard
+        {
+            curCard[ii++] = card;
         }
 
-        return null;
+        List<List<int>> ans = new List<List<int>>();  // 存储结果
+
+        // 遍历所有可能的组合
+        for (int j = (1 << CurNum) - 1; j > 0; j = (j - 1) & ((1 << CurNum) - 1))
+        {
+            int cnt = CountOne(j);  // 计算1的数量
+            if (cnt != 2) continue;  // 只考虑有两个1的组合
+
+            int jj = j;
+            int c1 = 0;
+
+            // 找到第一个位置
+            for (int i = 0; i < 31; i++)
+            {
+                if ((jj & (1 << i)) != 0)
+                {
+                    jj ^= 1 << i;
+                    break;
+                }
+                else
+                {
+                    c1++;
+                }
+            }
+
+            int c2 = 0;
+
+            // 找到第二个位置
+            for (int i = 0; i < 31; i++)
+            {
+                if ((jj & (1 << i)) != 0)
+                {
+                    jj ^= 1 << i;
+                    break;
+                }
+                else
+                {
+                    c2++;
+                }
+            }
+
+            int n1 = curCard[c1], n2 = curCard[c2], n3 = n;
+
+            if (n1 > 108 || n2 > 108 || n3 > 108) continue;
+
+            int p1 = (n1 - 1) / 36, p2 = (n2 - 1) / 36, p3 = (n3 - 1) / 36;
+
+            if (p1 != p2 || p1 != p3) continue;
+
+            int num1 = (n1 - 1) % 9 + 1, num2 = (n2 - 1) % 9 + 1, num3 = (n3 - 1) % 9 + 1;
+
+            // 排序并检查是否是连续的
+            if (num1 > num2) Swap(ref num1, ref num2);
+            if (num2 > num3) Swap(ref num2, ref num3);
+            if (num1 > num2) Swap(ref num1, ref num2);
+
+            if (num1 + 1 != num2 || num2 + 1 != num3) continue;
+
+            // 如果满足条件，将该组合加入结果
+            ans.Add(new List<int> { n1, n2 });
+        }
+
+        // 如果没有找到合适的组合，返回空列表
+        if (ans.Count == 0)
+        {
+            return new List<int>();  // 返回空的列表
+        }
+
+        // 返回第一个符合条件的组合
+        return ans[0];
     }
 
 
@@ -340,6 +424,10 @@ public class Player
     public List<List<int>> CheckChi(int n)
     {
         List<int> curCard = new List<int>(OwnCard);
+        for (int i = 0; i < OwnCard.Count + 1; i++)
+        {
+            curCard.Add(0);
+        }
         List<List<int>> res = new List<List<int>>();
         int j = (1 << 2) - 1;
         List<List<int>> ans = new List<List<int>>();
@@ -445,6 +533,10 @@ public class Player
         foreach (var card in OwnCard)
         {
             string cardName = this.Card.GetName(card);
+            if (!cnt.ContainsKey(cardName))
+            {
+                cnt[cardName] = 0;
+            }
             if (++cnt[cardName] >= 4)
                 p = card;
         }
