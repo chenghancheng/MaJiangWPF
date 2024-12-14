@@ -19,6 +19,7 @@ using System.Windows.Threading;
 namespace Majiang
 {
     using System.Collections.Generic;
+    using System.Threading;
     using System.Windows.Controls;
 
     public class ButtonGroup
@@ -192,7 +193,8 @@ namespace Majiang
             totalCardSelf.Add(new BitmapImage());
             totalDiscardedCard.Add(new BitmapImage());
             LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
-            LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
+            //LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
+            LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
             InitCardUI();
             InitDirectionUI();
             InitChiPengGangUI();
@@ -374,8 +376,8 @@ namespace Majiang
             // 创建 GridLayout 控件，并设置大小
             totalCardBox = new Grid
             {
-                Width = 1035,
-                Height = 618
+                //Width = 1035,
+                //Height = 618
             };
 
             // 初始化 othersCardBox（其他玩家卡片布局）
@@ -402,6 +404,8 @@ namespace Majiang
                 new BitmapImage(new Uri("pack://application:,,,/Resources/Images/back.png")),
                 new BitmapImage(new Uri("pack://application:,,,/Resources/Images/left_normal.png"))
             };
+
+            biaoZhi = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/xia_biao.png"));
 
             // 检查图片加载
             foreach (var imageUri in othersCardImages)
@@ -459,16 +463,20 @@ namespace Majiang
             selfCardBox.Margin = new Thickness(0);
 
             // 设置列和行的伸展比例
+            //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             for (int i = 0; i < 38; i++)
             {
                 //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                 totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             }
+            //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             for (int i = 0; i < 27; i++)
             {
                 //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             }
+            //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             // 添加布局到 Grid
             totalCardBox.Children.Add(othersCardBox[0]);
@@ -522,16 +530,16 @@ namespace Majiang
         {
             // 初始化方向图像列表 (与原始 Qt 图像相同)
             directionPic = new List<BitmapImage>
-    {
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down1.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right1.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up1.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left1.png"))
-    };
+            {
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_down1.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_right1.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_up1.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/fangxiang/fangxiang_left1.png"))
+            };
 
             direction = new List<Label>();
 
@@ -625,7 +633,7 @@ namespace Majiang
         }
 
         // 创建玩家自己的卡牌
-        private void createSelfCard(int index)
+        private async void createSelfCard(int index)
         {
             // 创建 StackPanel 来代替 QVBoxLayout
             var stackPanel = new StackPanel
@@ -635,7 +643,17 @@ namespace Majiang
             };
 
             // 创建一个 Image 用于显示卡牌图像
-            var label = new Label();
+            var label = new Label 
+            {
+                Width = 9,
+                Height = 10,
+                //Background=Brushes.AliceBlue,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+            };
             var image = new Image
             {
                 Width = 9,
@@ -643,14 +661,35 @@ namespace Majiang
             };
             label.Content = image;
 
+            // 创建自定义的按钮模板
+            ControlTemplate buttonTemplate = new ControlTemplate(typeof(Button))
+            {
+                VisualTree = new FrameworkElementFactory(typeof(Border))
+            };
+
+            // 获取 Border
+            FrameworkElementFactory borderFactory = buttonTemplate.VisualTree;
+            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(2));
+
+            // 将 Border 的内容设置为按钮的内容
+            FrameworkElementFactory contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            borderFactory.AppendChild(contentPresenter);
+
             // 创建按钮
             var button = new Button
             {
                 Width = 37,
                 Height = 53,
                 Content = new Image(),
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Template=buttonTemplate,
+                Tag = index
             };
+            
 
             selfCardTransition();
 
@@ -661,15 +700,20 @@ namespace Majiang
                 var cardImage = totalCardSelf[cardIndex];
                 Task.Run(() =>
                 {
-                    Dispatcher.Invoke(() =>
+                    button.Dispatcher.BeginInvoke((() =>
                     {
-                        (button.Content as Image).Source = cardImage;
-                    });
-                });
-                
+                        button.Content = new Image
+                        {
+                            Source = cardImage,
+                            Stretch = Stretch.UniformToFill
+                        };
+                        //(button.Content as Image).Source = cardImage;
+                    }));
+                }).Wait();
+
             }
 
-            button.Click += Button_Click; // 可选的按钮点击事件处理
+            button.Click += SelfCardButtonClick; // 可选的按钮点击事件处理
 
             // 将控件添加到 StackPanel
             stackPanel.Children.Add(label);
@@ -679,6 +723,60 @@ namespace Majiang
             selfCardButton.Add(button);
             selfCardLabel.Add(label);
             selfCardBox.Children.Add(selfCard[index]);
+        }
+
+        private async void SelfCardButtonClick(object sender, RoutedEventArgs e)
+        {
+            // 处理按钮点击事件
+            // 用户点击按钮后，完成任务，程序继续
+            // 检查按钮是否被点击且处于选中状态
+            if (statu && waitUserChoice)
+            {
+                var button = sender as Button;
+
+                if (choiceBtn == (int)button.Tag)
+                {
+                    //await Task.Run(() =>
+                    //{
+                    //    selfCardLabel[choiceBtn].Dispatcher.Invoke(() =>
+                    //    {
+                            selfCardLabel[choiceBtn].Content = null;
+                    //    });
+                    //});
+                    waitUserChoice = false;
+                    discardIndex = choiceBtn;
+                    choiceBtn = -1;
+
+                    if (tcs != null)
+                    {
+                        tcs.SetResult(1); // 设置结果，结束等待
+                        tcs = null; // 任务完成后，清空 tcs 以便下一次使用
+                    }
+                }
+                else
+                {
+                    if (choiceBtn != -1)
+                        //await Task.Run(() =>
+                        //{
+                        //    selfCardLabel[choiceBtn].Dispatcher.Invoke(() =>
+                        //    {
+                                selfCardLabel[choiceBtn].Content = null;
+                        //    });
+                        //});
+                    choiceBtn = (int)button.Tag;
+                    //await Task.Run(() =>
+                    //{
+                        //Dispatcher.Invoke(() =>
+                        //{
+                        selfCardLabel[choiceBtn].Content = new Image
+                        {
+                            Source = biaoZhi,
+                                Stretch=Stretch.Fill
+                            };
+                    //    });
+                    //});
+                }
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -822,17 +920,20 @@ namespace Majiang
         public void InitChiPengGangUI()
         {
             //-----------吃碰杠胡等--------------
-            chiPengGangBox = new StackPanel();
-            chiPengGangBox.Orientation = Orientation.Horizontal;
+            chiPengGangBox = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment=VerticalAlignment.Center
+            };
 
             guoChiPengGangHuPic = new List<BitmapImage>
-    {
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/guo.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/peng.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/gang.png")),
-        new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/hu.png"))
-    };
+            {
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/guo.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/peng.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/gang.png")),
+                new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/hu.png"))
+            };
 
             // 创建按钮组
             buttonGroupChiPengPang = new ButtonGroup();
@@ -841,49 +942,7 @@ namespace Majiang
             // 按钮点击事件处理
             foreach (var button in buttonGroupChiPengPang.Buttons)
             {
-                button.Click += async (sender, e) =>
-                {
-                    var btnId = (int)(button.Tag); // 获取按钮的自定义 ID
-
-                    if (btnId < guoChiPengGangHuPic.Count && waitUserOtherChoice)
-                    {
-                        tcs = new TaskCompletionSource<int>();
-
-                        switch (guoChiPengGangHu[btnId])
-                        {
-                            case 0:
-                                Console.WriteLine("guo");
-                                guoChiPengGangHuChoice = 0;
-                                waitUserOtherChoice = false;
-                                await tcs.Task;
-                                break;
-                            case 1 when !multiChi:
-                                Console.WriteLine("chi");
-                                guoChiPengGangHuChoice = 1;
-                                waitUserOtherChoice = false;
-                                await tcs.Task;
-                                break;
-                            case 2:
-                                Console.WriteLine("peng");
-                                guoChiPengGangHuChoice = 2;
-                                waitUserOtherChoice = false;
-                                await tcs.Task;
-                                break;
-                            case 3:
-                                Console.WriteLine("gang");
-                                guoChiPengGangHuChoice = 3;
-                                waitUserOtherChoice = false;
-                                await tcs.Task;
-                                break;
-                            case 4:
-                                Console.WriteLine("hu");
-                                guoChiPengGangHuChoice = 4;
-                                waitUserOtherChoice = false;
-                                await tcs.Task;
-                                break;
-                        }
-                    }
-                };
+                button.Click += ChiPengGangButtonClick;
             }
 
             // 创建吃碰杠按钮
@@ -897,8 +956,8 @@ namespace Majiang
             }
 
 
-            for(int i = 0; i < 3; i++)
-{
+            for (int i = 0; i < 3; i++)
+            {
                 // 创建一个新的 List<Button> 实例，并添加到 chiChoice 中
                 List<Button> qvbtn = new List<Button>();
                 chiChoice.Add(qvbtn);
@@ -913,8 +972,13 @@ namespace Majiang
                     {
                         Width = 17,
                         Height = 25,
-                        Content = $"Button {i}-{j}",  // 设置按钮显示内容
                         IsEnabled = true,
+                        Background = Brushes.AliceBlue,
+                        HorizontalContentAlignment = HorizontalAlignment.Center,
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(1),
+                        Padding = new Thickness(0), // 去除 Padding
+                        BorderThickness = new Thickness(0), // 去除边框厚度
                     };
 
                     button.Tag = i;
@@ -926,20 +990,7 @@ namespace Majiang
             // 连接多选按钮的点击事件
             foreach (var button in multiChiChoiceBtn.Buttons)
             {
-                button.Click += (sender, e) =>
-                {
-                    if (multiChi)
-                    {
-                        var btnId = (int)button.Tag; // 获取按钮的自定义 ID
-                        Console.WriteLine(btnId);
-                        if (waitUserOtherChoice)
-                        {
-                            multiChiChoice = btnId;
-                            guoChiPengGangHuChoice = 1; // 选择 "吃"
-                            waitUserOtherChoice = false;
-                        }
-                    }
-                };
+                button.Click += MultiChiButtonClick;
             }
 
             // 将按钮添加到布局中
@@ -950,9 +1001,10 @@ namespace Majiang
                 for (int j = 0; j < 3; j++)
                 {
                     // 使用 Margin 控制按钮之间的间距
-                    chiChoice[i][j].Margin = new Thickness(5);  // 设置按钮之间的间距
+                    chiChoice[i][j].Margin = new Thickness(0);  // 设置按钮之间的间距
                     chiPengGangBox.Children.Add(chiChoice[i][j]);
                 }
+                chiChoice[i][2].Margin = new Thickness(0, 0, 10, 0);
 
                 if (i != 2)
                     chiPengGangBox.Children.Add(new UIElement()); // 空白
@@ -969,20 +1021,57 @@ namespace Majiang
 
             // 使用 Grid 或 WrapPanel 来替代 StackPanel
             // WrapPanel 可以帮助自动换行并支持间距
-            var wrapPanel = new WrapPanel();
-            wrapPanel.Children.Add(chiPengGangBox);
+            //var wrapPanel = new WrapPanel();
+            //wrapPanel.Children.Add(chiPengGangBox);
 
-            Grid.SetRow(wrapPanel, 23);
-            Grid.SetColumn(wrapPanel, 9);
-            Grid.SetRowSpan(wrapPanel, 1);
-            Grid.SetColumnSpan(wrapPanel, 20);
+            //Grid.SetRow(wrapPanel, 23);
+            //Grid.SetColumn(wrapPanel, 9);
+            //Grid.SetRowSpan(wrapPanel, 1);
+            //Grid.SetColumnSpan(wrapPanel, 20);
+
+            //// 将布局添加到父布局中（假设 totalCardBox 是你的父布局）
+            //totalCardBox.Children.Add(wrapPanel);  // 使用 wrapPanel 而不是直接使用 StackPanel
+            Grid.SetRow(chiPengGangBox, 23);
+            Grid.SetColumn(chiPengGangBox, 9);
+            Grid.SetRowSpan(chiPengGangBox, 1);
+            Grid.SetColumnSpan(chiPengGangBox, 20);
 
             // 将布局添加到父布局中（假设 totalCardBox 是你的父布局）
-            totalCardBox.Children.Add(wrapPanel);  // 使用 wrapPanel 而不是直接使用 StackPanel
+            totalCardBox.Children.Add(chiPengGangBox);  // 使用 wrapPanel 而不是直接使用 StackPanel
         }
 
-
-
+        
+        private void MultiChiButtonClick(object sender, RoutedEventArgs e)
+        {
+            // 处理按钮点击事件
+            if (multiChi)
+            {
+                var button = sender as Button;
+                int btnId = (int)button.Tag;
+                if (waitUserOtherChoice)
+                {
+                    if (btnId == 0)
+                    {
+                        multiChiChoice = 0;
+                    }
+                    else if (btnId == 1)
+                    {
+                        multiChiChoice = 1;
+                    }
+                    else if (btnId == 2)
+                    {
+                        multiChiChoice = 2;
+                    }
+                    guoChiPengGangHuChoice = 1;
+                    waitUserOtherChoice = false;
+                    if (tcs != null)
+                    {
+                        tcs.SetResult(1); // 设置结果，结束等待
+                        tcs = null; // 任务完成后，清空 tcs 以便下一次使用
+                    }
+                }
+            }
+        }
 
         // 创建按钮的方法
         private void CreateChiPengGangBtn(int id)
@@ -995,24 +1084,63 @@ namespace Majiang
                 Content = new Image
                 {
                     Source = new BitmapImage(), // 图像路径，可以根据需要设置具体的图片路径
-                    Stretch = Stretch.Fill
+                    Stretch = Stretch.Uniform
                 },
+                //Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
                 Tag = id // 将按钮的 ID 存储在 Tag 属性中
             };
 
             // 按钮点击事件绑定
-            button.Click += (sender, e) =>
-            {
-                var btnId = (int)((Button)sender).Tag; // 获取按钮的自定义 ID
-                                                       // 处理点击事件，根据按钮的 ID 进行逻辑处理
-                Console.WriteLine($"Button {btnId} clicked");
-
-                // 在这里执行按钮点击后的逻辑
-            };
+            button.Click += ChiPengGangButtonClick;
 
             // 将 Button 添加到 StackPanel 或者其他容器中
             guoChiPengGangHuBtn.Add(button); // 将 Button 加入到按钮列表中
             buttonGroupChiPengPang.AddButton(button, id);
+        }
+
+        private void ChiPengGangButtonClick(object sender, RoutedEventArgs e)
+        {
+            // 处理按钮点击事件
+            var button = sender as Button;
+            int btnId = (int)button.Tag;
+            if (btnId < guoChiPengGangHu.Count && waitUserOtherChoice)
+            {
+                if (guoChiPengGangHu[btnId] == 0)
+                {
+                    guoChiPengGangHuChoice = 0;
+                    waitUserOtherChoice = false;
+                }
+                if (guoChiPengGangHu[btnId] == 1)
+                {
+                    if (multiChi)
+                    {
+                        return;
+                    }
+                    guoChiPengGangHuChoice = 1;
+                    waitUserOtherChoice = false;
+                }
+                if (guoChiPengGangHu[btnId] == 2)
+                {
+                    guoChiPengGangHuChoice = 2;
+                    waitUserOtherChoice = false;
+                }
+                if (guoChiPengGangHu[btnId] == 3)
+                {
+                    guoChiPengGangHuChoice = 3;
+                    waitUserOtherChoice = false;
+                }
+                if (guoChiPengGangHu[btnId] == 4)
+                {
+                    guoChiPengGangHuChoice = 4;
+                    waitUserOtherChoice = false;
+                }
+                if (tcs != null)
+                {
+                    tcs.SetResult(1); // 设置结果，结束等待
+                    tcs = null; // 任务完成后，清空 tcs 以便下一次使用
+                }
+            }
         }
 
 
@@ -1049,11 +1177,26 @@ namespace Majiang
                     Background = Brushes.Gray,  // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
+                    Content=new Image
+                    {
+                        Source=new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/gang.png")),
+                        
+                    },
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
                     //Content = new TextBlock
                     //{
                     //    Text = "占位符", // 可以显示一些文本内容作为占位符
                     //    Foreground = Brushes.White
                     //}
+                };
+
+                label.Content = null;
+                label.Content = new Image
+                {
+                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
+
                 };
 
                 discarded[2].Add(label);
@@ -1080,6 +1223,9 @@ namespace Majiang
                     Background = Brushes.Gray, // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
                     //Content = new TextBlock
                     //{
                     //    Text = "占位符", // 可以显示一些文本内容作为占位符
@@ -1110,6 +1256,9 @@ namespace Majiang
                     Background = Brushes.Gray, // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
                     //Content = new TextBlock
                     //{
                     //    Text = "占位符", // 可以显示一些文本内容作为占位符
@@ -1140,6 +1289,9 @@ namespace Majiang
                     Background = Brushes.Gray, // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
                     //Content = new TextBlock
                     //{
                     //    Text = "占位符", // 可以显示一些文本内容作为占位符
@@ -1629,709 +1781,735 @@ namespace Majiang
         }
 
         public async void StartGame()
-        { 
+        {
             //Task.Run(() =>
             //    {
             //        Dispatcher.Invoke(() =>
             //        {
-                        isFinish = false;
-                        if (game.cur == 0)
-                            waitUserChoice = true;
-                        //cout<<"游戏开始,先手为"<<game->player[game->cur].get_name();
-                        bool isGang = false;//是否杠了
-                        bool isChiPeng = false;//是否吃碰
-                        while (!game.card.IsEmpty())
-                        {//循环直到牌被摸完
-                            if (game.card.IsEmpty())
-                                break;//判断是否还有牌，没牌则退出
-                            int ans = 0;//当前玩家出牌，ans为打出的牌
+            isFinish = false;
+            if (game.cur == 0)
+                waitUserChoice = true;
+            //cout<<"游戏开始,先手为"<<game->player[game->cur].get_name();
+            bool isGang = false;//是否杠了
+            bool isChiPeng = false;//是否吃碰
+            while (!game.card.IsEmpty())
+            {//循环直到牌被摸完
+                if (game.card.IsEmpty())
+                    break;//判断是否还有牌，没牌则退出
+                int ans = 0;//当前玩家出牌，ans为打出的牌
 
 
-                            Task.Run(() =>
-                            {
-                                Dispatcher.Invoke(() =>
-                                {
-                                    direction[cur].Content = new Image
-                                    {
-                                        Source = directionPic[cur]
-                                    };
-                                    cur = game.cur;
-                                    direction[cur].Content = new Image
-                                    {
-                                        Source = directionPic[cur + 4]
-                                    };
-                                });
-                            });
-
-
-
-                            selfCardTransition();
-                            for (int i = 0; i < handCard.Count; ++i)
-                                selfCardButton[i].Content = new Image
-                                {
-                                    Source = totalCardSelf[handCard[i].Key]
-                                };
-
-                            if (game.cur == 0)
-                            {
-                                waitUserChoice = true;
-                                int getCard = 0;
-
-                                if (!isChiPeng)
-                                {
-                                    if (isGang)
-                                    {
-                                        getCard = game.player[game.cur].GetBackCard();//摸牌
-                                        isGang = false;
-                                    }
-                                    else
-                                        getCard = game.player[game.cur].GetCard();//摸牌
-
-                                    remained.Content = remainedText + game.card.dq.Count;
-
-                                    handCard.Add(new KeyValuePair<int, int>(Transition(getCard), getCard));
-                                    //BitmapSource bitmapSource2 = AdaptImageSize(totalCardSelf[Transition(getCard)], new Size(selfCardButton[selfCardButton.Count - 1].ActualWidth, selfCardButton[selfCardButton.Count - 1].ActualHeight), 0);
-                                    BitmapSource bitmapSource2 = RotateBitmapImage(totalCardSelf[Transition(getCard)], 0);
-                                    selfCardButton[selfCardButton.Count - 1].Content = new Image
-                                    {
-                                        Source = bitmapSource2
-                                    };
-                                    selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
-
-                                    guoChiPengGangHu.Clear();
-                                    guoChiPengGangHu.Add(0);
-                                    bool gangType = true;
-                                    if (game.player[game.cur].CheckGang() != -1)
-                                    {
-                                        guoChiPengGangHu.Add(3);
-                                        gangType = true;
-                                        waitUserOtherChoice = true;
-                                    }
-                                    if (game.player[game.cur].CheckAddGang(getCard))
-                                    {
-                                        guoChiPengGangHu.Add(3);
-                                        gangType = false;
-                                        waitUserOtherChoice = true;
-                                    }
-                                    if (game.player[game.cur].CheckWin())
-                                    {
-                                        guoChiPengGangHu.Add(4);
-                                        waitUserOtherChoice = true;
-                                    }
-
-                                    if (waitUserOtherChoice)
-                                    {
-                                        for (int i = 0; i < guoChiPengGangHu.Count; i++)
-                                        {
-                                            guoChiPengGangHuBtn[i].Content = new Image
-                                            {
-                                                Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                            };
-                                        }
-                                    }
-
-                                    //todo
-                                    // 暂停程序
-                                    //if (waitUserOtherChoice)
-                                    //{
-                                    //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
-                                    //    loop.exec();
-                                    //}
-
-
-                                    if (guoChiPengGangHu.Count > 1)
-                                    {
-                                        if (guoChiPengGangHuChoice == 4)
-                                        {
-                                            isFinish = true;
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                            typeHu = 1;
-                                            statement = statement + game.player[game.cur].GetName() + "自摸";
-                                            break;
-                                        }
-                                        else if (guoChiPengGangHuChoice == 3)
-                                        {
-                                            if (gangType)
-                                            {
-                                                game.player[game.cur].Gang(getCard, 0);
-                                                //todo
-                                                //emit pengGangSelfSignals(false,Transition(getCard));
-                                                //QCoreApplication::processEvents();
-                                            }
-                                            else
-                                            {
-                                                game.player[game.cur].AddGang(getCard);
-                                                AddGangSelf(Transition(getCard));
-                                            }
-                                            isGang = true;
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                            continue;
-                                        }
-                                        foreach (var btn in guoChiPengGangHuBtn)
-                                            btn.Content = null;
-                                    }
-
-                                }
-                                else
-                                {
-                                    selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
-                                    isChiPeng = false;
-                                }
-
-                                //if (waitUserChoice)
-                                //{
-                                //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
-                                //    loop.exec();
-                                //}
-
-                                KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                                if (discardIndex >= 0 && discardIndex < game.player[0].OwnCard.Count)
-                                    discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                                game.player[game.cur].Discard(discardThisRound.Value);//出牌
-
-                                //double width = discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth;
-                                //double height = discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight;
-                                //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[discardThisRound.Key], new Size(width, height) , 0);
-                                BitmapSource bitmapSource = RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
-                                if (bitmapSource == null)
-                                {
-                                    Console.WriteLine("bitmap");
-                                }
-                                if (discarded == null)
-                                {
-                                    Console.WriteLine("discarded");
-                                }
-                                if (discardedNowIndex == null)
-                                {
-                                    Console.WriteLine("discardedNowIndex");
-                                }
-                                //discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
-                                //{
-                                //    //Source = bitmapSource
-                                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"))
-                                //};
-                                await Task.Run(() =>
-                                {
-                                    Dispatcher.Invoke(() =>
-                                    {
-                                        discarded[game.cur][discardedNowIndex[game.cur]].Content = "123";
-                                    });
-                                });
-
-
-
-                                selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
-                                selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
-
-                                //todo
-                                //QCoreApplication::processEvents();
-
-                                discardedNowIndex[game.cur]++;
-
-                                selfCardTransition();
-                                for (int i = 0; i < handCard.Count; ++i)
-                                    selfCardButton[i].Content = new Image
-                                    {
-                                        Source = totalCardSelf[handCard[i].Key]
-                                    };
-
-                                deal = true;
-                                if (deal)
-                                {
-                                    //检查胡
-                                    for (int i = (game.cur + 1) % 4; i != 0; i = (i + 1) % 4)
-                                    {
-                                        if (game.player[i].CheckWin(discardThisRound.Value))
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            isFinish = true;
-                                            deal = false;//结束游戏
-                                            typeHu = -1;
-                                            statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[i].GetName();
-                                            break;
-                                        }
-                                    }
-                                    if (isFinish)
-                                        break;
-                                }
-                                if (deal)
-                                {
-                                    //检查杠
-                                    for (int i = (game.cur + 1) % 4; i != 0; i = (i + 1) % 4)
-                                    {
-                                        if (game.player[i].CheckGang(discardThisRound.Value))
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            game.player[i].Gang(discardThisRound.Value, 1);
-                                            //discarded[i][--discardedNowIndex[i]]->setPixmap(QPixmap());
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            //todo
-                                            //emit pengGangOthersSignals(false,i - 1,discardThisRound.first);
-                                            //QCoreApplication::processEvents();
-                                            isGang = true;
-                                            game.cur = i;
-                                            deal = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (deal)
-                                {
-                                    //检查碰
-                                    for (int i = (game.cur + 1) % 4; i != 0; i = (i + 1) % 4)
-                                    {
-                                        if (game.player[i].CheckPeng(discardThisRound.Value))
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            game.player[i].Peng(discardThisRound.Value);
-                                            discarded[game.cur][--discardedNowIndex[game.cur]] = null;
-                                            //todo
-                                            //emit pengGangOthersSignals(true,i - 1,discardThisRound.first);
-                                            //QCoreApplication::processEvents();
-                                            isChiPeng = true;
-                                            game.cur = i;
-                                            deal = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (deal)
-                                {
-                                    //检查吃
-                                    List<int> temp = game.player[game.cur + 1].CheckChiRot(discardThisRound.Value);
-                                    if (temp.Count > 0)
-                                    {
-                                        //todo
-                                        //timer.setSingleShot(true);
-                                        //timer.start(1000);
-                                        //loop.exec();
-                                        game.player[game.cur + 1].Chi(temp);
-                                        temp.Add(discardThisRound.Value);
-                                        for (int i = 0; i < 3; i++)
-                                            temp[i] = Transition(temp[i]);
-                                        temp.Sort();
-                                        await Task.Run(() =>
-                                        {
-                                            Dispatcher.Invoke(() =>
-                                            {
-                                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            });
-                                        });
-
-                                        ChiOthers(0, temp);
-                                        //todo
-                                        //QCoreApplication::processEvents();
-                                        isChiPeng = true;
-                                        game.cur = game.cur + 1;
-                                        deal = false;
-                                    }
-                                }
-                                if (deal)
-                                    game.cur = (game.cur + 1) % 4;
-                            }
-                            else
-                            {
-                                int getCard = 0;
-                                if (!isChiPeng)
-                                {
-                                    if (isGang)
-                                    {
-                                        getCard = game.player[game.cur].GetBackCard();//摸牌
-                                        isGang = false;
-                                    }
-                                    else
-                                        getCard = game.player[game.cur].GetCard();//摸牌
-                                    //Task.Run(() =>
-                                    //{
-                                    //    Dispatcher.Invoke(() =>
-                                    //    {
-                                            remained.Content = remainedText + game.card.dq.Count;
-                                            othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = new Image
-                                            {
-                                                Source = othersCardImages[game.cur - 1]
-                                                    };
-                                //});
-                                
-                            //});
-
-
-
-                                    if (game.player[game.cur].CheckWin())
-                                    {
-                                        //todo
-                                        //timer.setSingleShot(true);
-                                        //timer.start(1000);
-                                        //loop.exec();
-                                        isFinish = true;
-                                        typeHu = -1;
-                                        statement = statement + game.player[game.cur].GetName() + "自摸";
-                                        break;//结束游戏
-                                    }
-                                    if (game.player[game.cur].CheckGang() != -1)
-                                    {
-                                        //todo
-                                        //timer.setSingleShot(true);
-                                        //timer.start(1000);
-                                        //loop.exec();
-                                        game.player[game.cur].Gang(getCard, 0);
-                                        //todo
-                                        //emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
-                                        //QCoreApplication::processEvents();
-                                        isGang = true;
-                                        continue;
-                                    }
-                                    if (game.player[game.cur].CheckAddGang(getCard))
-                                    {
-                                        //todo
-                                        //timer.setSingleShot(true);
-                                        //timer.start(1000);
-                                        //loop.exec();
-                                        game.player[game.cur].AddGang(getCard);
-                                        AddGangOthers(game.cur - 1, Transition(getCard));
-                                        isGang = true;
-                                        continue;
-                                    }
-
-                                }
-                                else
-                                {
-                                    isChiPeng = false;
-                                }
-                                // 启动定时器，设置1秒后触发一次定时器超时事件
-                                //todo
-                                //timer.setSingleShot(true);
-                                //timer.start(1000); // 1000 毫秒 = 1 秒
-                                //loop.exec();
-
-                                int discardThisRound = game.player[game.cur].DiscardRobot();
-                                game.player[game.cur].Discard(discardThisRound);//出牌,默认出第一张牌
-
-                                //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[Transition(discardThisRound)], new Size(discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth, discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight), game.cur * (-90));
-                                BitmapSource bitmapSource = RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
-                                discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
-                                {
-                                    Source = bitmapSource
-                                };//更新已出牌区
-
-                                othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = null;//更新按钮
-                                discardedNowIndex[game.cur]++;
-
-                                guoChiPengGangHu.Clear();
-                                guoChiPengGangHu.Add(0);
-                                deal = true;
-                                if (deal)
-                                {
-                                    multiChi = false;//当前是否有多种吃法
-                                    List<List<int>> chiTemp = new List<List<int>>();//将多种吃法存入该数组中
-                                    List<List<int>> transitionChi = new List<List<int>>();//将多种吃法的牌所对应的图片的下标存入该数组中
-                                    if (game.cur == 3)//轮至自己
-                                    {
-                                        chiTemp = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
-                                        if (chiTemp.Count > 0)//能吃牌
-                                        {
-                                            guoChiPengGangHu.Add(1);
-                                            waitUserOtherChoice = true;
-                                        }
-                                        if (chiTemp.Count > 1)//能吃牌且有多种吃法
-                                        {
-                                            multiChi = true;
-                                            for (int i = 0; i < chiTemp.Count; i++)
-                                            {
-                                                List<int> t = new List<int>();
-                                                transitionChi.Add(t);
-                                                transitionChi[i].AddRange(chiTemp[i]);
-                                                transitionChi[i].Add(discardThisRound);
-                                                for (int j = 0; j < 3; j++)
-                                                {
-                                                    chiChoice[i][j].IsEnabled = true;//设置按钮可用
-                                                    transitionChi[i][j] = Transition(transitionChi[i][j]);
-                                                }
-                                                transitionChi[i].Sort();
-                                                for (int j = 0; j < 3; j++)
-                                                {
-                                                    //设置按钮牌图片
-                                                    chiChoice[i][j].Content = new Image
-                                                    {
-                                                        //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
-                                                        Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
-                                                    };
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (game.player[0].CheckPeng(discardThisRound))//检查是否能碰
-                                    {
-                                        guoChiPengGangHu.Add(2);
-                                        waitUserOtherChoice = true;
-                                    }
-                                    if (game.player[0].CheckGang(discardThisRound))//检查是否能杠
-                                    {
-                                        guoChiPengGangHu.Add(3);
-                                        waitUserOtherChoice = true;
-                                    }
-                                    if (game.player[0].CheckWin(discardThisRound))//检查是否能胡
-                                    {
-                                        guoChiPengGangHu.Add(4);
-                                        waitUserOtherChoice = true;
-                                    }
-
-                                    if (guoChiPengGangHu.Count > 1)//大于1说明能吃碰杠胡中的一种或多种
-                                    {
-                                        guoChiPengGangHu.Sort();
-                                        waitUserOtherChoice = true;
-
-                                        for (int i = 0; i < guoChiPengGangHu.Count; i++)
-                                        {
-                                            //设置吃碰杠胡区按钮图片
-                                            guoChiPengGangHuBtn[i].Content = new Image
-                                            {
-                                                Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                            };
-                                        }
-                                        //等待玩家选择
-                                        //todo
-                                        //if (waitUserOtherChoice)
-                                        //{
-                                        //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
-                                        //    loop.exec();
-                                        //}
-
-                                        if (guoChiPengGangHuChoice == 4)
-                                        {
-                                            isFinish = true;
-                                            deal = false;
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                            typeHu = 1;
-                                            statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[0].GetName();
-                                            break;
-                                        }
-                                        else if (guoChiPengGangHuChoice == 3)
-                                        {
-                                            game.player[0].Gang(discardThisRound, 1);
-                                            //todo
-                                            //emit pengGangSelfSignals(false,Transition(discardThisRound));
-                                            //QCoreApplication::processEvents();
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            deal = false;
-                                            isGang = true;
-                                            game.cur = 0;
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                            continue;
-                                        }
-                                        else if (guoChiPengGangHuChoice == 2)
-                                        {
-                                            game.player[0].Peng(discardThisRound);
-                                            //todo
-                                            //emit pengGangSelfSignals(true,Transition(discardThisRound));
-                                            //QCoreApplication::processEvents();
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            deal = false;
-                                            isChiPeng = true;
-                                            game.cur = 0;
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                            continue;
-                                        }
-                                        else if (guoChiPengGangHuChoice == 1)//吃
-                                        {
-                                            if (multiChi)//有多种情况
-                                            {
-                                                game.player[0].Chi(chiTemp[multiChiChoice]);//更新手牌
-                                                ChiSelf(transitionChi[multiChiChoice]);//更新UI
-                                                for (int i = 0; i < chiTemp.Count; i++)
-                                                {
-                                                    for (int j = 0; j < 3; j++)
-                                                    {
-                                                        chiChoice[i][j].Content = null;//设置图片为空
-                                                        chiChoice[i][j].IsEnabled = false;//设置按钮不可用
-                                                    }
-                                                }
-                                                //todo
-                                                //QCoreApplication::processEvents();
-                                            }
-                                            else//无
-                                            {
-                                                game.player[0].Chi(chiTemp[0]);//更新手牌
-                                                chiTemp[0].Add(discardThisRound);
-                                                for (int i = 0; i < 3; i++)
-                                                    chiTemp[0][i] = Transition(chiTemp[0][i]);
-                                                chiTemp[0].Sort();
-                                                ChiSelf(chiTemp[0]);//更新UI
-                                                                    //todo
-                                                                    //QCoreApplication::processEvents();
-                                            }
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            deal = false;
-                                            isChiPeng = true;
-                                            game.cur = 0;
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                            continue;
-                                        }
-                                        else if (guoChiPengGangHuChoice == 0)
-                                        {
-                                            //当用户选择过时，也需要将多吃部分进行修改
-                                            for (int i = 0; i < chiTemp.Count; i++)
-                                            {
-                                                for (int j = 0; j < 3; j++)
-                                                {
-                                                    chiChoice[i][j].Content = null;//设置图片为空
-                                                    chiChoice[i][j].IsEnabled = false;//设置按钮不可用
-                                                }
-                                            }
-                                            foreach (var btn in guoChiPengGangHuBtn)
-                                                btn.Content = null;
-                                        }
-                                    }
-                                }
-                                if (deal)
-                                {
-                                    //检查胡
-                                    for (int i = (game.cur + 1) % 4; i != game.cur; i = (i + 1) % 4)
-                                    {
-                                        if (i != 0 && game.player[i].CheckWin(discardThisRound))
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            isFinish = true;//结束游戏
-                                            deal = false;
-                                            typeHu = -1;
-                                            statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[i].GetName();
-                                            break;
-                                        }
-                                    }
-                                    if (isFinish)
-                                        break;
-                                }
-                                if (deal)
-                                {
-                                    //检查杠
-                                    for (int i = (game.cur + 1) % 4; i != game.cur; i = (i + 1) % 4)
-                                    {
-                                        if (i != 0 && game.player[i].CheckGang(discardThisRound))
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            game.player[i].Gang(discardThisRound, 1);
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            //todo
-                                            //emit pengGangOthersSignals(false,i - 1,Transition(discardThisRound));
-                                            //QCoreApplication::processEvents();
-                                            isGang = true;
-                                            game.cur = i;
-                                            deal = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (deal)
-                                {
-                                    //检查碰
-                                    for (int i = (game.cur + 1) % 4; i != game.cur; i = (i + 1) % 4)
-                                    {
-                                        if (i != 0 && game.player[i].CheckPeng(discardThisRound))
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            game.player[i].Peng(discardThisRound);
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            //todo
-                                            //emit pengGangOthersSignals(true,i - 1,Transition(discardThisRound));
-                                            //QCoreApplication::processEvents();
-                                            isChiPeng = true;
-                                            game.cur = i;
-                                            deal = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (deal)
-                                {
-                                    //检查吃
-                                    if (game.cur != 3)
-                                    {
-                                        List<int> temp = game.player[game.cur + 1].CheckChiRot(discardThisRound);
-                                        if (temp.Count > 0)
-                                        {
-                                            //todo
-                                            //timer.setSingleShot(true);
-                                            //timer.start(1000);
-                                            //loop.exec();
-                                            game.player[game.cur + 1].Chi(temp);
-                                            temp.Add(discardThisRound);
-                                            for (int i = 0; i < 3; i++)
-                                                temp[i] = Transition(temp[i]);
-                                            temp.Sort();
-                                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                            ChiOthers(game.cur, temp);
-                                            //todo
-                                            //QCoreApplication::processEvents();
-                                            isChiPeng = true;
-                                            game.cur = game.cur + 1;
-                                            deal = false;
-                                        }
-                                    }
-                                }
-                                if (deal)
-                                    game.cur = (game.cur + 1) % 4;
-                            }
-                            //todo
-                            //QCoreApplication::processEvents();
-                            //loop.processEvents(QEventLoop::AllEvents);
-                        }
-                        if (isFinish)
+                //await Task.Run(() =>
+                //{
+                //    direction[cur].Dispatcher.Invoke(() =>
+                //    {
+                        //(direction[cur].Content as Image).Source = directionPic[cur];
+                        //cur = game.cur;
+                        //(direction[cur].Content as Image).Source = directionPic[cur+4];
+                        direction[cur].Content = new Image
                         {
-                            if (typeHu == 1)
-                                settlementPic.Content = new Image
-                                {
-                                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png"))
-                                };
-                            else if (typeHu == -1)
-                                settlementPic.Content = new Image
-                                {
-                                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png"))
-                                };
-                            ResetCheckoutUI();
-                            //todo
-                            //checkout->show();
-                        }
-                        else
+                            Source = directionPic[cur]
+                        };
+                        cur = game.cur;
+                        direction[cur].Content = new Image
                         {
-                            settlementPic.Content = new Image
-                            {
-                                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png"))
-                            };
-                            statement += "牌堆已空";
-                            ResetCheckoutUI();
-                            //todo
-                            //checkout->show();
-                        }
+                            Source = directionPic[cur + 4]
+                        };
                 //    });
                 //});
+
+
+
+                selfCardTransition();
+                for (int i = 0; i < handCard.Count; ++i)
+                    selfCardButton[i].Content = new Image
+                    {
+                        Source = totalCardSelf[handCard[i].Key]
+                    };
+
+                if (game.cur == 0)
+                {
+                    waitUserChoice = true;
+                    int getCard = 0;
+
+                    if (!isChiPeng)
+                    {
+                        if (isGang)
+                        {
+                            getCard = game.player[game.cur].GetBackCard();//摸牌
+                            isGang = false;
+                        }
+                        else
+                            getCard = game.player[game.cur].GetCard();//摸牌
+
+                        remained.Content = remainedText + game.card.dq.Count;
+
+                        handCard.Add(new KeyValuePair<int, int>(Transition(getCard), getCard));
+                        //BitmapSource bitmapSource2 = AdaptImageSize(totalCardSelf[Transition(getCard)], new Size(selfCardButton[selfCardButton.Count - 1].ActualWidth, selfCardButton[selfCardButton.Count - 1].ActualHeight), 0);
+                        BitmapSource bitmapSource2 = RotateBitmapImage(totalCardSelf[Transition(getCard)], 0);
+                        selfCardButton[selfCardButton.Count - 1].Content = new Image
+                        {
+                            Source = totalCardSelf[Transition(getCard)]
+                            //Source = bitmapSource2
+                        };
+                        selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
+
+                        guoChiPengGangHu.Clear();
+                        guoChiPengGangHu.Add(0);
+                        bool gangType = true;
+                        if (game.player[game.cur].CheckGang() != -1)
+                        {
+                            guoChiPengGangHu.Add(3);
+                            gangType = true;
+                            waitUserOtherChoice = true;
+                        }
+                        if (game.player[game.cur].CheckAddGang(getCard))
+                        {
+                            guoChiPengGangHu.Add(3);
+                            gangType = false;
+                            waitUserOtherChoice = true;
+                        }
+                        if (game.player[game.cur].CheckWin())
+                        {
+                            guoChiPengGangHu.Add(4);
+                            waitUserOtherChoice = true;
+                        }
+
+                        if (waitUserOtherChoice)
+                        {
+                            for (int i = 0; i < guoChiPengGangHu.Count; i++)
+                            {
+                                guoChiPengGangHuBtn[i].Content = new Image
+                                {
+                                    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
+                                };
+                            }
+                        }
+
+                        //todo
+                        // 暂停程序
+                        if (waitUserOtherChoice)
+                        {
+                            await WaitForPlayer();
+                            //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
+                            //    loop.exec();
+                        }
+
+
+
+                        if (guoChiPengGangHu.Count > 1)
+                        {
+                            if (guoChiPengGangHuChoice == 4)
+                            {
+                                isFinish = true;
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                                typeHu = 1;
+                                statement = statement + game.player[game.cur].GetName() + "自摸";
+                                break;
+                            }
+                            else if (guoChiPengGangHuChoice == 3)
+                            {
+                                if (gangType)
+                                {
+                                    game.player[game.cur].Gang(getCard, 0);
+                                    //todo
+                                    //emit pengGangSelfSignals(false,Transition(getCard));
+                                    //QCoreApplication::processEvents();
+                                }
+                                else
+                                {
+                                    game.player[game.cur].AddGang(getCard);
+                                    AddGangSelf(Transition(getCard));
+                                }
+                                isGang = true;
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                                continue;
+                            }
+                            foreach (var btn in guoChiPengGangHuBtn)
+                                btn.Content = null;
+                        }
+
+                    }
+                    else
+                    {
+                        selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
+                        isChiPeng = false;
+                    }
+
+                    if (waitUserChoice)
+                    {
+                        await WaitForPlayer();
+                        //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
+                        //    loop.exec();
+                    }
+
+                    KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
+                    if (discardIndex >= 0 && discardIndex < game.player[0].OwnCard.Count)
+                        discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
+                    game.player[game.cur].Discard(discardThisRound.Value);//出牌
+
+                    //double width = discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth;
+                    //double height = discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight;
+                    //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[discardThisRound.Key], new Size(width, height) , 0);
+                    BitmapSource bitmapSource = RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
+                    discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
+                    {
+                        //Source = bitmapSource
+                        //Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"))
+                        Source= totalDiscardedCard[discardThisRound.Key],
+                        Stretch=Stretch.Uniform
+                    };
+                    //Task.Run(() =>
+                    //{
+                    //    Dispatcher.Invoke(() =>
+                    //    {
+                    //        //discarded[game.cur][discardedNowIndex[game.cur]].Content = "123";
+                    //    });
+                    //});
+
+
+
+                    selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
+                    selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
+
+                    //todo
+                    //QCoreApplication::processEvents();
+
+                    discardedNowIndex[game.cur]++;
+
+                    selfCardTransition();
+                    for (int i = 0; i < handCard.Count; ++i)
+                        selfCardButton[i].Content = new Image
+                        {
+                            Source = totalCardSelf[handCard[i].Key]
+                        };
+
+                    deal = true;
+                    if (deal)
+                    {
+                        //检查胡
+                        for (int i = (game.cur + 1) % 4; i != 0; i = (i + 1) % 4)
+                        {
+                            if (game.player[i].CheckWin(discardThisRound.Value))
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                isFinish = true;
+                                deal = false;//结束游戏
+                                typeHu = -1;
+                                statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[i].GetName();
+                                break;
+                            }
+                        }
+                        if (isFinish)
+                            break;
+                    }
+                    if (deal)
+                    {
+                        //检查杠
+                        for (int i = (game.cur + 1) % 4; i != 0; i = (i + 1) % 4)
+                        {
+                            if (game.player[i].CheckGang(discardThisRound.Value))
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                game.player[i].Gang(discardThisRound.Value, 1);
+                                //discarded[i][--discardedNowIndex[i]]->setPixmap(QPixmap());
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                //todo
+                                //emit pengGangOthersSignals(false,i - 1,discardThisRound.first);
+                                //QCoreApplication::processEvents();
+                                isGang = true;
+                                game.cur = i;
+                                deal = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (deal)
+                    {
+                        //检查碰
+                        for (int i = (game.cur + 1) % 4; i != 0; i = (i + 1) % 4)
+                        {
+                            if (game.player[i].CheckPeng(discardThisRound.Value))
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                game.player[i].Peng(discardThisRound.Value);
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                //todo
+                                //emit pengGangOthersSignals(true,i - 1,discardThisRound.first);
+                                //QCoreApplication::processEvents();
+                                isChiPeng = true;
+                                game.cur = i;
+                                deal = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (deal)
+                    {
+                        //检查吃
+                        List<int> temp = game.player[game.cur + 1].CheckChiRot(discardThisRound.Value);
+                        if (temp.Count > 0)
+                        {
+                            //todo
+                            //timer.setSingleShot(true);
+                            //timer.start(1000);
+                            //loop.exec();
+                            await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                            game.player[game.cur + 1].Chi(temp);
+                            temp.Add(discardThisRound.Value);
+                            for (int i = 0; i < 3; i++)
+                                temp[i] = Transition(temp[i]);
+                            temp.Sort();
+                            //Task.Run(() =>
+                            //{
+                            //    Dispatcher.Invoke(() =>
+                            //    {
+                            //        //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                            //    });
+                            //});
+                            discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+
+                            ChiOthers(0, temp);
+                            //todo
+                            //QCoreApplication::processEvents();
+                            isChiPeng = true;
+                            game.cur = game.cur + 1;
+                            deal = false;
+                        }
+                    }
+                    if (deal)
+                        game.cur = (game.cur + 1) % 4;
+                }
+                else
+                {
+                    int getCard = 0;
+                    if (!isChiPeng)
+                    {
+                        if (isGang)
+                        {
+                            getCard = game.player[game.cur].GetBackCard();//摸牌
+                            isGang = false;
+                        }
+                        else
+                            getCard = game.player[game.cur].GetCard();//摸牌
+                                                                      //Task.Run(() =>
+                                                                      //{
+                                                                      //    Dispatcher.Invoke(() =>
+                                                                      //    {
+                        remained.Content = remainedText + game.card.dq.Count;
+                        othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = new Image
+                        {
+                            Source = othersCardImages[game.cur - 1]
+                        };
+                        //});
+
+                        //});
+
+
+
+                        if (game.player[game.cur].CheckWin())
+                        {
+                            //todo
+                            //timer.setSingleShot(true);
+                            //timer.start(1000);
+                            //loop.exec();
+                            await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                            isFinish = true;
+                            typeHu = -1;
+                            statement = statement + game.player[game.cur].GetName() + "自摸";
+                            break;//结束游戏
+                        }
+                        if (game.player[game.cur].CheckGang() != -1)
+                        {
+                            //todo
+                            //timer.setSingleShot(true);
+                            //timer.start(1000);
+                            //loop.exec();
+                            await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                            game.player[game.cur].Gang(getCard, 0);
+                            //todo
+                            //emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
+                            //QCoreApplication::processEvents();
+                            isGang = true;
+                            continue;
+                        }
+                        if (game.player[game.cur].CheckAddGang(getCard))
+                        {
+                            //todo
+                            //timer.setSingleShot(true);
+                            //timer.start(1000);
+                            //loop.exec();
+                            await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                            game.player[game.cur].AddGang(getCard);
+                            AddGangOthers(game.cur - 1, Transition(getCard));
+                            isGang = true;
+                            continue;
+                        }
+
+                    }
+                    else
+                    {
+                        isChiPeng = false;
+                    }
+                    // 启动定时器，设置1秒后触发一次定时器超时事件
+                    //todo
+                    //timer.setSingleShot(true);
+                    //timer.start(1000); // 1000 毫秒 = 1 秒
+                    //loop.exec();
+                    await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+
+                    int discardThisRound = game.player[game.cur].DiscardRobot();
+                    game.player[game.cur].Discard(discardThisRound);//出牌,默认出第一张牌
+
+                    //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[Transition(discardThisRound)], new Size(discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth, discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight), game.cur * (-90));
+                    BitmapSource bitmapSource = RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
+                    discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
+                    {
+                        //Source = bitmapSource
+                        Source= totalDiscardedCard[Transition(discardThisRound)],
+                        RenderTransform= new RotateTransform(game.cur * (-90)),
+                        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                        Stretch=Stretch.Uniform
+                };//更新已出牌区
+
+                    othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = null;//更新按钮
+                    discardedNowIndex[game.cur]++;
+
+                    guoChiPengGangHu.Clear();
+                    guoChiPengGangHu.Add(0);
+                    deal = true;
+                    if (deal)
+                    {
+                        multiChi = false;//当前是否有多种吃法
+                        List<List<int>> chiTemp = new List<List<int>>();//将多种吃法存入该数组中
+                        List<List<int>> transitionChi = new List<List<int>>();//将多种吃法的牌所对应的图片的下标存入该数组中
+                        if (game.cur == 3)//轮至自己
+                        {
+                            chiTemp = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
+                            if (chiTemp.Count > 0)//能吃牌
+                            {
+                                guoChiPengGangHu.Add(1);
+                                waitUserOtherChoice = true;
+                            }
+                            if (chiTemp.Count > 1)//能吃牌且有多种吃法
+                            {
+                                multiChi = true;
+                                for (int i = 0; i < chiTemp.Count; i++)
+                                {
+                                    List<int> t = new List<int>();
+                                    transitionChi.Add(t);
+                                    transitionChi[i].AddRange(chiTemp[i]);
+                                    transitionChi[i].Add(discardThisRound);
+                                    for (int j = 0; j < 3; j++)
+                                    {
+                                        chiChoice[i][j].IsEnabled = true;//设置按钮可用
+                                        transitionChi[i][j] = Transition(transitionChi[i][j]);
+                                    }
+                                    transitionChi[i].Sort();
+                                    for (int j = 0; j < 3; j++)
+                                    {
+                                        //设置按钮牌图片
+                                        chiChoice[i][j].Content = new Image
+                                        {
+                                            //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
+                                            //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
+                                            Source= totalDiscardedCard[transitionChi[i][j]]
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                        if (game.player[0].CheckPeng(discardThisRound))//检查是否能碰
+                        {
+                            guoChiPengGangHu.Add(2);
+                            waitUserOtherChoice = true;
+                        }
+                        if (game.player[0].CheckGang(discardThisRound))//检查是否能杠
+                        {
+                            guoChiPengGangHu.Add(3);
+                            waitUserOtherChoice = true;
+                        }
+                        if (game.player[0].CheckWin(discardThisRound))//检查是否能胡
+                        {
+                            guoChiPengGangHu.Add(4);
+                            waitUserOtherChoice = true;
+                        }
+
+                        if (guoChiPengGangHu.Count > 1)//大于1说明能吃碰杠胡中的一种或多种
+                        {
+                            guoChiPengGangHu.Sort();
+                            waitUserOtherChoice = true;
+
+                            for (int i = 0; i < guoChiPengGangHu.Count; i++)
+                            {
+                                //设置吃碰杠胡区按钮图片
+                                guoChiPengGangHuBtn[i].Content = new Image
+                                {
+                                    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
+                                };
+                            }
+                            //等待玩家选择
+                            //todo
+                            if (waitUserOtherChoice)
+                            {
+                                await WaitForPlayer();
+                                //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
+                                //    loop.exec();
+                            }
+
+                            if (guoChiPengGangHuChoice == 4)
+                            {
+                                isFinish = true;
+                                deal = false;
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                                typeHu = 1;
+                                statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[0].GetName();
+                                break;
+                            }
+                            else if (guoChiPengGangHuChoice == 3)
+                            {
+                                game.player[0].Gang(discardThisRound, 1);
+                                //todo
+                                //emit pengGangSelfSignals(false,Transition(discardThisRound));
+                                //QCoreApplication::processEvents();
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                deal = false;
+                                isGang = true;
+                                game.cur = 0;
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                                continue;
+                            }
+                            else if (guoChiPengGangHuChoice == 2)
+                            {
+                                game.player[0].Peng(discardThisRound);
+                                //todo
+                                //emit pengGangSelfSignals(true,Transition(discardThisRound));
+                                //QCoreApplication::processEvents();
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                deal = false;
+                                isChiPeng = true;
+                                game.cur = 0;
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                                continue;
+                            }
+                            else if (guoChiPengGangHuChoice == 1)//吃
+                            {
+                                if (multiChi)//有多种情况
+                                {
+                                    game.player[0].Chi(chiTemp[multiChiChoice]);//更新手牌
+                                    ChiSelf(transitionChi[multiChiChoice]);//更新UI
+                                    for (int i = 0; i < chiTemp.Count; i++)
+                                    {
+                                        for (int j = 0; j < 3; j++)
+                                        {
+                                            chiChoice[i][j].Content = null;//设置图片为空
+                                            chiChoice[i][j].IsEnabled = false;//设置按钮不可用
+                                        }
+                                    }
+                                    //todo
+                                    //QCoreApplication::processEvents();
+                                }
+                                else//无
+                                {
+                                    game.player[0].Chi(chiTemp[0]);//更新手牌
+                                    chiTemp[0].Add(discardThisRound);
+                                    for (int i = 0; i < 3; i++)
+                                        chiTemp[0][i] = Transition(chiTemp[0][i]);
+                                    chiTemp[0].Sort();
+                                    ChiSelf(chiTemp[0]);//更新UI
+                                                        //todo
+                                                        //QCoreApplication::processEvents();
+                                }
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                deal = false;
+                                isChiPeng = true;
+                                game.cur = 0;
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                                continue;
+                            }
+                            else if (guoChiPengGangHuChoice == 0)
+                            {
+                                //当用户选择过时，也需要将多吃部分进行修改
+                                for (int i = 0; i < chiTemp.Count; i++)
+                                {
+                                    for (int j = 0; j < 3; j++)
+                                    {
+                                        chiChoice[i][j].Content = null;//设置图片为空
+                                        chiChoice[i][j].IsEnabled = false;//设置按钮不可用
+                                    }
+                                }
+                                foreach (var btn in guoChiPengGangHuBtn)
+                                    btn.Content = null;
+                            }
+                        }
+                    }
+                    if (deal)
+                    {
+                        //检查胡
+                        for (int i = (game.cur + 1) % 4; i != game.cur; i = (i + 1) % 4)
+                        {
+                            if (i != 0 && game.player[i].CheckWin(discardThisRound))
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                isFinish = true;//结束游戏
+                                deal = false;
+                                typeHu = -1;
+                                statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[i].GetName();
+                                break;
+                            }
+                        }
+                        if (isFinish)
+                            break;
+                    }
+                    if (deal)
+                    {
+                        //检查杠
+                        for (int i = (game.cur + 1) % 4; i != game.cur; i = (i + 1) % 4)
+                        {
+                            if (i != 0 && game.player[i].CheckGang(discardThisRound))
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                game.player[i].Gang(discardThisRound, 1);
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                //todo
+                                //emit pengGangOthersSignals(false,i - 1,Transition(discardThisRound));
+                                //QCoreApplication::processEvents();
+                                isGang = true;
+                                game.cur = i;
+                                deal = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (deal)
+                    {
+                        //检查碰
+                        for (int i = (game.cur + 1) % 4; i != game.cur; i = (i + 1) % 4)
+                        {
+                            if (i != 0 && game.player[i].CheckPeng(discardThisRound))
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                game.player[i].Peng(discardThisRound);
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                //todo
+                                //emit pengGangOthersSignals(true,i - 1,Transition(discardThisRound));
+                                //QCoreApplication::processEvents();
+                                isChiPeng = true;
+                                game.cur = i;
+                                deal = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (deal)
+                    {
+                        //检查吃
+                        if (game.cur != 3)
+                        {
+                            List<int> temp = game.player[game.cur + 1].CheckChiRot(discardThisRound);
+                            if (temp.Count > 0)
+                            {
+                                //todo
+                                //timer.setSingleShot(true);
+                                //timer.start(1000);
+                                //loop.exec();
+                                await Task.Delay(1000);  // 延迟1秒（1000毫秒）
+                                game.player[game.cur + 1].Chi(temp);
+                                temp.Add(discardThisRound);
+                                for (int i = 0; i < 3; i++)
+                                    temp[i] = Transition(temp[i]);
+                                temp.Sort();
+                                discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
+                                ChiOthers(game.cur, temp);
+                                //todo
+                                //QCoreApplication::processEvents();
+                                isChiPeng = true;
+                                game.cur = game.cur + 1;
+                                deal = false;
+                            }
+                        }
+                    }
+                    if (deal)
+                        game.cur = (game.cur + 1) % 4;
+                }
+                //todo
+                //QCoreApplication::processEvents();
+                //loop.processEvents(QEventLoop::AllEvents);
+            }
+            if (isFinish)
+            {
+                if (typeHu == 1)
+                    settlementPic.Content = new Image
+                    {
+                        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png"))
+                    };
+                else if (typeHu == -1)
+                    settlementPic.Content = new Image
+                    {
+                        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png"))
+                    };
+                ResetCheckoutUI();
+                //todo
+                //checkout->show();
+            }
+            else
+            {
+                settlementPic.Content = new Image
+                {
+                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png"))
+                };
+                statement += "牌堆已空";
+                ResetCheckoutUI();
+                //todo
+                //checkout->show();
+            }
+            //    });
+            //});
         }
 
         private void ResetCheckoutUI()
         {
             return;
+        }
+
+        //异步等待玩家点击出牌按钮
+        private async Task WaitForPlayer()
+        {
+            // 使用 TaskCompletionSource 来暂停异步操作，直到玩家点击按钮
+            tcs = new TaskCompletionSource<int>();
+
+            // 等待玩家点击按钮
+            await tcs.Task;
         }
     }
 }
