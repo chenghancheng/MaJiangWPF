@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Media;
+using System.Windows.Resources;
+using System.Windows;
 
 public class Player
 {
@@ -10,6 +13,8 @@ public class Player
     public int CurNum { get; set; }
     public Card? Card { get; set; }
     public HashSet<string> MyPeng { get; set; }
+
+    //private SoundPlayer soundPlayer;
 
     public Player()
     {
@@ -24,6 +29,7 @@ public class Player
         this.Card = card;
         OwnCard = new HashSet<int>();
         MyPeng = new HashSet<string>();
+        //soundPlayer = new SoundPlayer();
     }
 
     public int GetCard()
@@ -55,24 +61,17 @@ public class Player
         return count;
     }
 
-    public int Round()
-    {
-        int p = Card.GetCard();
-        OwnCard.Add(p);
-        CurNum++;
-        if (CheckWin())
-            return 666;
-
-        int choice = (int)OwnCard.First();
-        Discard(choice);
-        return choice;
-    }
-
     public int Discard(int n)
     {
-        // 播放弃牌音效
-        //var music = new MusicE();
-        //music.PlayDiscardSound();
+        // 获取嵌入资源的 URI
+        Uri soundUri = new Uri("pack://application:,,,/Resources/Music/click.wav");
+        // 获取资源流
+        StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+        // 使用流创建 SoundPlayer
+        SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+        soundPlayer.Play();
+            
+        
         CurNum--;
         int p = -1;
         foreach (var i in OwnCard)
@@ -89,6 +88,7 @@ public class Player
 
     public int DiscardChi(int n)
     {
+        
         CurNum--;
         int p = -1;
         foreach (var i in OwnCard)
@@ -105,7 +105,7 @@ public class Player
 
     public int DiscardRobot()
     {
-        CurNum = OwnCard.Count + 1;
+        CurNum = OwnCard.Count;
         var curCard2 = new List<int>(CurNum);
         for (int i = 0; i < CurNum; i++)
         {
@@ -186,7 +186,7 @@ public class Player
 
     public bool CheckWin()
     {
-        CurNum = OwnCard.Count + 1;
+        CurNum = OwnCard.Count;
         var curCard = new List<int>(CurNum);
         for (int i = 0; i < CurNum; i++)
         {
@@ -203,6 +203,7 @@ public class Player
 
     public bool CheckWin(int n)
     {
+        CurNum = OwnCard.Count;
         var curCard = new List<int>(CurNum + 1);
         for (int i = 0; i < CurNum; i++)
         {
@@ -479,6 +480,13 @@ public class Player
     // C++ 版的 chi 方法转为 C# 版本
     public void Chi(List<int> n)
     {
+        //获取嵌入资源的 URI
+        Uri soundUri = new Uri("pack://application:,,,/Resources/Music/chi.wav");
+        // 获取资源流
+        StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+        //使用流创建 SoundPlayer
+        SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+        soundPlayer.Play();
         //music.PlayChiSound();
         for (int i = 0; i < 2; ++i)
         {
@@ -504,6 +512,13 @@ public class Player
     // C++ 版的 peng 方法转为 C# 版本
     public void Peng(int n)
     {
+        //获取嵌入资源的 URI
+        Uri soundUri = new Uri("pack://application:,,,/Resources/Music/peng.wav");
+        // 获取资源流
+        StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+        //使用流创建 SoundPlayer
+        SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+        soundPlayer.Play();
         //music.PlayPengSound();
         int cnt = 2;
         CurNum -= 2;
@@ -512,8 +527,9 @@ public class Player
 
         foreach (var card in OwnCard)
         {
-            if (card == n && cnt > 0)
+            if (Card.GetName(card) == Card.GetName(n) && cnt > 0)
             {
+                //OwnCard.Remove(card);
                 p.Add(card);
                 cnt--;
             }
@@ -524,7 +540,6 @@ public class Player
             OwnCard.Remove(item);
         }
     }
-
     // C++ 版的 check_gang 方法转为 C# 版本
     public int CheckGang()
     {
@@ -567,6 +582,13 @@ public class Player
     // C++ 版的 gang 方法转为 C# 版本
     public int Gang(int n, int type)
     {
+        //获取嵌入资源的 URI
+        Uri soundUri = new Uri("pack://application:,,,/Resources/Music/gang.wav");
+        // 获取资源流
+        StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+        //使用流创建 SoundPlayer
+        SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+        soundPlayer.Play();
         //music.PlayGangSound();
         int cnt = type == 1 ? 3 : 4;
         CurNum -= cnt;
@@ -574,7 +596,7 @@ public class Player
 
         foreach (var card in OwnCard)
         {
-            if (card == n && cnt > 0)
+            if (Card.GetName(card) == Card.GetName(n) && cnt > 0)
             {
                 p.Add(card);
                 cnt--;

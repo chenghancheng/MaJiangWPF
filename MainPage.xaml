@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Majiang"
       mc:Ignorable="d" 
-      d:DesignHeight="618" d:DesignWidth="1035"
+      d:DesignHeight="770" d:DesignWidth="1100"
       Title="MainPage">
 
     <Page.Resources>

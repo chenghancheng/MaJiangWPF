@@ -1,7 +1,8 @@
 ﻿<Window x:Class="MaJiangApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MaJiang" Height="618" Width="1035">
+        Title="MaJiang" Height="770" Width="1150"
+        ResizeMode="NoResize">
 
     <Grid>
         <!-- 背景图片 -->
@@ -11,5 +12,12 @@
 
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
 
+        <!-- 设置 MediaElement 的大小和布局 -->
+        <Grid>
+            <MediaElement x:Name="mediaElement" 
+                          LoadedBehavior="Manual" 
+                          UnloadedBehavior="Manual" 
+                          Width="0" Height="0" />
+        </Grid>
     </Grid>
 </Window>

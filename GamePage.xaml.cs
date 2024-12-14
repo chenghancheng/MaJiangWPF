@@ -131,7 +131,7 @@ namespace Majiang
         private int typeHu = 0;
 
         private Label remained;
-        private string remainedText;
+        private string remainedText = "剩余牌数：";
 
         private DispatcherTimer timer;
 
@@ -506,12 +506,12 @@ namespace Majiang
             // 添加剩余牌数标签
             remained = new Label
             {
-                Content = remainedText + "150", // 示例，实际需要动态更新
+                //Content = remainedText + "150", // 示例，实际需要动态更新
                 Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGoldenrodYellow),
                 Width = 170,
                 Height = 30,
-                FontFamily = new System.Windows.Media.FontFamily("楷体"),
-                FontSize = 10
+                FontFamily = new System.Windows.Media.FontFamily("幼圆"),
+                FontSize = 17
             };
 
             Grid.SetRow(remained, 1);
@@ -842,7 +842,7 @@ namespace Majiang
             //
 
             // 在自己卡片区添加间隔
-            selfCardBox.Children.Add(new Button { Content = "Space" }); // 可自定义空白控件
+            selfCardBox.Children.Add(new Button { Content = "Space", Visibility = Visibility.Hidden, Width = 15 } ); // 可自定义空白控件
             createSelfCard(13);
 
             // 禁用最后一个卡片的按钮
@@ -973,7 +973,7 @@ namespace Majiang
                         Width = 17,
                         Height = 25,
                         IsEnabled = true,
-                        Background = Brushes.AliceBlue,
+                        Background = Brushes.Transparent,
                         HorizontalContentAlignment = HorizontalAlignment.Center,
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(1),
@@ -1031,9 +1031,9 @@ namespace Majiang
 
             //// 将布局添加到父布局中（假设 totalCardBox 是你的父布局）
             //totalCardBox.Children.Add(wrapPanel);  // 使用 wrapPanel 而不是直接使用 StackPanel
-            Grid.SetRow(chiPengGangBox, 23);
+            Grid.SetRow(chiPengGangBox, 22);
             Grid.SetColumn(chiPengGangBox, 9);
-            Grid.SetRowSpan(chiPengGangBox, 1);
+            Grid.SetRowSpan(chiPengGangBox, 2);
             Grid.SetColumnSpan(chiPengGangBox, 20);
 
             // 将布局添加到父布局中（假设 totalCardBox 是你的父布局）
@@ -1079,14 +1079,14 @@ namespace Majiang
             // 创建一个 Button，代替 RadioButton
             Button button = new Button
             {
-                Width = 20,
-                Height = 20,
+                Width = 30,
+                Height = 30,
                 Content = new Image
                 {
                     Source = new BitmapImage(), // 图像路径，可以根据需要设置具体的图片路径
-                    Stretch = Stretch.Uniform
+                    Stretch = Stretch.UniformToFill
                 },
-                //Background = Brushes.Transparent,
+                Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Tag = id // 将按钮的 ID 存储在 Tag 属性中
             };
@@ -1421,7 +1421,7 @@ namespace Majiang
         {
             // 清除状态和重置游戏
             statement = "";
-            game = new Game("于洋");
+            game = new Game("谭杰");
             game.DistributeCards();
             ResetCardUI();
             ResetDirectionUI();
@@ -1470,63 +1470,53 @@ namespace Majiang
 
         public void ChiSelf(List<int> chiCard)
         {
-            // 清空当前选中的按钮
             if (choiceBtn != -1)
             {
-                // 清除按钮和标签
-                selfCardLabel[choiceBtn].Content = null; // 清空卡片标签
+                selfCardLabel[choiceBtn].Content = null; // 清空选中的Label
                 choiceBtn = -1;
             }
 
-            // 移除最后两个按钮和标签
-            if (selfCardButton.Count > 1)
-            {
-                int lastIndex = selfCardButton.Count - 2;
-
-                // 移除按钮和标签
-                selfCardButton[lastIndex].Click -= Button_Click; // 移除点击事件
-                selfCardBox.Children.Remove(selfCardButton[lastIndex]);
-                selfCardLabel[lastIndex].Content = null; // 清空标签
-                selfCardBox.Children.Remove(selfCardLabel[lastIndex]);
-
-                // 从列表中删除
-                selfCardButton.RemoveAt(lastIndex);
-                selfCardLabel.RemoveAt(lastIndex);
-                selfCard.RemoveAt(lastIndex);
-            }
-
-            // 插入新的卡片
+            // 移除按钮和控件
             for (int i = 0; i < 3; ++i)
             {
-                // 创建新的卡片标签
+                var lastIndex = selfCardButton.Count - 2;
+
+                // 移除自定义的控件和按钮
+                selfCardBox.Children.Remove(selfCard[selfCard.Count - 2]);
+                selfCardButton[selfCardButton.Count - 2].Content = null;
+                selfCardButton[selfCardButton.Count - 2].Click -= SelfCardButtonClick; // 如果有事件绑定需要解除
+                selfCardButton.RemoveAt(selfCardButton.Count - 2);
+
+                selfCardLabel[selfCardLabel.Count - 2].Content = null;
+                selfCardLabel.RemoveAt(selfCardLabel.Count - 2);
+
+                selfCard.RemoveAt(selfCard.Count - 2);
+            }
+
+            // 插入间距
+            selfCardBox.Children.Add(new Label { Margin = new Thickness(5) });
+
+            // 插入新的图片标签
+            for (int i = 0; i < 3; ++i)
+            {
                 var label = new Label
                 {
                     Width = 27,
                     Height = 39,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
                     Content = new Image
                     {
-                        Source = totalDiscardedCard[chiCard[i]], // 假设你已经准备好卡片的图片列表
-                        Stretch = Stretch.Uniform
+                        Source = totalDiscardedCard[chiCard[i]],
+                        Stretch = Stretch.Uniform,
                     }
                 };
-
-                selfCardBox.Children.Insert(selfCardBox.Children.Count - 1, label);
-                selfCardLabel.Add(label);
-
-                // 创建新的按钮
-                var button = new Button
-                {
-                    Content = $"Card {i}",
-                    Width = 27,
-                    Height = 39
-                };
-                button.Click += Button_Click; // 绑定按钮点击事件
-                selfCardBox.Children.Insert(selfCardBox.Children.Count - 1, button);
-                selfCardButton.Add(button);
-
-                // 将按钮添加到 ButtonGroup 中
-                buttonGroup.AddButton(button, i);
+                selfCardBox.Children.Add(label);
             }
+            selfCardButton[selfCardButton.Count - 1].Tag = selfCardButton.Count - 1;
 
             // 更新 UI
             Dispatcher.Invoke(() =>
@@ -1538,47 +1528,54 @@ namespace Majiang
 
         public void ChiOthers(int type, List<int> chiCard)
         {
-            // 移除最后两个卡片
-            if (othersCard[type].Count > 1)
-            {
-                int lastIndex = othersCard[type].Count - 2;
-
-                // 移除卡片并清空
-                othersCardBox[type].Children.Remove(othersCard[type][lastIndex]);
-                othersCard[type][lastIndex].Content = null; // 清空卡片标签
-
-                // 从列表中删除
-                othersCard[type].RemoveAt(lastIndex);
-            }
-
-            // 插入新的卡片
             for (int i = 0; i < 3; ++i)
             {
-                // 创建新的卡片标签
+                if (othersCard[type].Count > 2)
+                {
+                    var label = othersCard[type][othersCard[type].Count - 2];
+                    othersCard[type].RemoveAt(othersCard[type].Count - 2);
+                    othersCardBox[type].Children.Remove(label);
+                }
+            }
+
+            // 插入间距
+            othersCardBox[type].Children.Add(new Label { Margin = new Thickness(5) });
+
+            for (int i = 0; i < 3; ++i)
+            {
                 var label = new Label
                 {
-                    Width = (type == 1) ? 55 : 60,
-                    Height = (type == 1) ? 78 : 44,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
                 };
-
-                // 旋转图片
-                var rotateTransform = new RotateTransform(-90 * (type + 1));
-
-                var image = new Image
+                if (type == 1)
                 {
-                    Source = totalDiscardedCard[chiCard[i]], // 假设你已经准备好卡片的图片列表
-                    Stretch = Stretch.Uniform,
-                    RenderTransform = rotateTransform // 应用旋转
-                };
-
-                label.Content = image;
-
-                // 按照类型调整缩放
-                image.Stretch = Stretch.UniformToFill;
-
-                // 将新的卡片标签添加到对应的 StackPanel 中
-                othersCardBox[type].Children.Insert(othersCardBox[type].Children.Count - 1, label);
-                othersCard[type].Add(label); // 将新的标签添加到列表中
+                    label.Width = 27;
+                    label.Height = 39;
+                    label.Content = new Image
+                    {
+                        Source = totalDiscardedCard[chiCard[i]],
+                        Stretch = Stretch.Uniform,
+                        RenderTransform = new RotateTransform((type + 1) * (-90)),
+                        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                    };
+                }
+                else
+                {
+                    label.Width = 30;
+                    label.Height = 22;
+                    label.Content = new Image
+                    {
+                        Source = totalDiscardedCard[chiCard[i]],
+                        Stretch = Stretch.Uniform,
+                        RenderTransform = new RotateTransform((type + 1) * (-90)),
+                        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                    };
+                }
+                othersCardBox[type].Children.Add(label);
             }
 
             // 强制刷新 UI
@@ -1590,9 +1587,6 @@ namespace Majiang
 
         public void PengGangSelf(bool choice, int pengGangCard)
         {
-            // 取消当前选中的按钮
-            buttonGroup.ClearSelection();
-
             if (choiceBtn != -1)
             {
                 // 清除当前选择的按钮
@@ -1603,55 +1597,56 @@ namespace Majiang
             // 根据 choice 决定是碰（3张卡）还是杠（4张卡）
             int num = choice ? 3 : 4;
 
-            // 移除旧的卡片
-            if (selfCard.Count > 1)
+            // 移除按钮和控件
+            for (int i = 0; i < 3; ++i)
             {
-                int lastIndex = selfCard.Count - 2;
+                int lastIndex = selfCardButton.Count - 2;
 
-                // 移除卡片标签和按钮
-                selfCardBox.Children.Remove(selfCard[lastIndex]);
-                selfCardButton[lastIndex].IsEnabled = false; // 禁用按钮（可以选择是否删除）
-                selfCardButton[lastIndex].Content = null;
+                // 移除控件和按钮
+                selfCardBox.Children.Remove(selfCard[selfCard.Count - 2]);
 
-                selfCard.RemoveAt(lastIndex);
-                selfCardButton.RemoveAt(lastIndex);
-                selfCardLabel.RemoveAt(lastIndex);
+                selfCardButton[selfCardButton.Count - 2].Content = null;
+                selfCardButton[selfCardButton.Count - 2].Click -= SelfCardButtonClick; // 如果有事件绑定，需要解除绑定
+                selfCardButton.RemoveAt(selfCardButton.Count - 2);
+
+                selfCardLabel[selfCardLabel.Count - 2].Content = null;
+                selfCardLabel.RemoveAt(selfCardLabel.Count - 2);
+
+                selfCard.RemoveAt(selfCard.Count - 2);
+
             }
 
-            // 插入新的卡片
+            // 添加间距
+            selfCardBox.Children.Add(new Label { Margin = new Thickness(5) });
+
+            // 添加新的图片标签
             for (int i = 0; i < num; ++i)
             {
-                // 创建新的 StackPanel，用于容纳 Image
-                var stackPanel = new StackPanel
+                var label = new Label
                 {
-                    Width = 55,
-                    Height = 78,
-                    Orientation = Orientation.Vertical // 根据需求调整布局方向
+                    Width = 27,
+                    Height = 39,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
+                    Content = new Image
+                    {
+                        Source = totalDiscardedCard[pengGangCard],
+                        Stretch = Stretch.Uniform,
+                    }
                 };
+                selfCardBox.Children.Add(label);
 
-                // 创建一个 Image 控件显示卡片
-                var image = new Image
-                {
-                    Source = totalDiscardedCard[pengGangCard], // 假设 totalDiscardedCard 是 BitmapImage 列表
-                    Stretch = Stretch.Uniform
-                };
-
-                // 将 Image 添加到 StackPanel 中
-                stackPanel.Children.Add(image);
-
-                // 将新的 StackPanel 添加到自定义的 StackPanel 控件（selfCardBox）
-                selfCardBox.Children.Insert(selfCardBox.Children.Count - 1, stackPanel);
-                selfCard.Add(stackPanel);
-
-                // 如果是碰，记录该卡片的位置
+                // 更新pengAlready
                 if (choice && i == 0)
                 {
-                    pengAlready[0][pengGangCard] = selfCardBox.Children.IndexOf(stackPanel) - selfCardButton.Count;
+                    pengAlready[0][pengGangCard] = selfCardBox.Children.IndexOf(label) - selfCardButton.Count;
                 }
             }
 
-            // 更新按钮 ID
-            buttonGroup.AddButton(selfCardButton[selfCardButton.Count - 1], selfCardButton.Count - 1);
+            selfCardButton[selfCardButton.Count - 1].Tag = selfCardButton.Count - 1;
 
             // 强制刷新 UI
             Dispatcher.Invoke(() =>
@@ -1660,6 +1655,70 @@ namespace Majiang
             });
         }
 
+        public void PengGangOthers(bool choice, int type, int pengGangCard)
+        {
+            int num = choice ? 3 : 4; // 根据选择来确定数字
+
+            for (int i = 0; i < 3; ++i)
+            {
+                if (othersCard[type].Count > 2)
+                {
+                    othersCard[type][othersCard[type].Count - 2].Content = null;
+                    othersCard[type].RemoveAt(othersCard[type].Count - 2);
+                    othersCardBox[type].Children.Remove(othersCard[type][othersCard[type].Count - 2]);
+                }
+            }
+
+            // 插入间距
+            othersCardBox[type].Children.Add(new Label { Margin = new Thickness(5) });
+
+            for (int i = 0; i < num; ++i)
+            {
+                var label = new Label
+                {
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
+                };
+                if (type == 1)
+                {
+                    label.Width = 27;
+                    label.Height = 39;
+                    label.Content = new Image
+                    {
+                        Source = totalDiscardedCard[pengGangCard],
+                        Stretch = Stretch.Uniform,
+                        RenderTransform = new RotateTransform((type + 1) * (-90)),
+                        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                    };
+                }
+                else
+                {
+                    label.Width = 30;
+                    label.Height = 22;
+                    label.Content = new Image
+                    {
+                        Source = totalDiscardedCard[pengGangCard],
+                        Stretch = Stretch.Uniform,
+                        RenderTransform = new RotateTransform((type + 1) * (-90)),
+                        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                    };
+                }
+                othersCardBox[type].Children.Add(label);
+                if (choice && i == 1)
+                {
+                    pengAlready[type][pengGangCard] = othersCardBox[type].Children.IndexOf(label) - othersCard[type].Count;
+                }
+            }
+
+            // 强制刷新界面更新
+            Dispatcher.Invoke(() =>
+            {
+                selfCardBox.UpdateLayout();
+            });
+        }
 
         public void AddGangSelf(int pengGangCard)
         {
@@ -1670,81 +1729,28 @@ namespace Majiang
             }
             int index = pengAlready[0][pengGangCard] + selfCardButton.Count;
 
-            // 创建新的 Image 控件用于显示卡片
-            var image = new Image
+            var label = new Label
             {
-                Width = 55,
-                Height = 78,
-                Stretch = Stretch.Uniform,
-                Source = totalDiscardedCard[pengGangCard] // 假设 totalDiscardedCard 是 BitmapImage 列表
-            };
-
-            // 将 Image 控件插入到指定位置
-            selfCardBox.Children.Insert(index, image);
-
-            // 将此卡片的 StackPanel 信息存入 selfCard 中
-            var stackPanel = new StackPanel
-            {
-                Width = 55,
-                Height = 78,
-                Orientation = Orientation.Vertical
-            };
-
-            stackPanel.Children.Add(image); // 将 Image 添加到 StackPanel 中
-            selfCard.Add(stackPanel); // 将 StackPanel 添加到 selfCard 列表中
-        }
-
-        public void PengGangOthers(bool choice, int type, int pengGangCard)
-        {
-            int num = choice ? 3 : 4; // 根据选择来确定数字
-
-            // 移除之前的卡片控件
-            for (int i = 0; i < 3; ++i)
-            {
-                if (othersCard[type].Count > 1)
+                Width = 27,
+                Height = 39,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Content = new Image
                 {
-                    // 移除 StackPanel 中的控件
-                    othersCard[type].RemoveAt(othersCard[type].Count - 2);
-                }
-            }
-
-            // 向 StackPanel 插入间隔
-            othersCardBox[type].Children.Insert(othersCardBox[type].Children.Count - 1, new UIElement()); // 添加空元素来模拟间隔
-
-            // 进行旋转变换
-            var transform = new RotateTransform(-90 * (type + 1));
-
-            // 创建图片控件，并设置相关属性
-            for (int i = 0; i < num; ++i)
-            {
-                var image = new Image
-                {
-                    Width = type == 1 ? 55 : 60,
-                    Height = type == 1 ? 78 : 44,
+                    Source = totalDiscardedCard[pengGangCard],
                     Stretch = Stretch.Uniform,
-                    Source = totalDiscardedCard[pengGangCard] // 假设 totalDiscardedCard 是 BitmapImage 列表
-                };
-
-                // 对图片应用旋转变换
-                image.RenderTransform = transform;
-
-                // 插入图片控件到 StackPanel 中
-                othersCardBox[type].Children.Insert(othersCardBox[type].Children.Count - 1, image);
-
-                // 如果选择了“碰”并且是第二张卡片
-                if (choice && i == 1)
-                {
-                    // 保存卡片在其它玩家卡片中的位置
-                    if (!pengAlready[type].ContainsKey(pengGangCard))
-                    {
-                        pengAlready[type][pengGangCard] = 0;
-                    }
-                    pengAlready[type][pengGangCard] = othersCardBox[type].Children.IndexOf(image) - othersCard[type].Count;
                 }
-            }
+            };
 
-            // 强制刷新界面更新
-            Dispatcher.Invoke(() => { });
+            selfCardBox.Children.Insert(index, label);
+
+            Dispatcher.Invoke(() =>
+            {
+                selfCardBox.UpdateLayout();
+            });
         }
 
 
@@ -1757,26 +1763,29 @@ namespace Majiang
             // 计算要插入的位置
             int index = pengAlready[type][pengGangCard] + othersCard[type].Count;
 
-            // 进行旋转变换
-            var transform = new RotateTransform(-90 * (type + 1));
-
             // 创建 Image 控件，并设置其大小
-            var image = new Image
+            Label label = new Label
             {
-                Width = (type == 1) ? 55 : 60,
-                Height = (type == 1) ? 78 : 44,
-                Stretch = Stretch.Uniform
+                Width = (type == 1) ? 27 : 30,
+                Height = (type == 1) ? 39 : 22,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Content = new Image
+                {
+                    Source = totalDiscardedCard[pengGangCard],
+                    Stretch = Stretch.Uniform,
+                    RenderTransform = new RotateTransform((type + 1) * (-90)),
+                    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                }
             };
-
-            // 获取卡片图片并应用旋转变换
-            var pixmap = totalDiscardedCard[pengGangCard]; // 假设 totalDiscardedCard 是 BitmapImage 列表
-            image.Source = pixmap; // 设置图片源
-
-            // 对图片进行旋转
-            image.RenderTransform = transform;
-
-            // 插入控件到对应的 StackPanel 中
-            othersCardBox[type].Children.Insert(index, image);
+            othersCardBox[type].Children.Insert(index, label);
+            Dispatcher.Invoke(() =>
+            {
+                selfCardBox.UpdateLayout();
+            });
         }
 
         public async void StartGame()
@@ -1802,18 +1811,18 @@ namespace Majiang
                 //{
                 //    direction[cur].Dispatcher.Invoke(() =>
                 //    {
-                        //(direction[cur].Content as Image).Source = directionPic[cur];
-                        //cur = game.cur;
-                        //(direction[cur].Content as Image).Source = directionPic[cur+4];
-                        direction[cur].Content = new Image
-                        {
-                            Source = directionPic[cur]
-                        };
-                        cur = game.cur;
-                        direction[cur].Content = new Image
-                        {
-                            Source = directionPic[cur + 4]
-                        };
+                //(direction[cur].Content as Image).Source = directionPic[cur];
+                //cur = game.cur;
+                //(direction[cur].Content as Image).Source = directionPic[cur+4];
+                direction[cur].Content = new Image
+                {
+                    Source = directionPic[cur]
+                };
+                cur = game.cur;
+                direction[cur].Content = new Image
+                {
+                    Source = directionPic[cur + 4]
+                };
                 //    });
                 //});
 
@@ -1915,6 +1924,7 @@ namespace Majiang
                                     //todo
                                     //emit pengGangSelfSignals(false,Transition(getCard));
                                     //QCoreApplication::processEvents();
+                                    PengGangSelf(false, Transition(getCard));
                                 }
                                 else
                                 {
@@ -1957,8 +1967,8 @@ namespace Majiang
                     {
                         //Source = bitmapSource
                         //Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"))
-                        Source= totalDiscardedCard[discardThisRound.Key],
-                        Stretch=Stretch.Uniform
+                        Source = totalDiscardedCard[discardThisRound.Key],
+                        Stretch = Stretch.Uniform
                     };
                     //Task.Run(() =>
                     //{
@@ -2026,6 +2036,7 @@ namespace Majiang
                                 //todo
                                 //emit pengGangOthersSignals(false,i - 1,discardThisRound.first);
                                 //QCoreApplication::processEvents();
+                                PengGangOthers(false, i - 1, discardThisRound.Key);
                                 isGang = true;
                                 game.cur = i;
                                 deal = false;
@@ -2050,6 +2061,7 @@ namespace Majiang
                                 //todo
                                 //emit pengGangOthersSignals(true,i - 1,discardThisRound.first);
                                 //QCoreApplication::processEvents();
+                                PengGangOthers(true, i - 1, discardThisRound.Key);
                                 isChiPeng = true;
                                 game.cur = i;
                                 deal = false;
@@ -2143,6 +2155,7 @@ namespace Majiang
                             //todo
                             //emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
                             //QCoreApplication::processEvents();
+                            PengGangOthers(false, game.cur - 1, Transition(getCard));
                             isGang = true;
                             continue;
                         }
@@ -2179,11 +2192,11 @@ namespace Majiang
                     discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
                     {
                         //Source = bitmapSource
-                        Source= totalDiscardedCard[Transition(discardThisRound)],
-                        RenderTransform= new RotateTransform(game.cur * (-90)),
+                        Source = totalDiscardedCard[Transition(discardThisRound)],
+                        RenderTransform = new RotateTransform(game.cur * (-90)),
                         RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                        Stretch=Stretch.Uniform
-                };//更新已出牌区
+                        Stretch = Stretch.Uniform
+                    };//更新已出牌区
 
                     othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = null;//更新按钮
                     discardedNowIndex[game.cur]++;
@@ -2226,7 +2239,7 @@ namespace Majiang
                                         {
                                             //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
                                             //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
-                                            Source= totalDiscardedCard[transitionChi[i][j]]
+                                            Source = totalDiscardedCard[transitionChi[i][j]]
                                         };
                                     }
                                 }
@@ -2286,6 +2299,7 @@ namespace Majiang
                                 //todo
                                 //emit pengGangSelfSignals(false,Transition(discardThisRound));
                                 //QCoreApplication::processEvents();
+                                PengGangSelf(false, Transition(discardThisRound));
                                 discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                 deal = false;
                                 isGang = true;
@@ -2300,6 +2314,7 @@ namespace Majiang
                                 //todo
                                 //emit pengGangSelfSignals(true,Transition(discardThisRound));
                                 //QCoreApplication::processEvents();
+                                PengGangSelf(true, Transition(discardThisRound));
                                 discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                 deal = false;
                                 isChiPeng = true;
@@ -2399,6 +2414,7 @@ namespace Majiang
                                 //todo
                                 //emit pengGangOthersSignals(false,i - 1,Transition(discardThisRound));
                                 //QCoreApplication::processEvents();
+                                PengGangOthers(false, i - 1, Transition(discardThisRound));
                                 isGang = true;
                                 game.cur = i;
                                 deal = false;
@@ -2423,6 +2439,7 @@ namespace Majiang
                                 //todo
                                 //emit pengGangOthersSignals(true,i - 1,Transition(discardThisRound));
                                 //QCoreApplication::processEvents();
+                                PengGangOthers(true, i - 1, Transition(discardThisRound));
                                 isChiPeng = true;
                                 game.cur = i;
                                 deal = false;
