@@ -105,7 +105,7 @@ public class Player
 
     public int DiscardRobot()
     {
-        CurNum = OwnCard.Count;
+        //CurNum = OwnCard.Count;
         var curCard2 = new List<int>(CurNum);
         for (int i = 0; i < CurNum; i++)
         {

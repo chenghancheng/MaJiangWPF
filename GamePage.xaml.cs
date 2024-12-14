@@ -1663,9 +1663,9 @@ namespace Majiang
             {
                 if (othersCard[type].Count > 2)
                 {
-                    othersCard[type][othersCard[type].Count - 2].Content = null;
+                    var label = othersCard[type][othersCard[type].Count - 2];
                     othersCard[type].RemoveAt(othersCard[type].Count - 2);
-                    othersCardBox[type].Children.Remove(othersCard[type][othersCard[type].Count - 2]);
+                    othersCardBox[type].Children.Remove(label);
                 }
             }
 
