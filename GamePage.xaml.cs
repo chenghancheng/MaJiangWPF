@@ -1174,12 +1174,11 @@ namespace Majiang
                 {
                     Width = 22,
                     Height = 30,
-                    Background = Brushes.Gray,  // 使用背景色作为占位符
+                    Background = Brushes.Transparent,  // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Content=new Image
                     {
-                        Source=new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/gang.png")),
                         
                     },
                     Margin = new Thickness(0),
@@ -1193,11 +1192,11 @@ namespace Majiang
                 };
 
                 label.Content = null;
-                label.Content = new Image
-                {
-                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
+                //label.Content = new Image
+                //{
+                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
 
-                };
+                //};
 
                 discarded[2].Add(label);
 
@@ -1220,7 +1219,7 @@ namespace Majiang
                 {
                     Width = 30,
                     Height = 22,
-                    Background = Brushes.Gray, // 使用背景色作为占位符
+                    Background = Brushes.Transparent, // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
@@ -1253,7 +1252,7 @@ namespace Majiang
                 {
                     Width = 30,
                     Height = 22,
-                    Background = Brushes.Gray, // 使用背景色作为占位符
+                    Background = Brushes.Transparent, // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
@@ -1286,7 +1285,7 @@ namespace Majiang
                 {
                     Width = 22,
                     Height = 30,
-                    Background = Brushes.Gray, // 使用背景色作为占位符
+                    Background = Brushes.Transparent, // 使用背景色作为占位符
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),

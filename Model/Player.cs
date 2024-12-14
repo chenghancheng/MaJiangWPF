@@ -203,7 +203,7 @@ public class Player
 
     public bool CheckWin(int n)
     {
-        var curCard = new List<int>(CurNum);
+        var curCard = new List<int>(CurNum + 1);
         for (int i = 0; i < CurNum; i++)
         {
             curCard.Add(0); // 你可以用需要的初始值来填充 List
