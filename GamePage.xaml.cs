@@ -18,7 +18,9 @@ using System.Windows.Threading;
 
 namespace Majiang
 {
+    using MaJiangApp;
     using System.Collections.Generic;
+    using System.Numerics;
     using System.Threading;
     using System.Windows.Controls;
 
@@ -147,7 +149,7 @@ namespace Majiang
 
 
 
-        public GamePage()
+        public GamePage(bool type)
         {
             // StackPanel用于自定义布局
             var mainLayout = new StackPanel();
@@ -192,19 +194,20 @@ namespace Majiang
             totalDiscardedCard = new List<BitmapImage>();
             totalCardSelf.Add(new BitmapImage());
             totalDiscardedCard.Add(new BitmapImage());
-            LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
+            ImageMethod.LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
             //LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
-            LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
+            ImageMethod.LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
             InitCardUI();
             InitDirectionUI();
             InitChiPengGangUI();
             InitDiscardedCardUI();
             InitCheckoutUI();
 
-
-
+            if (type)
+            {
+                StartGame();
+            }
         }
-
 
 
         private void TimerTick(object sender, EventArgs e)
@@ -220,156 +223,6 @@ namespace Majiang
         {
             return (i <= 108) ? ((i - 1) / 36 * 9 + (i - 1) % 9 + 1) : ((i - 1) / 4 + 1);
         }
-
-        // 方法来加载图像到列表中
-        public void LoadImages(List<BitmapImage> picBox, string pathName, bool isRound)
-        {
-            // 获取文件夹中的所有文件
-            string[] fileList = Directory.GetFiles(pathName);
-
-            foreach (var filePath in fileList)
-            {
-                // 检查文件扩展名是否为图像格式
-                if (filePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                    filePath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase))
-                {
-                    var filePath2 = "pack://application:,,," + filePath.Substring(1);
-                    // 加载图片文件
-                    BitmapImage bitmap = new BitmapImage(new Uri(filePath2));
-
-                    // 根据 isRound 参数决定是否需要圆角处理
-                    if (isRound)
-                    {
-                        picBox.Add(RoundImage(bitmap));
-                    }
-                    else
-                    {
-                        picBox.Add(bitmap);
-                    }
-                }
-            }
-        }
-
-        // 创建圆角图像的方法
-        private BitmapImage RoundImage(BitmapImage bitmap)
-        {
-            // 创建一个带圆角的矩形
-            var width = bitmap.PixelWidth;
-            var height = bitmap.PixelHeight;
-
-            var rect = new Rectangle
-            {
-                Width = width,
-                Height = height,
-                RadiusX = 15,  // 设置圆角半径
-                RadiusY = 15
-            };
-
-            // 创建 Image 控件并设置其 Source 属性为传入的 bitmap
-            var image = new Image
-            {
-                Source = bitmap,
-                Width = width,
-                Height = height
-            };
-
-            // 使用 VisualBrush 将 Image 控件作为视觉对象
-            var visualBrush = new VisualBrush(image);
-            rect.Fill = visualBrush;
-
-            // 创建一个 RenderTargetBitmap 来渲染带圆角的矩形
-            var renderTargetBitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
-            renderTargetBitmap.Render(rect);
-
-            // 将渲染后的图像保存到内存流
-            var stream = new System.IO.MemoryStream();
-            PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
-            encoder.Save(stream);
-
-            // 创建一个 BitmapImage 对象并将图像流设置为源
-            var roundedBitmap = new BitmapImage();
-            stream.Seek(0, SeekOrigin.Begin);
-            roundedBitmap.BeginInit();
-            roundedBitmap.StreamSource = stream;
-            roundedBitmap.EndInit();
-
-            return roundedBitmap;
-        }
-
-        public static BitmapSource AdaptImageSize(BitmapSource source, Size size, int rotate)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source), "Source image cannot be null");
-            }
-
-            // 创建旋转变换
-            RotateTransform rotateTransform = new RotateTransform(rotate);
-
-            // 创建缩放变换，保持纵横比
-            double scaleX = size.Width / source.PixelWidth;
-            double scaleY = size.Height / source.PixelHeight;
-            ScaleTransform scaleTransform = new ScaleTransform(scaleX, scaleY);
-
-            // 将旋转和缩放变换组合成一个 TransformGroup
-            TransformGroup transformGroup = new TransformGroup();
-            transformGroup.Children.Add(rotateTransform);
-            transformGroup.Children.Add(scaleTransform);
-
-            // 使用 TransformedBitmap 创建最终的 BitmapSource
-            TransformedBitmap transformedBitmap = new TransformedBitmap();
-            transformedBitmap.BeginInit();
-            transformedBitmap.Source = source;
-            transformedBitmap.Transform = transformGroup;  // 应用组合的变换
-            transformedBitmap.EndInit();
-
-            return transformedBitmap;
-        }
-
-        //public static BitmapSource RotateBitmapImage(BitmapImage source, int angle)
-        //{
-        //    // 创建一个旋转变换
-        //    RotateTransform rotateTransform = new RotateTransform(angle);
-
-        //    // 使用 TransformedBitmap 来应用变换
-        //    TransformedBitmap transformedBitmap = new TransformedBitmap();
-        //    transformedBitmap.BeginInit();
-        //    transformedBitmap.Source = source;
-        //    transformedBitmap.Transform = rotateTransform; // 应用旋转
-        //    transformedBitmap.EndInit();
-
-        //    return transformedBitmap;
-        //}
-
-        public static BitmapSource RotateBitmapImage(BitmapImage source, int angle)
-        {
-            // 确保BitmapImage被正确初始化
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source), "Source image cannot be null");
-            }
-
-            // 创建一个旋转变换
-            RotateTransform rotateTransform = new RotateTransform(angle);
-
-            // 使用 TransformedBitmap 来应用变换
-            TransformedBitmap transformedBitmap = new TransformedBitmap();
-
-            // 先初始化BitmapImage，确保它已经初始化完毕
-            //source.BeginInit();
-            //source.EndInit();
-
-            //transformedBitmap.BeginInit();
-            transformedBitmap.Source = source;
-            transformedBitmap.Transform = rotateTransform; // 应用旋转
-            //transformedBitmap.EndInit();
-
-            return transformedBitmap;
-        }
-
-
-
 
         public void InitCardUI()
         {
@@ -643,7 +496,7 @@ namespace Majiang
             };
 
             // 创建一个 Image 用于显示卡牌图像
-            var label = new Label 
+            var label = new Label
             {
                 Width = 9,
                 Height = 10,
@@ -686,10 +539,10 @@ namespace Majiang
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                Template=buttonTemplate,
+                Template = buttonTemplate,
                 Tag = index
             };
-            
+
 
             selfCardTransition();
 
@@ -740,7 +593,7 @@ namespace Majiang
                     //{
                     //    selfCardLabel[choiceBtn].Dispatcher.Invoke(() =>
                     //    {
-                            selfCardLabel[choiceBtn].Content = null;
+                    selfCardLabel[choiceBtn].Content = null;
                     //    });
                     //});
                     waitUserChoice = false;
@@ -760,19 +613,19 @@ namespace Majiang
                         //{
                         //    selfCardLabel[choiceBtn].Dispatcher.Invoke(() =>
                         //    {
-                                selfCardLabel[choiceBtn].Content = null;
-                        //    });
-                        //});
+                        selfCardLabel[choiceBtn].Content = null;
+                    //    });
+                    //});
                     choiceBtn = (int)button.Tag;
                     //await Task.Run(() =>
                     //{
-                        //Dispatcher.Invoke(() =>
-                        //{
-                        selfCardLabel[choiceBtn].Content = new Image
-                        {
-                            Source = biaoZhi,
-                                Stretch=Stretch.Fill
-                            };
+                    //Dispatcher.Invoke(() =>
+                    //{
+                    selfCardLabel[choiceBtn].Content = new Image
+                    {
+                        Source = biaoZhi,
+                        Stretch = Stretch.Fill
+                    };
                     //    });
                     //});
                 }
@@ -792,6 +645,8 @@ namespace Majiang
                 Width = width,
                 Height = height,
                 Content = new Image { Source = pic, Stretch = Stretch.Uniform },
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 //BorderBrush = Brushes.Transparent, // 去除边框
@@ -842,7 +697,7 @@ namespace Majiang
             //
 
             // 在自己卡片区添加间隔
-            selfCardBox.Children.Add(new Button { Content = "Space", Visibility = Visibility.Hidden, Width = 15 } ); // 可自定义空白控件
+            selfCardBox.Children.Add(new Button { Content = "Space", Visibility = Visibility.Hidden, Width = 15 }); // 可自定义空白控件
             createSelfCard(13);
 
             // 禁用最后一个卡片的按钮
@@ -910,20 +765,13 @@ namespace Majiang
 
         }
 
-
-
-
-
-
-
-
         public void InitChiPengGangUI()
         {
             //-----------吃碰杠胡等--------------
             chiPengGangBox = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                VerticalAlignment=VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center
             };
 
             guoChiPengGangHuPic = new List<BitmapImage>
@@ -982,6 +830,9 @@ namespace Majiang
                     };
 
                     button.Tag = i;
+
+                    button.Visibility = Visibility.Hidden;
+
                     multiChiChoiceBtn.AddButton(button, i); // 将按钮加入 ButtonGroup
                     chiChoice[i].Add(button);
                 }
@@ -1040,7 +891,7 @@ namespace Majiang
             totalCardBox.Children.Add(chiPengGangBox);  // 使用 wrapPanel 而不是直接使用 StackPanel
         }
 
-        
+
         private void MultiChiButtonClick(object sender, RoutedEventArgs e)
         {
             // 处理按钮点击事件
@@ -1090,6 +941,8 @@ namespace Majiang
                 BorderThickness = new Thickness(0),
                 Tag = id // 将按钮的 ID 存储在 Tag 属性中
             };
+
+            button.Visibility = Visibility.Hidden;
 
             // 按钮点击事件绑定
             button.Click += ChiPengGangButtonClick;
@@ -1142,331 +995,6 @@ namespace Majiang
                 }
             }
         }
-
-
-
-
-        private void CompleteUserChoice()
-        {
-            // 完成用户选择时，设置 TaskCompletionSource 的结果
-            if (tcs != null && !tcs.Task.IsCompleted)
-            {
-                tcs.SetResult(guoChiPengGangHuChoice); // 传递用户的选择
-            }
-        }
-
-
-        private void InitDiscardedCardUI()
-        {
-            // 初始化丢弃的卡牌（方向上4个）
-            discarded = new List<List<Label>>();
-            for (int i = 0; i < 4; i++)
-            {
-                discarded.Add(new List<Label>());
-            }
-
-            discardedNowIndex = new List<int> { 0, 0, 0, 0 };
-
-            // 上方丢弃的卡牌
-            for (int i = 7, j = 23, index = 0; i >= 5 && j >= 13; --j, ++index)
-            {
-                var label = new Label
-                {
-                    Width = 22,
-                    Height = 30,
-                    Background = Brushes.Transparent,  // 使用背景色作为占位符
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    Content=new Image
-                    {
-                        
-                    },
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(0), // 去除 Padding
-                    BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.White
-                    //}
-                };
-
-                label.Content = null;
-                //label.Content = new Image
-                //{
-                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
-
-                //};
-
-                discarded[2].Add(label);
-
-                // 在 Grid 中添加控件，假设 `totalCardBox` 是一个 Grid 控件
-                totalCardBox.Children.Add(label);
-                Grid.SetRow(label, i);   // 设置行
-                Grid.SetColumn(label, j); // 设置列
-
-                if (j == 13 && i > 5)
-                {
-                    j = 24;
-                    i--;
-                }
-            }
-
-            // 左侧丢弃的卡牌
-            for (int i = 8, j = 12, index = 0; i <= 15 && j >= 9; ++i, ++index)
-            {
-                var label = new Label
-                {
-                    Width = 30,
-                    Height = 22,
-                    Background = Brushes.Transparent, // 使用背景色作为占位符
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(0), // 去除 Padding
-                    BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.White
-                    //}
-                };
-
-                discarded[3].Add(label);
-
-                totalCardBox.Children.Add(label);
-                Grid.SetRow(label, i);    // 设置行
-                Grid.SetColumn(label, j); // 设置列
-
-                if (i == 15 && j > 9)
-                {
-                    i = 7;
-                    j--;
-                }
-            }
-
-            // 右侧丢弃的卡牌
-            for (int i = 15, j = 24, index = 0; i >= 8 && j <= 27; --i, ++index)
-            {
-                var label = new Label
-                {
-                    Width = 30,
-                    Height = 22,
-                    Background = Brushes.Transparent, // 使用背景色作为占位符
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(0), // 去除 Padding
-                    BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.Red
-                    //}
-                };
-
-                discarded[1].Add(label);
-
-                totalCardBox.Children.Add(label);
-                Grid.SetRow(label, i);    // 设置行
-                Grid.SetColumn(label, j); // 设置列
-
-                if (i == 8 && j < 27)
-                {
-                    i = 16;
-                    j++;
-                }
-            }
-
-            // 下方丢弃的卡牌
-            for (int i = 16, j = 13, index = 0; i <= 18 && j <= 23; ++j, ++index)
-            {
-                var label = new Label
-                {
-                    Width = 22,
-                    Height = 30,
-                    Background = Brushes.Transparent, // 使用背景色作为占位符
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0),
-                    Padding = new Thickness(0), // 去除 Padding
-                    BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.White
-                    //}
-                };
-
-                discarded[0].Add(label);
-
-                totalCardBox.Children.Add(label);
-                Grid.SetRow(label, i);    // 设置行
-                Grid.SetColumn(label, j); // 设置列
-
-                if (j == 23 && i < 18)
-                {
-                    j = 12;
-                    i++;
-                }
-            }
-
-            // 设置 Grid 的间距（你可以根据需要设置）
-            totalCardBox.Margin = new Thickness(2);
-        }
-
-
-        // 初始化结算界面
-        private void InitCheckoutUI()
-        {
-            // 创建 Grid 作为容器
-            checkout = new Grid
-            {
-                Width = 700,
-                Height = 400,
-                Visibility = Visibility.Collapsed
-            };
-
-            // 设置 Grid 背景为图像
-            var pix = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"));
-            var brush = new ImageBrush(pix)
-            {
-                Stretch = Stretch.Fill
-            };
-            checkout.Background = brush;
-
-            // 创建并设置结算状态的 Label
-            settlementPic = new Label
-            {
-                Width = 535,
-                Height = 160,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                VerticalContentAlignment = VerticalAlignment.Center
-            };
-            Grid.SetRow(settlementPic, 2); // 设置它在 Grid 中的行
-            Grid.SetColumn(settlementPic, 3); // 设置它在 Grid 中的列
-            checkout.Children.Add(settlementPic);
-
-            // 设置结算状态文本
-            settlementState = new Label
-            {
-                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
-                FontSize = 15,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                VerticalContentAlignment = VerticalAlignment.Center
-            };
-            Grid.SetRow(settlementState, 4); // 设置它在 Grid 中的行
-            Grid.SetColumn(settlementState, 6); // 设置它在 Grid 中的列
-            checkout.Children.Add(settlementState);
-
-            // 创建按钮布局
-            checkoutBtn = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            Grid.SetRow(checkoutBtn, 2); // 设置它在 Grid 中的行
-            Grid.SetColumn(checkoutBtn, 0); // 设置它在 Grid 中的列
-
-            continueGame = new Button
-            {
-                Content = "继续游戏",
-                Width = 240,
-                Height = 50,
-                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
-                FontSize = 10
-            };
-            continueGame.Style = (Style)Application.Current.Resources["ButtonStyle"]; // 设置按钮样式
-            checkoutBtn.Children.Add(continueGame);
-
-            backToMainStage = new Button
-            {
-                Content = "返回菜单",
-                Width = 240,
-                Height = 50,
-                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
-                FontSize = 10
-            };
-            backToMainStage.Style = (Style)Application.Current.Resources["ButtonStyle"];
-            checkoutBtn.Children.Add(backToMainStage);
-
-            checkout.Children.Add(checkoutBtn);
-
-            // 创建隐藏按钮
-            hideCheckOut = new Button
-            {
-                Width = 20,
-                Height = 20,
-                Background = Brushes.Transparent
-            };
-            hideCheckOut.Click += HideCheckOut_Click;
-
-            // 隐藏按钮放置位置2
-            Grid.SetRow(checkout, 15);
-            Grid.SetColumn(checkout, 15);
-            Grid.SetRowSpan(checkout, 30);
-            Grid.SetColumnSpan(checkout, 10);
-            totalCardBox.Children.Add(checkout);  // 将按钮添加到容器中
-
-            // 注册按钮点击事件
-            continueGame.Click += ContinueGame_Click;
-            backToMainStage.Click += BackToMainStage_Click;
-
-            //// 添加 checkout 到当前页面
-            //this.Content = checkout;
-        }
-
-        // 继续游戏按钮点击事件
-        private void ContinueGame_Click(object sender, RoutedEventArgs e)
-        {
-            // 清除状态和重置游戏
-            statement = "";
-            game = new Game("谭杰");
-            game.DistributeCards();
-            ResetCardUI();
-            ResetDirectionUI();
-            ResetDiscardedUI();
-            hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
-            checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
-            StartGame();
-        }
-
-        // 返回菜单按钮点击事件
-        private void BackToMainStage_Click(object sender, RoutedEventArgs e)
-        {
-            // 清除状态和重置游戏
-            statement = "";
-            game = new Game("谭杰");
-            game.DistributeCards();
-            ResetCardUI();
-            ResetDirectionUI();
-            ResetDiscardedUI();
-            hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
-                                                            // 跳转到主菜单
-            NavigateToMainPage();
-            checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
-        }
-
-        // 隐藏或显示结算界面
-        private void HideCheckOut_Click(object sender, RoutedEventArgs e)
-        {
-            if (!statu)
-            {
-                if (checkout.Visibility == Visibility.Hidden)
-                    checkout.Visibility = Visibility.Visible;
-                else
-                    checkout.Visibility = Visibility.Hidden;
-            }
-        }
-
-        private void ResetDirectionUI() { }
-        private void ResetDiscardedUI() { }
-
-        private void NavigateToMainPage()
-        {
-            // 这里写主菜单跳转逻辑
-        }
-
 
         public void ChiSelf(List<int> chiCard)
         {
@@ -1521,7 +1049,7 @@ namespace Majiang
             // 更新 UI
             Dispatcher.Invoke(() =>
             {
-                // 强制刷新 UI 界面
+                //强制刷新 UI 界面
                 selfCardBox.UpdateLayout();
             });
         }
@@ -1753,7 +1281,6 @@ namespace Majiang
             });
         }
 
-
         public void AddGangOthers(int type, int pengGangCard)
         {
             if (!pengAlready[type].ContainsKey(pengGangCard))
@@ -1788,12 +1315,451 @@ namespace Majiang
             });
         }
 
+
+
+        private void CompleteUserChoice()
+        {
+            // 完成用户选择时，设置 TaskCompletionSource 的结果
+            if (tcs != null && !tcs.Task.IsCompleted)
+            {
+                tcs.SetResult(guoChiPengGangHuChoice); // 传递用户的选择
+            }
+        }
+
+
+        private void InitDiscardedCardUI()
+        {
+            // 初始化丢弃的卡牌（方向上4个）
+            discarded = new List<List<Label>>();
+            for (int i = 0; i < 4; i++)
+            {
+                discarded.Add(new List<Label>());
+            }
+
+            discardedNowIndex = new List<int> { 0, 0, 0, 0 };
+
+            // 上方丢弃的卡牌
+            for (int i = 7, j = 23, index = 0; i >= 5 && j >= 13; --j, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 22,
+                    Height = 30,
+                    Background = Brushes.Transparent,  // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Content = new Image
+                    {
+
+                    },
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
+                    //Content = new TextBlock
+                    //{
+                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                    //    Foreground = Brushes.White
+                    //}
+                };
+
+                label.Content = null;
+                //label.Content = new Image
+                //{
+                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
+
+                //};
+
+                discarded[2].Add(label);
+
+                // 在 Grid 中添加控件，假设 `totalCardBox` 是一个 Grid 控件
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);   // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (j == 13 && i > 5)
+                {
+                    j = 24;
+                    i--;
+                }
+            }
+
+            // 左侧丢弃的卡牌
+            for (int i = 8, j = 12, index = 0; i <= 15 && j >= 9; ++i, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 30,
+                    Height = 22,
+                    Background = Brushes.Transparent, // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
+                    //Content = new TextBlock
+                    //{
+                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                    //    Foreground = Brushes.White
+                    //}
+                };
+
+                discarded[3].Add(label);
+
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);    // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (i == 15 && j > 9)
+                {
+                    i = 7;
+                    j--;
+                }
+            }
+
+            // 右侧丢弃的卡牌
+            for (int i = 15, j = 24, index = 0; i >= 8 && j <= 27; --i, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 30,
+                    Height = 22,
+                    Background = Brushes.Transparent, // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
+                    //Content = new TextBlock
+                    //{
+                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                    //    Foreground = Brushes.Red
+                    //}
+                };
+
+                discarded[1].Add(label);
+
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);    // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (i == 8 && j < 27)
+                {
+                    i = 16;
+                    j++;
+                }
+            }
+
+            // 下方丢弃的卡牌
+            for (int i = 16, j = 13, index = 0; i <= 18 && j <= 23; ++j, ++index)
+            {
+                var label = new Label
+                {
+                    Width = 22,
+                    Height = 30,
+                    Background = Brushes.Transparent, // 使用背景色作为占位符
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0),
+                    Padding = new Thickness(0), // 去除 Padding
+                    BorderThickness = new Thickness(0), // 去除边框厚度
+                    //Content = new TextBlock
+                    //{
+                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                    //    Foreground = Brushes.White
+                    //}
+                };
+
+                discarded[0].Add(label);
+
+                totalCardBox.Children.Add(label);
+                Grid.SetRow(label, i);    // 设置行
+                Grid.SetColumn(label, j); // 设置列
+
+                if (j == 23 && i < 18)
+                {
+                    j = 12;
+                    i++;
+                }
+            }
+
+            // 设置 Grid 的间距（你可以根据需要设置）
+            totalCardBox.Margin = new Thickness(2);
+        }
+
+
+        // 初始化结算界面
+        private void InitCheckoutUI()
+        {
+            // 创建 Grid 作为容器
+            checkout = new Grid
+            {
+                //Width = 700,
+                //Height = 400,
+                Visibility = Visibility.Collapsed
+            };
+
+            for (int i = 0; i < 10; i++)
+            {
+                checkout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                checkout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            }
+
+            // 设置 Grid 背景为图像
+            var pix = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"));
+            var brush = new ImageBrush(pix)
+            {
+                Stretch = Stretch.Uniform
+            };
+            checkout.Background = brush;
+
+            // 创建并设置结算状态的 Label
+            settlementPic = new Label
+            {
+                //Width = 535,
+                //Height = 160,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                //Content =new Image 
+                //{
+                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/win.png")),
+                //    Stretch=Stretch.Uniform
+                //} 
+            };
+            
+            Grid.SetRow(settlementPic, 1); // 设置它在 Grid 中的行
+            Grid.SetColumn(settlementPic, 1); // 设置它在 Grid 中的列
+            Grid.SetRowSpan(settlementPic, 4); 
+            Grid.SetColumnSpan(settlementPic, 8);
+            checkout.Children.Add(settlementPic);
+
+
+            // 设置结算状态文本
+            settlementState = new Label
+            {
+                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                FontSize = 15,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+            };
+            Grid.SetRow(settlementState, 5); // 设置它在 Grid 中的行
+            Grid.SetColumn(settlementState, 1); // 设置它在 Grid 中的列
+            Grid.SetRowSpan(settlementState, 2);
+            Grid.SetColumnSpan(settlementState, 8);
+            checkout.Children.Add(settlementState);
+
+            // 创建按钮布局
+            //checkoutBtn = new StackPanel
+            //{
+            //    Orientation = Orientation.Horizontal,
+            //    HorizontalAlignment = HorizontalAlignment.Center
+            //};
+            //Grid.SetRow(checkoutBtn, 2); // 设置它在 Grid 中的行
+            //Grid.SetColumn(checkoutBtn, 0); // 设置它在 Grid 中的列
+            //Grid.SetRowSpan(settlementPic, 3);
+            //Grid.SetColumnSpan(settlementPic, 8);
+
+            continueGame = new Button
+            {
+                Content = "继续游戏",
+                //Width = 240,
+                //Height = 50,
+                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                FontSize = 10,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Background = new ImageBrush
+                {
+                    ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")),
+                    Stretch = Stretch.Uniform
+                }
+            };
+            //continueGame.Style = (Style)Application.Current.Resources["ButtonStyle"]; // 设置按钮样式
+            checkout.Children.Add(continueGame);
+            Grid.SetRow(continueGame, 8);
+            Grid.SetColumn(continueGame, 1);
+            Grid.SetRowSpan(continueGame, 1);
+            Grid.SetColumnSpan(continueGame, 3);
+            //checkout.Children.Add(continueGame);
+
+            backToMainStage = new Button
+            {
+                Content = "返回菜单",
+                //Width = 240,
+                //Height = 50,
+                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                FontSize = 10,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Background = new ImageBrush
+                {
+                    ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")),
+                    Stretch = Stretch.Uniform
+                }
+            };
+            //backToMainStage.Style = (Style)Application.Current.Resources["ButtonStyle"];
+            checkout.Children.Add(backToMainStage);
+            Grid.SetRow(backToMainStage, 8);
+            Grid.SetColumn(backToMainStage, 6);
+            Grid.SetRowSpan(backToMainStage, 1);
+            Grid.SetColumnSpan(backToMainStage, 3);
+            //checkout.Children.Add(backToMainStage);
+
+            // 创建隐藏按钮
+            hideCheckOut = new Button
+            {
+                Width = 20,
+                Height = 20,
+                Background = Brushes.Transparent,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                //Content = new Image
+                //{
+                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/eye.png")),
+                //    Stretch = Stretch.Uniform
+                //}
+            };
+            hideCheckOut.Click += HideCheckOut_Click;
+            Grid.SetRow(hideCheckOut, 26);
+            Grid.SetColumn(hideCheckOut, 37);
+            Grid.SetRowSpan(hideCheckOut, 1);
+            Grid.SetColumnSpan(hideCheckOut, 1);
+            totalCardBox.Children.Add(hideCheckOut);
+
+            // 隐藏按钮放置位置2
+            Grid.SetRow(checkout, 7);
+            Grid.SetColumn(checkout, 12);
+            Grid.SetRowSpan(checkout, 10);
+            Grid.SetColumnSpan(checkout, 14);
+            totalCardBox.Children.Add(checkout);  // 将按钮添加到容器中
+
+            // 注册按钮点击事件
+            continueGame.Click += ContinueGame_Click;
+            backToMainStage.Click += BackToMainStage_Click;
+
+            //// 添加 checkout 到当前页面
+            //this.Content = checkout;
+        }
+
+        private void ResetCheckoutUI()
+        {
+            statu = false;
+            hideCheckOut.Content = new Image
+            {
+                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/eye.png"))
+            };
+
+            settlementState.Content = statement;
+
+            if (choiceBtn != -1)
+            {
+                selfCardLabel[choiceBtn].Content = null;
+                choiceBtn = -1;
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                List<int> cardTemp = new List<int>();
+                foreach (var card in game.player[i + 1].OwnCard)
+                {
+                    cardTemp.Add(Transition(card));
+                }
+                cardTemp.Sort();
+                int j = 0;
+                foreach (var card in cardTemp)
+                {
+                    othersCard[i][j].Content = new Image
+                    {
+                        Source = totalDiscardedCard[card],
+                        RenderTransform = new RotateTransform((i + 1) * (-90)),
+                        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
+                        Stretch = Stretch.Uniform
+                    };
+                    j++;
+                }
+            }
+            checkout.Visibility = Visibility.Visible;
+        }
+
+
+        // 继续游戏按钮点击事件
+        private void ContinueGame_Click(object sender, RoutedEventArgs e)
+        {
+            //// 清除状态和重置游戏
+            //statement = "";
+            //game = new Game("谭杰");
+            //game.DistributeCards();
+            //ResetCardUI();
+            //ResetDirectionUI();
+            //ResetDiscardedUI();
+            //hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
+            //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
+            //StartGame();
+            DestroyPageResources();
+            GC.Collect();
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            mainWindow.MainFrame.Navigate(new GamePage(true));
+        }
+
+        // 返回菜单按钮点击事件
+        private void BackToMainStage_Click(object sender, RoutedEventArgs e)
+        {
+            // 清除状态和重置游戏
+            //statement = "";
+            //game = new Game("谭杰");
+            //game.DistributeCards();
+            //ResetCardUI();
+            //ResetDirectionUI();
+            //ResetDiscardedUI();
+            //hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
+            //                                                // 跳转到主菜单
+            //NavigateToMainPage();
+            //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
+            DestroyPageResources();
+            GC.Collect();
+            // 获取父窗口中的 Frame 控件
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            mainWindow.MainFrame.Navigate(mainWindow.mainPage);
+        }
+
+        // 隐藏或显示结算界面
+        private void HideCheckOut_Click(object sender, RoutedEventArgs e)
+        {
+            if (!statu)
+            {
+                if (checkout.Visibility == Visibility.Hidden)
+                    checkout.Visibility = Visibility.Visible;
+                else
+                    checkout.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void ResetDirectionUI() { }
+        private void ResetDiscardedUI() { }
+
+        private void NavigateToMainPage()
+        {
+            // 这里写主菜单跳转逻辑
+        }
+
         public async void StartGame()
         {
             //Task.Run(() =>
             //    {
             //        Dispatcher.Invoke(() =>
             //        {
+            //ResetCheckoutUI();
             isFinish = false;
             if (game.cur == 0)
                 waitUserChoice = true;
@@ -1854,7 +1820,7 @@ namespace Majiang
 
                         handCard.Add(new KeyValuePair<int, int>(Transition(getCard), getCard));
                         //BitmapSource bitmapSource2 = AdaptImageSize(totalCardSelf[Transition(getCard)], new Size(selfCardButton[selfCardButton.Count - 1].ActualWidth, selfCardButton[selfCardButton.Count - 1].ActualHeight), 0);
-                        BitmapSource bitmapSource2 = RotateBitmapImage(totalCardSelf[Transition(getCard)], 0);
+                        BitmapSource bitmapSource2 = ImageMethod.RotateBitmapImage(totalCardSelf[Transition(getCard)], 0);
                         selfCardButton[selfCardButton.Count - 1].Content = new Image
                         {
                             Source = totalCardSelf[Transition(getCard)]
@@ -1891,6 +1857,7 @@ namespace Majiang
                                 {
                                     Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
                                 };
+                                guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                             }
                         }
 
@@ -1911,7 +1878,7 @@ namespace Majiang
                             {
                                 isFinish = true;
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                                 typeHu = 1;
                                 statement = statement + game.player[game.cur].GetName() + "自摸";
                                 break;
@@ -1933,11 +1900,11 @@ namespace Majiang
                                 }
                                 isGang = true;
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                                 continue;
                             }
                             foreach (var btn in guoChiPengGangHuBtn)
-                                btn.Content = null;
+                                btn.Visibility = Visibility.Hidden;
                         }
 
                     }
@@ -1962,7 +1929,7 @@ namespace Majiang
                     //double width = discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth;
                     //double height = discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight;
                     //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[discardThisRound.Key], new Size(width, height) , 0);
-                    BitmapSource bitmapSource = RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
+                    BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
                     discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
                     {
                         //Source = bitmapSource
@@ -2188,7 +2155,7 @@ namespace Majiang
                     game.player[game.cur].Discard(discardThisRound);//出牌,默认出第一张牌
 
                     //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[Transition(discardThisRound)], new Size(discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth, discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight), game.cur * (-90));
-                    BitmapSource bitmapSource = RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
+                    BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
                     discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
                     {
                         //Source = bitmapSource
@@ -2241,6 +2208,7 @@ namespace Majiang
                                             //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
                                             Source = totalDiscardedCard[transitionChi[i][j]]
                                         };
+                                        chiChoice[i][j].Visibility = Visibility.Visible;
                                     }
                                 }
                             }
@@ -2273,6 +2241,7 @@ namespace Majiang
                                 {
                                     Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
                                 };
+                                guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                             }
                             //等待玩家选择
                             //todo
@@ -2288,7 +2257,7 @@ namespace Majiang
                                 isFinish = true;
                                 deal = false;
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                                 typeHu = 1;
                                 statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[0].GetName();
                                 break;
@@ -2305,7 +2274,7 @@ namespace Majiang
                                 isGang = true;
                                 game.cur = 0;
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                                 continue;
                             }
                             else if (guoChiPengGangHuChoice == 2)
@@ -2320,7 +2289,7 @@ namespace Majiang
                                 isChiPeng = true;
                                 game.cur = 0;
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                                 continue;
                             }
                             else if (guoChiPengGangHuChoice == 1)//吃
@@ -2335,6 +2304,7 @@ namespace Majiang
                                         {
                                             chiChoice[i][j].Content = null;//设置图片为空
                                             chiChoice[i][j].IsEnabled = false;//设置按钮不可用
+                                            chiChoice[i][j].Visibility = Visibility.Hidden;
                                         }
                                     }
                                     //todo
@@ -2356,7 +2326,7 @@ namespace Majiang
                                 isChiPeng = true;
                                 game.cur = 0;
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                                 continue;
                             }
                             else if (guoChiPengGangHuChoice == 0)
@@ -2368,10 +2338,11 @@ namespace Majiang
                                     {
                                         chiChoice[i][j].Content = null;//设置图片为空
                                         chiChoice[i][j].IsEnabled = false;//设置按钮不可用
+                                        chiChoice[i][j].Visibility = Visibility.Hidden;
                                     }
                                 }
                                 foreach (var btn in guoChiPengGangHuBtn)
-                                    btn.Content = null;
+                                    btn.Visibility = Visibility.Hidden;
                             }
                         }
                     }
@@ -2487,12 +2458,14 @@ namespace Majiang
                 if (typeHu == 1)
                     settlementPic.Content = new Image
                     {
-                        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png"))
+                        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                        Stretch = Stretch.Uniform
                     };
                 else if (typeHu == -1)
                     settlementPic.Content = new Image
                     {
-                        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png"))
+                        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                        Stretch = Stretch.Uniform
                     };
                 ResetCheckoutUI();
                 //todo
@@ -2502,7 +2475,8 @@ namespace Majiang
             {
                 settlementPic.Content = new Image
                 {
-                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png"))
+                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png")),
+                    Stretch = Stretch.Uniform
                 };
                 statement += "牌堆已空";
                 ResetCheckoutUI();
@@ -2511,11 +2485,6 @@ namespace Majiang
             }
             //    });
             //});
-        }
-
-        private void ResetCheckoutUI()
-        {
-            return;
         }
 
         //异步等待玩家点击出牌按钮
@@ -2527,5 +2496,151 @@ namespace Majiang
             // 等待玩家点击按钮
             await tcs.Task;
         }
+
+        private void DestroyPageResources()
+        {
+            // 1. 清理绑定
+            BindingOperations.ClearAllBindings(this);
+
+            // 2. 解除事件绑定
+            // 如果控件绑定了事件处理程序，应该在销毁时解除绑定。
+            foreach (var button in selfCardButton)
+            {
+                button.Click -= SelfCardButtonClick; // 示例: 解除按钮的点击事件
+            }
+
+            foreach (var button in guoChiPengGangHuBtn)
+            {
+                button.Click -= ChiPengGangButtonClick; // 示例: 解除按钮的点击事件
+            }
+
+            foreach (var chiButtons in chiChoice)
+            {
+                foreach (var button in chiButtons)
+                    button.Click -= MultiChiButtonClick; // 示例: 解除按钮的点击事件
+            }
+
+            continueGame.Click -= ContinueGame_Click;
+            backToMainStage.Click -= BackToMainStage_Click;
+            hideCheckOut.Click -= HideCheckOut_Click;
+
+            // 3. 清空控件内容（并释放 UI 元素）
+            if (selfCardBox != null)
+            {
+                selfCardBox.Children.Clear(); // 清空控件内容
+            }
+
+            if (totalCardBox != null)
+            {
+                totalCardBox.Children.Clear();
+            }
+
+            if (othersCardBox != null)
+            {
+                foreach (var box in othersCardBox)
+                {
+                    box.Children.Clear();
+                }
+            }
+
+            if (chiPengGangBox != null)
+            {
+                chiPengGangBox.Children.Clear();
+            }
+
+            if (stackWidget != null)
+            {
+                stackWidget.Children.Clear();
+            }
+
+            if (checkout != null)
+            {
+                checkout.Children.Clear();
+            }
+
+            if (checkoutLayout != null)
+            {
+                checkoutLayout.Children.Clear();
+            }
+
+            if (checkoutBtn != null)
+            {
+                checkoutBtn.Children.Clear();
+            }   
+
+            // 4. 清理方向牌、牌的显示等
+            if (direction != null)
+            {
+                foreach (var label in direction)
+                {
+                    label.Content = null; // 清空方向标签
+                }
+            }
+
+            if (discarded != null)
+            {
+                foreach (var discardedList in discarded)
+                {
+                    foreach (var label in discardedList)
+                    {
+                        label.Content = null; // 清空弃牌标签
+                    }
+                }
+            }
+
+            if (guoChiPengGangHuPic != null)
+            {
+                guoChiPengGangHuPic.Clear();
+            }
+
+            // 5. 清理图像资源
+            totalCardSelf?.Clear();
+            totalDiscardedCard?.Clear();
+            othersCardImages?.Clear();
+            biaoZhi = null; // 清除图像资源
+            directionPic?.Clear();
+
+            // 6. 清理任务相关数据
+            tcs?.TrySetResult(-1); // 取消任务等待
+
+            // 7. 清理控件和游戏相关的成员变量
+            selfCard.Clear();
+            selfCardButton.Clear();
+            selfCardLabel.Clear();
+            othersCard.Clear();
+            chiChoice.Clear();
+            pengAlready.Clear();
+            discardedNowIndex.Clear();
+
+            // 8. 清理游戏状态
+            game = null;
+            gameName = null;
+
+            // 9. 停止定时器（如果有定时器）
+            if (timer != null)
+            {
+                timer.Stop();
+                timer = null;
+            }
+
+            // 10. 清空其他状态变量
+            choiceBtn = -1;
+            guoChiPengGangHuChoice = 0;
+            multiChi = false;
+            multiChiChoice = -1;
+            statu = true;
+            isFinish = false;
+            typeHu = 0;
+
+            // 11. 清除控件的任何其他附加状态
+            remained.Content = null; // 清空剩余牌数标签
+            settlementPic.Content = null; // 清空结算图片
+            settlementState.Content = null; // 清空结算状态标签
+
+            // 12. 清理字符串和其他成员变量
+            statement = null;
+            remainedText = null;
+        }
+
     }
 }

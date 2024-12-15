@@ -29,9 +29,9 @@ namespace Majiang
 
         private void startGameButton_Click(object sender, RoutedEventArgs e)
         {
-            GamePage gamePage = new GamePage();
+            GamePage gamePage = new GamePage(true);
             NavigationService.Navigate(gamePage);
-            gamePage.StartGame();
+            //gamePage.StartGame();
         }
 
         private void introduceButton_Click(object sender, RoutedEventArgs e)
