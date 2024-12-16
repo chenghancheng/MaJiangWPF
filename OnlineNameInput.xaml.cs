@@ -53,6 +53,7 @@ namespace Majiang
             await Connect.ws.StartAsync();
             ChatMessage chatMessage = new ChatMessage(0, inputName.Text, "kjj", 0);
             await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+            GamePage.name = inputName.Text;
             Connect.ws.MessageReceived += OnMessageReceived;
         }
 
@@ -63,9 +64,9 @@ namespace Majiang
             {
                 if (serial == -1)
                 {
-                    serial = int.Parse(responseMessage.Content)-1;
+                    serial = responseMessage.Receiver;
                 }
-                if (int.Parse(responseMessage.Content) == 4)
+                if (responseMessage.Receiver == 3)
                 {
                     Reset();
                     // 获取父窗口中的 Frame 控件

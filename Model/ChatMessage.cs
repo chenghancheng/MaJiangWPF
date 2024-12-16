@@ -2,13 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-public class ChatMessage//自己发送的
+
+public class ChatMessage
 {
     // 消息类型，使用 int 来表示
     public int MessageType { get; set; }
+
+    public int SenderId { get; set; }
 
     // 发送人
     public string Sender { get; set; }
@@ -31,29 +35,22 @@ public class ChatMessage//自己发送的
     // 转换为 JSON 字符串
     public string ToJson()
     {
-        return $"{{\"messageType\":{MessageType},\"sender\":\"{Sender}\",\"receiver\":{Receiver},\"extraMessage\":\"{ExtraMessage}\"}}";
+        return JsonConvert.SerializeObject(this);
     }
 
     // 从 JSON 字符串反序列化为 ChatMessage 对象
     public static ChatMessage FromJson(string json)
     {
-        // 这里简单解析，可以使用 JSON 库（如 Json.NET）来进行更复杂的处理
-        var parts = json.Trim('{', '}').Split(',');
-        var messageType = int.Parse(parts[0].Split(':')[1]);
-        var sender = parts[1].Split(':')[1].Trim('"');
-        var receiver = parts[2].Split(':')[1].Trim('"');
-        var extraMessage = int.Parse(parts[3].Split(':')[1].Trim('"'));
-
-        return new ChatMessage(messageType, sender, receiver, extraMessage);
+        return JsonConvert.DeserializeObject<ChatMessage>(json);
     }
 }
 
-public class ResponseMessage//接收到的
+public class ResponseMessage
 {
     public int MessageType { get; set; }  // 消息类型，使用 MessageType 枚举
-    public string Sender { get; set; }    // 发送者
-    public string Receiver { get; set; }  // 接收者
-    public string Content { get; set; }   // 消息内容
+    public int Sender { get; set; }    // 发送者
+    public int Receiver { get; set; }  // 接收者
+    public Content content { get; set; }   // 消息内容
     public DateTime Timestamp { get; set; }  // 时间戳
 
     public ResponseMessage()
@@ -62,12 +59,12 @@ public class ResponseMessage//接收到的
     }
 
     // 构造函数
-    public ResponseMessage(int messageType, string sender, string receiver, string content)
+    public ResponseMessage(int messageType, int sender, int receiver)
     {
         MessageType = messageType;
         Sender = sender;
         Receiver = receiver;
-        Content = content;
+        content = new Content();
         Timestamp = DateTime.UtcNow;
     }
 
@@ -84,9 +81,41 @@ public class ResponseMessage//接收到的
     }
 }
 
+
+public class Content
+{
+    public List<HashSet<int>> handCard;
+    public int getCard;
+    public int disCard;
+    public List<string> playerName;
+    public List<int> chiCard;
+    public int remainCards;
+    public int curPlayer;
+
+
+    public Content()
+    {
+        handCard = new List<HashSet<int>>();
+        playerName = new List<string>();
+        chiCard = new List<int> { };
+    }
+
+    public string ToJson()
+    {
+        return JsonConvert.SerializeObject(this);
+    }
+
+    public static Content FromJson(string json)
+    {
+        return JsonConvert.DeserializeObject<Content>(json);
+    }
+}
+
+
+
 public enum MessageType
 {
-    StartGame = 0,
+    Ready = 0,
     Discard = 1,
     Chi = 2,
     Peng = 3,
@@ -98,5 +127,10 @@ public enum MessageType
     Win_Zimo = 7,
     Win_DianPao = 8,
 
-    Liuju = 9
+    Liuju = 9,
+    StartGame = 10,
+    Pass = 11,
+    GetCard = 12
 }
+
+

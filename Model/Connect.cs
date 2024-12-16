@@ -49,9 +49,9 @@ public class WebSocketClient
     public async Task SendMessagesAsyncs(string message)
     {
         // 循环等待用户输入并发送消息
-        while (_webSocket.State == WebSocketState.Open)
+        if (_webSocket.State == WebSocketState.Open)
         {
-            if (string.IsNullOrEmpty(message)) break;
+            if (string.IsNullOrEmpty(message)) return;
 
             // 将消息转换为字节数组
             var buffer = Encoding.UTF8.GetBytes(message);
