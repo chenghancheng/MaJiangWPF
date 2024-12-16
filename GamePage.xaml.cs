@@ -149,13 +149,14 @@ namespace Majiang
         private TaskCompletionSource<int> tcs = null;
         private Button backToMainPage;
 
+        bool type;
+        int serial = -1;
 
-
-        public GamePage(bool type)
+        public GamePage(bool type,int serial)
         {
             // StackPanel用于自定义布局
             //var mainLayout = new StackPanel();
-
+            this.type = type;
             // 初始化布局
             selfCardBox = new StackPanel { Orientation = Orientation.Horizontal };
             totalCardBox = new Grid();
@@ -168,7 +169,7 @@ namespace Majiang
             handCard = new List<KeyValuePair<int, int>>();
             guoChiPengGangHuBtn = new List<Button>();
             chiChoice = new List<List<Button>>();
-            othersCardImages = new List<BitmapImage>();            
+            othersCardImages = new List<BitmapImage>();
             guoChiPengGangHu = new List<int>();
             //totalDiscardedCard = new List<List<BitmapImage>>();
             //for (int i = 0; i < 2; ++i)
@@ -178,7 +179,7 @@ namespace Majiang
             discardedNowIndex = new List<int>();
             pengAlready = new List<Dictionary<int, int>>();
 
-            
+
 
             // 布局的控件
             //mainLayout.Children.Add(selfCardBox);
@@ -219,6 +220,11 @@ namespace Majiang
             {
                 StartGame();
             }
+            else
+            {
+                this.serial = serial;
+                Connect.ws.MessageReceived += OnMessageReceived;
+            }
         }
 
 
@@ -234,6 +240,71 @@ namespace Majiang
         int Transition(int i)
         {
             return (i <= 108) ? ((i - 1) / 36 * 9 + (i - 1) % 9 + 1) : ((i - 1) / 4 + 1);
+        }
+
+        // 自定义事件处理程序（跨文件定义）
+        private void OnMessageReceived(object sender, string message)
+        {
+            // 在此处理收到的消息
+            Console.WriteLine("事件触发：收到消息：" + message);
+            // 你可以在这里做更多的逻辑处理，比如解析消息、更新界面等
+            ResponseMessage responseMessage = ResponseMessage.FromJson(message);
+            switch (responseMessage.MessageType)
+            {
+                case (int)MessageType.StartGame:
+                    {
+                        if (serial == -1)
+                        {
+                            serial = int.Parse(responseMessage.Content);
+                        }
+                    }
+                    break;
+                case (int)MessageType.Discard:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Chi:
+                    {
+                        
+                    }
+                    break;
+                case (int)MessageType.Peng:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Gang_Zimo:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Gang_JiaGang:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Gang_FromOthers:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Win_Zimo:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Win_DianPao:
+                    {
+
+                    }
+                    break;
+                case (int)MessageType.Liuju:
+                    {
+
+                    }
+                    break;
+            }
         }
 
         public void InitMainFrameUI()
@@ -840,9 +911,9 @@ namespace Majiang
                     createOtherCard(i, othersCardImages[i], width, length, j);
                 }
                 othersCardBox[i].Children.Add(new Button { Content = "Space", Visibility = Visibility.Hidden, Width = 15, Height = 15 }); // 可自定义空白控件
-                // 添加一个间距（Spacing），类似 Qt 中的 addSpacing
-                // var spacing = new FrameworkElement { Height = 15 };  // 设置间距为 15，可以根据需要调整
-                //othersCardBox[i].Children.Add(spacing);
+                                                                                                                                          // 添加一个间距（Spacing），类似 Qt 中的 addSpacing
+                                                                                                                                          // var spacing = new FrameworkElement { Height = 15 };  // 设置间距为 15，可以根据需要调整
+                                                                                                                                          //othersCardBox[i].Children.Add(spacing);
 
                 // 创建一张空卡片（这可能是用于显示某种空白状态）
                 createOtherCard(i, null, width, length, 13);
@@ -1340,7 +1411,7 @@ namespace Majiang
                     Height = (type == 1) ? 39 : 22,
                     //Width = 27,
                     //Height = 39,
-                    Source = totalDiscardedCard[type%2][pengGangCard],
+                    Source = totalDiscardedCard[type % 2][pengGangCard],
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Stretch = Stretch.Uniform,
@@ -1470,7 +1541,7 @@ namespace Majiang
                 //Width = 27,
                 //Height = 39,
                 Margin = new Thickness(0),
-                Source = totalDiscardedCard[type%2][pengGangCard],
+                Source = totalDiscardedCard[type % 2][pengGangCard],
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Stretch = Stretch.Uniform,
@@ -1533,11 +1604,11 @@ namespace Majiang
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.White
-                    //}
+                                                        //Content = new TextBlock
+                                                        //{
+                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                                                        //    Foreground = Brushes.White
+                                                        //}
                 };
 
                 label.Content = null;
@@ -1557,7 +1628,7 @@ namespace Majiang
                     //Margin = new Thickness(0,1,0,1),
                     Margin = new Thickness(0),
                     Source = null,
-                    Stretch=Stretch.Uniform
+                    Stretch = Stretch.Uniform
 
                 };
                 discarded[2].Add(image);
@@ -1591,11 +1662,11 @@ namespace Majiang
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.White
-                    //}
+                                                        //Content = new TextBlock
+                                                        //{
+                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                                                        //    Foreground = Brushes.White
+                                                        //}
                 };
 
                 //discarded[3].Add(label);
@@ -1639,11 +1710,11 @@ namespace Majiang
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.Red
-                    //}
+                                                        //Content = new TextBlock
+                                                        //{
+                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                                                        //    Foreground = Brushes.Red
+                                                        //}
                 };
 
                 //discarded[1].Add(label);
@@ -1687,11 +1758,11 @@ namespace Majiang
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                    //Content = new TextBlock
-                    //{
-                    //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                    //    Foreground = Brushes.White
-                    //}
+                                                        //Content = new TextBlock
+                                                        //{
+                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
+                                                        //    Foreground = Brushes.White
+                                                        //}
                 };
 
                 //discarded[0].Add(label);
@@ -1765,11 +1836,11 @@ namespace Majiang
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                //Content =new Image 
-                //{
-                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/win.png")),
-                //    Stretch=Stretch.Uniform
-                //} 
+                                                    //Content =new Image 
+                                                    //{
+                                                    //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/win.png")),
+                                                    //    Stretch=Stretch.Uniform
+                                                    //} 
             };
 
             Grid.SetRow(settlementPic, 1); // 设置它在 Grid 中的行
@@ -1864,11 +1935,11 @@ namespace Majiang
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                //Content = new Image
-                //{
-                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/eye.png")),
-                //    Stretch = Stretch.Uniform
-                //}
+                                                    //Content = new Image
+                                                    //{
+                                                    //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/eye.png")),
+                                                    //    Stretch = Stretch.Uniform
+                                                    //}
             };
             hideCheckOut.Click += HideCheckOut_Click;
             Grid.SetRow(hideCheckOut, 26);
@@ -1926,7 +1997,7 @@ namespace Majiang
                     //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
                     //    Stretch = Stretch.Uniform
                     //};
-                    othersCard[i][j].Source = totalDiscardedCard[i%2][card];
+                    othersCard[i][j].Source = totalDiscardedCard[i % 2][card];
                     othersCard[i][j].RenderTransform = new RotateTransform((i + 1) / 2 * (-180));
                     othersCard[i][j].RenderTransformOrigin = new Point(0.5, 0.5);
                     j++;
@@ -1952,7 +2023,7 @@ namespace Majiang
             DestroyPageResources();
             GC.Collect();
             var mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.MainFrame.Navigate(new GamePage(true));
+            mainWindow.MainFrame.Navigate(new GamePage(true,-1));
         }
 
         // 返回菜单按钮点击事件
@@ -2751,9 +2822,9 @@ namespace Majiang
                 //    });
                 //});
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                
+
             }
         }
 
@@ -2875,7 +2946,7 @@ namespace Majiang
 
             if (continueGame != null)
             {
-                continueGame.Content=null;
+                continueGame.Content = null;
             }
 
             if (backToMainStage != null)
@@ -2940,6 +3011,11 @@ namespace Majiang
             // 12. 清理字符串和其他成员变量
             statement = null;
             remainedText = null;
+
+            if (!type)
+            {
+                Connect.ws.MessageReceived += OnMessageReceived;
+            }
         }
 
     }

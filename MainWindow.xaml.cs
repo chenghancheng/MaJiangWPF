@@ -50,7 +50,7 @@ namespace MaJiangApp
             //}).Wait();
             mainPage = new MainPage();
             onlineNameInput = new OnlineNameInput();
-
+            Connect connect = new Connect();
             // 确保页面导航的操作放在这里
             MainFrame.Navigate(mainPage);
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaJiangApp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Majiang
 
         private void startGameButton_Click(object sender, RoutedEventArgs e)
         {
-            GamePage gamePage = new GamePage(true);
+            GamePage gamePage = new GamePage(true,-1);
             NavigationService.Navigate(gamePage);
             //gamePage.StartGame();
         }
@@ -37,8 +38,8 @@ namespace Majiang
         private void introduceButton_Click(object sender, RoutedEventArgs e)
         {
             // 切换到麻将介绍界面
-            GamePage gamePage = new GamePage(false);
-            NavigationService.Navigate(gamePage);
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            mainWindow.MainFrame.Navigate(mainWindow.onlineNameInput);
         }
 
         private void exitGameButton_Click(object sender, RoutedEventArgs e)
