@@ -477,7 +477,6 @@ public class Player
         return ans;
     }
 
-    // C++ 版的 chi 方法转为 C# 版本
     public void Chi(List<int> n)
     {
         //获取嵌入资源的 URI
@@ -494,7 +493,6 @@ public class Player
         }
     }
 
-    // C++ 版的 check_peng 方法转为 C# 版本
     public bool CheckPeng(int n)
     {
         Dictionary<string, int> cnt = new Dictionary<string, int>();
@@ -509,7 +507,6 @@ public class Player
         return cnt.ContainsKey(this.Card.GetName(n)) && cnt[this.Card.GetName(n)] >= 2;
     }
 
-    // C++ 版的 peng 方法转为 C# 版本
     public void Peng(int n)
     {
         //获取嵌入资源的 URI
@@ -540,7 +537,7 @@ public class Player
             OwnCard.Remove(item);
         }
     }
-    // C++ 版的 check_gang 方法转为 C# 版本
+
     public int CheckGang()
     {
         Dictionary<string, int> cnt = new Dictionary<string, int>();
@@ -558,7 +555,6 @@ public class Player
         return p;
     }
 
-    // C++ 版的 check_gang (重载) 方法转为 C# 版本
     public bool CheckGang(int n)
     {
         Dictionary<string, int> cnt = new Dictionary<string, int>();
@@ -573,13 +569,11 @@ public class Player
         return cnt.ContainsKey(this.Card.GetName(n)) && cnt[this.Card.GetName(n)] >= 3;
     }
 
-    // C++ 版的 check_add_gang 方法转为 C# 版本
     public bool CheckAddGang(int n)
     {
         return MyPeng.Contains(this.Card.GetName(n));
     }
 
-    // C++ 版的 gang 方法转为 C# 版本
     public int Gang(int n, int type)
     {
         //获取嵌入资源的 URI

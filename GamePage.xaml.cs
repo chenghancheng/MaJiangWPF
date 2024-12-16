@@ -87,8 +87,8 @@ namespace Majiang
         private ButtonGroup buttonGroup;
         private int choiceBtn = -1;
 
-        private List<BitmapImage> totalCardSelf;
-        private List<BitmapImage> totalDiscardedCard;
+        public static List<BitmapImage> totalCardSelf;
+        public static List<List<BitmapImage>> totalDiscardedCard;
         private BitmapImage biaoZhi;
         private List<BitmapImage> othersCardImages;
 
@@ -168,9 +168,13 @@ namespace Majiang
             handCard = new List<KeyValuePair<int, int>>();
             guoChiPengGangHuBtn = new List<Button>();
             chiChoice = new List<List<Button>>();
-            othersCardImages = new List<BitmapImage>();
+            othersCardImages = new List<BitmapImage>();            
             guoChiPengGangHu = new List<int>();
-            totalDiscardedCard = new List<BitmapImage>();
+            //totalDiscardedCard = new List<List<BitmapImage>>();
+            //for (int i = 0; i < 2; ++i)
+            //{
+            //    totalDiscardedCard.Add(new List<BitmapImage>());
+            //}
             discardedNowIndex = new List<int>();
             pengAlready = new List<Dictionary<int, int>>();
 
@@ -193,13 +197,16 @@ namespace Majiang
 
             InitializeComponent();
 
-            totalCardSelf = new List<BitmapImage>();
-            totalDiscardedCard = new List<BitmapImage>();
-            totalCardSelf.Add(new BitmapImage());
-            totalDiscardedCard.Add(new BitmapImage());
-            ImageMethod.LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
-            //LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
-            ImageMethod.LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
+            //totalCardSelf = new List<BitmapImage>();
+            ////totalDiscardedCard = new List<BitmapImage>();
+            //totalCardSelf.Add(new BitmapImage());
+            //totalDiscardedCard[0].Add(new BitmapImage());
+            //totalDiscardedCard[1].Add(new BitmapImage()); 
+            //ImageMethod.LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
+            ////LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
+            ////ImageMethod.LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
+            //ImageMethod.LoadImages(totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
+            //ImageMethod.LoadImages(totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
             InitCardUI();
             InitDirectionUI();
             InitChiPengGangUI();
@@ -388,10 +395,16 @@ namespace Majiang
             {
                 Width = 30,
                 Height = 30,
-                Content=new Image
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Content =new Image
                 {
                     Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
-                }
+                },
+                Background=Brushes.Transparent
             };
             backToMainPage.Click += BackToMainPageButtonClick;
             Grid.SetRow(backToMainPage, 1);
@@ -1079,7 +1092,7 @@ namespace Majiang
                     BorderThickness = new Thickness(0), // 去除边框厚度
                     Content = new Image
                     {
-                        Source = totalDiscardedCard[chiCard[i]],
+                        Source = totalDiscardedCard[1][chiCard[i]],
                         Stretch = Stretch.Uniform,
                     }
                 };
@@ -1122,16 +1135,16 @@ namespace Majiang
                 //};
                 var image = new Image
                 {
-                    //Width = (type == 1) ? 27 : 30,
-                    //Height = (type == 1) ? 39 : 22,
-                    Width = 27,
-                    Height = 39,
-                    Source = totalDiscardedCard[chiCard[i]],
+                    Width = (type == 1) ? 27 : 30,
+                    Height = (type == 1) ? 39 : 22,
+                    //Width = 27,
+                    //Height = 39,
+                    Source = totalDiscardedCard[type % 2][chiCard[i]],
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Stretch=Stretch.Uniform,
-                    //RenderTransform = new RotateTransform((type + 1) * (-90)),
-                    //RenderTransformOrigin = new Point(0.5, 0.5),
+                    Stretch = Stretch.Uniform,
+                    RenderTransform = new RotateTransform((type + 1) / 2 * (-180)),
+                    RenderTransformOrigin = new Point(0.5, 0.5),
                     Margin = new Thickness(0),
                 };
                 //if (type == 1)
@@ -1227,7 +1240,7 @@ namespace Majiang
                     BorderThickness = new Thickness(0), // 去除边框厚度
                     Content = new Image
                     {
-                        Source = totalDiscardedCard[pengGangCard],
+                        Source = totalDiscardedCard[1][pengGangCard],
                         Stretch = Stretch.Uniform,
                     }
                 };
@@ -1278,16 +1291,16 @@ namespace Majiang
                 //};
                 var image = new Image
                 {
-                    //Width = (type == 1) ? 27 : 30,
-                    //Height = (type == 1) ? 39 : 22,
-                    Width = 27,
-                    Height = 39,
-                    Source = totalDiscardedCard[pengGangCard],
+                    Width = (type == 1) ? 27 : 30,
+                    Height = (type == 1) ? 39 : 22,
+                    //Width = 27,
+                    //Height = 39,
+                    Source = totalDiscardedCard[type%2][pengGangCard],
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Stretch = Stretch.Uniform,
-                    //RenderTransform = new RotateTransform((type + 1) * (-90)),
-                    //RenderTransformOrigin = new Point(0.5, 0.5),
+                    RenderTransform = new RotateTransform((type + 1) / 2 * (-180)),
+                    RenderTransformOrigin = new Point(0.5, 0.5),
                     Margin = new Thickness(0),
                 };
                 //var image = new Image
@@ -1364,7 +1377,7 @@ namespace Majiang
                 BorderThickness = new Thickness(0), // 去除边框厚度
                 Content = new Image
                 {
-                    Source = totalDiscardedCard[pengGangCard],
+                    Source = totalDiscardedCard[1][pengGangCard],
                     Stretch = Stretch.Uniform,
                 }
             };
@@ -1407,16 +1420,16 @@ namespace Majiang
             // 创建 Image 控件，并设置其大小
             Image image = new Image
             {
-                //Width = (type == 1) ? 27 : 30,
-                //Height = (type == 1) ? 39 : 22,
-                Width = 27,
-                Height = 39,
+                Width = (type == 1) ? 27 : 30,
+                Height = (type == 1) ? 39 : 22,
+                //Width = 27,
+                //Height = 39,
                 Margin = new Thickness(0),
-                Source = totalDiscardedCard[pengGangCard],
+                Source = totalDiscardedCard[type%2][pengGangCard],
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Stretch = Stretch.Uniform,
-                RenderTransform = new RotateTransform((type + 1) * (-90)),
+                RenderTransform = new RotateTransform((type + 1) / 2 * (-180)),
                 RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
             };
 
@@ -1493,12 +1506,13 @@ namespace Majiang
                 Image image = new Image
                 {
                     Width = 22,
-                    Height = 40,
+                    Height = 29,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     //Margin = new Thickness(0,1,0,1),
                     Margin = new Thickness(0),
                     Source = null,
+                    Stretch=Stretch.Uniform
 
                 };
                 discarded[2].Add(image);
@@ -1542,8 +1556,8 @@ namespace Majiang
                 //discarded[3].Add(label);
                 Image image = new Image
                 {
-                    Width = 22,
-                    Height = 40,
+                    Width = 30,
+                    Height = 22,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
@@ -1590,8 +1604,8 @@ namespace Majiang
                 //discarded[1].Add(label);
                 Image image = new Image
                 {
-                    Width = 22,
-                    Height = 40,
+                    Width = 30,
+                    Height = 22,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
@@ -1639,7 +1653,7 @@ namespace Majiang
                 Image image = new Image
                 {
                     Width = 22,
-                    Height = 40,
+                    Height = 29,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     //Margin = new Thickness(0,1,0,1),
@@ -1664,7 +1678,7 @@ namespace Majiang
             }
 
             // 设置 Grid 的间距（你可以根据需要设置）
-            totalCardBox.Margin = new Thickness(2);
+            totalCardBox.Margin = new Thickness(0);
         }
 
 
@@ -1867,8 +1881,8 @@ namespace Majiang
                     //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
                     //    Stretch = Stretch.Uniform
                     //};
-                    othersCard[i][j].Source = totalDiscardedCard[card];
-                    othersCard[i][j].RenderTransform = new RotateTransform((i + 1) * (-90));
+                    othersCard[i][j].Source = totalDiscardedCard[i%2][card];
+                    othersCard[i][j].RenderTransform = new RotateTransform((i + 1) / 2 * (-180));
                     othersCard[i][j].RenderTransformOrigin = new Point(0.5, 0.5);
                     j++;
                 }
@@ -2115,7 +2129,7 @@ namespace Majiang
                         //double width = discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth;
                         //double height = discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight;
                         //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[discardThisRound.Key], new Size(width, height) , 0);
-                        BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
+                        //BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
                         //discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
                         //{
                         //    //Source = bitmapSource
@@ -2123,7 +2137,7 @@ namespace Majiang
                         //    Source = totalDiscardedCard[discardThisRound.Key],
                         //    Stretch = Stretch.Uniform
                         //};
-                        discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[discardThisRound.Key];
+                        discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[1][discardThisRound.Key];
 
                         //Task.Run(() =>
                         //{
@@ -2347,7 +2361,7 @@ namespace Majiang
                         game.player[game.cur].Discard(discardThisRound);//出牌,默认出第一张牌
 
                         //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[Transition(discardThisRound)], new Size(discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth, discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight), game.cur * (-90));
-                        BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
+                        //BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
                         //discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
                         //{
                         //    //Source = bitmapSource
@@ -2356,8 +2370,10 @@ namespace Majiang
                         //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
                         //    Stretch = Stretch.Uniform
                         //};//更新已出牌区
-                        discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[Transition(discardThisRound)];
-                        discarded[game.cur][discardedNowIndex[game.cur]].RenderTransform = new RotateTransform(game.cur * (-90));
+                        //discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[Transition(discardThisRound)];
+                        //discarded[game.cur][discardedNowIndex[game.cur]].RenderTransform = new RotateTransform(game.cur * (-90));
+                        discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[(game.cur - 1) % 2][Transition(discardThisRound)];
+                        discarded[game.cur][discardedNowIndex[game.cur]].RenderTransform = new RotateTransform(game.cur / 2 * (-180));
                         discarded[game.cur][discardedNowIndex[game.cur]].RenderTransformOrigin = new Point(0.5, 0.5);
 
 
@@ -2376,6 +2392,7 @@ namespace Majiang
                             if (game.cur == 3)//轮至自己
                             {
                                 chiTemp = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
+                                chiTemp.Sort((a, b) => Transition(a[0]).CompareTo(Transition(b[0])));
                                 if (chiTemp.Count > 0)//能吃牌
                                 {
                                     guoChiPengGangHu.Add(1);
@@ -2403,7 +2420,7 @@ namespace Majiang
                                             {
                                                 //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
                                                 //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
-                                                Source = totalDiscardedCard[transitionChi[i][j]]
+                                                Source = totalDiscardedCard[1][transitionChi[i][j]]
                                             };
                                             chiChoice[i][j].Visibility = Visibility.Visible;
                                         }
@@ -2832,8 +2849,8 @@ namespace Majiang
             }
 
             // 5. 清理图像资源
-            totalCardSelf?.Clear();
-            totalDiscardedCard?.Clear();
+            //totalCardSelf?.Clear();
+            //totalDiscardedCard?.Clear();
             othersCardImages?.Clear();
             biaoZhi = null; // 清除图像资源
             directionPic?.Clear();

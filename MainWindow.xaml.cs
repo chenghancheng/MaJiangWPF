@@ -1,9 +1,11 @@
 ﻿using Majiang;
 using System;
+using System.Collections.Generic;
 using System.Media;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Resources; // 引入 MediaElement 所需的命名空间
 
 namespace MaJiangApp
@@ -30,6 +32,21 @@ namespace MaJiangApp
                 //};
                 player.Play();
             });
+            //Task.Run(() =>
+            //{
+                GamePage.totalDiscardedCard = new List<List<BitmapImage>>();
+                for (int i = 0; i < 2; ++i)
+                {
+                    GamePage.totalDiscardedCard.Add(new List<BitmapImage>());
+                }
+                GamePage.totalCardSelf = new List<BitmapImage>();
+                GamePage.totalCardSelf.Add(new BitmapImage());
+                GamePage.totalDiscardedCard[0].Add(new BitmapImage());
+                GamePage.totalDiscardedCard[1].Add(new BitmapImage());
+                ImageMethod.LoadImages(GamePage.totalCardSelf, @"./Resources/Images/selfcard2", false);
+                ImageMethod.LoadImages(GamePage.totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
+                ImageMethod.LoadImages(GamePage.totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
+            //}).Wait();
             mainPage = new MainPage();
 
 
