@@ -37,6 +37,8 @@ namespace Majiang
         private void introduceButton_Click(object sender, RoutedEventArgs e)
         {
             // 切换到麻将介绍界面
+            GamePage gamePage = new GamePage(false);
+            NavigationService.Navigate(gamePage);
         }
 
         private void exitGameButton_Click(object sender, RoutedEventArgs e)

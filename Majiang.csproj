@@ -30,6 +30,10 @@
 	  <Content Remove="Resources\Music\music.mp3" />
 	  <Content Remove="Resources\Music\peng.wav" />
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Include="TouchSocket" Version="3.0.8" />
+	</ItemGroup>
 
 	<!-- 如果您希望文件夹本身出现在项目中，可以添加以下内容 -->
 	<ItemGroup>

@@ -154,7 +154,7 @@ namespace Majiang
         public GamePage(bool type)
         {
             // StackPanel用于自定义布局
-            var mainLayout = new StackPanel();
+            //var mainLayout = new StackPanel();
 
             // 初始化布局
             selfCardBox = new StackPanel { Orientation = Orientation.Horizontal };
@@ -178,22 +178,15 @@ namespace Majiang
             discardedNowIndex = new List<int>();
             pengAlready = new List<Dictionary<int, int>>();
 
-            game = new Game("谭杰");
+            
 
             // 布局的控件
-            mainLayout.Children.Add(selfCardBox);
-            mainLayout.Children.Add(totalCardBox);
+            //mainLayout.Children.Add(selfCardBox);
+            //mainLayout.Children.Add(totalCardBox);
 
-            //这个不要用task
-            this.Content = mainLayout;
+            //////这个不要用task
+            //this.Content = mainLayout;
 
-            // 设置定时器
-            timer = new DispatcherTimer();
-            timer.Tick += TimerTick;
-            timer.Interval = TimeSpan.FromSeconds(1);
-
-            // 创建Game类的实例
-            game = new Game("谭杰");
 
             InitializeComponent();
 
@@ -207,6 +200,16 @@ namespace Majiang
             ////ImageMethod.LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
             //ImageMethod.LoadImages(totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
             //ImageMethod.LoadImages(totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
+            InitMainFrameUI();
+
+            // 设置定时器
+            timer = new DispatcherTimer();
+            timer.Tick += TimerTick;
+            timer.Interval = TimeSpan.FromSeconds(1);
+
+            // 创建Game类的实例
+            game = new Game("谭杰");
+
             InitCardUI();
             InitDirectionUI();
             InitChiPengGangUI();
@@ -233,14 +236,56 @@ namespace Majiang
             return (i <= 108) ? ((i - 1) / 36 * 9 + (i - 1) % 9 + 1) : ((i - 1) / 4 + 1);
         }
 
-        public void InitCardUI()
+        public void InitMainFrameUI()
         {
-            // 创建 GridLayout 控件，并设置大小
             totalCardBox = new Grid
             {
                 //Width = 1035,
                 //Height = 618
             };
+            // 设置列和行的伸展比例
+            for (int i = 0; i < 38; i++)
+            {
+                totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            }
+            for (int i = 0; i < 27; i++)
+            {
+                totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            }
+
+            backToMainPage = new Button
+            {
+                Width = 30,
+                Height = 30,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0),
+                Padding = new Thickness(0), // 去除 Padding
+                BorderThickness = new Thickness(0), // 去除边框厚度
+                Content = new Image
+                {
+                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
+                },
+                Background = Brushes.Transparent
+            };
+            backToMainPage.Click += BackToMainPageButtonClick;
+            Grid.SetRow(backToMainPage, 1);
+            Grid.SetColumn(backToMainPage, 1);
+            Grid.SetRowSpan(backToMainPage, 1);
+            Grid.SetColumnSpan(backToMainPage, 1);
+            totalCardBox.Children.Add(backToMainPage);
+
+            this.Content = totalCardBox;
+        }
+
+        public void InitCardUI()
+        {
+            // 创建 GridLayout 控件，并设置大小
+            //totalCardBox = new Grid
+            //{
+            //    //Width = 1035,
+            //    //Height = 618
+            //};
 
             // 初始化 othersCardBox（其他玩家卡片布局）
             othersCardBox = new List<StackPanel>
@@ -329,20 +374,20 @@ namespace Majiang
             }
             selfCardBox.Margin = new Thickness(0);
 
-            // 设置列和行的伸展比例
-            //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            for (int i = 0; i < 38; i++)
-            {
-                //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            }
-            //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            for (int i = 0; i < 27; i++)
-            {
-                //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            }
+            //// 设置列和行的伸展比例
+            ////totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            //for (int i = 0; i < 38; i++)
+            //{
+            //    //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            //    totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            //}
+            ////totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            ////totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            //for (int i = 0; i < 27; i++)
+            //{
+            //    //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            //    totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            //}
             //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             // 添加布局到 Grid
@@ -391,30 +436,30 @@ namespace Majiang
 
             totalCardBox.Children.Add(remained);
 
-            backToMainPage = new Button
-            {
-                Width = 30,
-                Height = 30,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                VerticalContentAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0),
-                Padding = new Thickness(0), // 去除 Padding
-                BorderThickness = new Thickness(0), // 去除边框厚度
-                Content =new Image
-                {
-                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
-                },
-                Background=Brushes.Transparent
-            };
-            backToMainPage.Click += BackToMainPageButtonClick;
-            Grid.SetRow(backToMainPage, 1);
-            Grid.SetColumn(backToMainPage, 1);
-            Grid.SetRowSpan(backToMainPage, 1);
-            Grid.SetColumnSpan(backToMainPage, 1);
-            totalCardBox.Children.Add(backToMainPage);
+            //backToMainPage = new Button
+            //{
+            //    Width = 30,
+            //    Height = 30,
+            //    HorizontalContentAlignment = HorizontalAlignment.Center,
+            //    VerticalContentAlignment = VerticalAlignment.Center,
+            //    Margin = new Thickness(0),
+            //    Padding = new Thickness(0), // 去除 Padding
+            //    BorderThickness = new Thickness(0), // 去除边框厚度
+            //    Content =new Image
+            //    {
+            //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
+            //    },
+            //    Background=Brushes.Transparent
+            //};
+            //backToMainPage.Click += BackToMainPageButtonClick;
+            //Grid.SetRow(backToMainPage, 1);
+            //Grid.SetColumn(backToMainPage, 1);
+            //Grid.SetRowSpan(backToMainPage, 1);
+            //Grid.SetColumnSpan(backToMainPage, 1);
+            //totalCardBox.Children.Add(backToMainPage);
 
             // 将整个 UI 设置为布局
-            this.Content = totalCardBox;
+            //this.Content = totalCardBox;
         }
 
         // 初始化方向图像

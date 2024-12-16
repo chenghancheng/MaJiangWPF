@@ -13,6 +13,7 @@ namespace MaJiangApp
     public partial class MainWindow : Window
     {
         public MainPage mainPage;
+        public OnlineNameInput onlineNameInput;
         public MainWindow()
         {
 
@@ -34,21 +35,21 @@ namespace MaJiangApp
             });
             //Task.Run(() =>
             //{
-                GamePage.totalDiscardedCard = new List<List<BitmapImage>>();
-                for (int i = 0; i < 2; ++i)
-                {
-                    GamePage.totalDiscardedCard.Add(new List<BitmapImage>());
-                }
-                GamePage.totalCardSelf = new List<BitmapImage>();
-                GamePage.totalCardSelf.Add(new BitmapImage());
-                GamePage.totalDiscardedCard[0].Add(new BitmapImage());
-                GamePage.totalDiscardedCard[1].Add(new BitmapImage());
-                ImageMethod.LoadImages(GamePage.totalCardSelf, @"./Resources/Images/selfcard2", false);
-                ImageMethod.LoadImages(GamePage.totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
-                ImageMethod.LoadImages(GamePage.totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
+            GamePage.totalDiscardedCard = new List<List<BitmapImage>>();
+            for (int i = 0; i < 2; ++i)
+            {
+                GamePage.totalDiscardedCard.Add(new List<BitmapImage>());
+            }
+            GamePage.totalCardSelf = new List<BitmapImage>();
+            GamePage.totalCardSelf.Add(new BitmapImage());
+            GamePage.totalDiscardedCard[0].Add(new BitmapImage());
+            GamePage.totalDiscardedCard[1].Add(new BitmapImage());
+            ImageMethod.LoadImages(GamePage.totalCardSelf, @"./Resources/Images/selfcard2", false);
+            ImageMethod.LoadImages(GamePage.totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
+            ImageMethod.LoadImages(GamePage.totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
             //}).Wait();
             mainPage = new MainPage();
-
+            onlineNameInput = new OnlineNameInput();
 
             // 确保页面导航的操作放在这里
             MainFrame.Navigate(mainPage);

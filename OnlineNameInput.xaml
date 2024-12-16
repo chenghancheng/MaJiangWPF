@@ -1,0 +1,18 @@
+﻿<Page x:Class="Majiang.OnlineNameInput"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Majiang"
+      mc:Ignorable="d" 
+      d:DesignHeight="770" d:DesignWidth="1100"
+      Title="OnlineNameInput">
+
+    <Canvas>
+        <Button Name="backToMainPage" Content="Button" Canvas.Left="120" Canvas.Top="126" Width="50" Height="50" Click="BackToMainPageButton_Click"/>
+        <Label Name="matchingLabel" Content="Label" Canvas.Left="450" Canvas.Top="226"/>
+        <TextBlock Canvas.Left="373" TextWrapping="Wrap" Text="请输入昵称：" Canvas.Top="419" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <TextBox Name="inputName" Canvas.Left="450" TextWrapping="Wrap" Text="" Canvas.Top="417" Width="120"/>
+        <Button Name="start" Content="Button" Canvas.Left="467" Canvas.Top="495" Click="StartButton_Click"/>
+    </Canvas>
+</Page>
