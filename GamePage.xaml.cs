@@ -19,6 +19,7 @@ using System.Windows.Threading;
 namespace Majiang
 {
     using MaJiangApp;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Numerics;
     using System.Runtime.CompilerServices;
@@ -251,9 +252,9 @@ namespace Majiang
             return (i <= 108) ? ((i - 1) / 36 * 9 + (i - 1) % 9 + 1) : ((i - 1) / 4 + 1);
         }
 
-        int TransitionCur(int cur)
+        int TransitionCur(int Cur)
         {
-            return (cur + 4 - serial) % 4;
+            return (Cur + 4 - serial) % 4;
         }
 
         // 自定义事件处理程序（跨文件定义）
@@ -267,7 +268,8 @@ namespace Majiang
             {
                 case (int)MessageType.StartGame:
                     {
-                        game.player[0].OwnCard = responseMessage.content.handCard[serial];
+                        game.player[0].OwnCard.Clear();
+                        game.player[0].OwnCard.UnionWith(responseMessage.content.handCard[serial]);
                         for (int i = 0; i < 4; ++i)
                         {
                             game.player[i].Name = responseMessage.content.playerName[(i + serial) % 4];
@@ -277,7 +279,7 @@ namespace Majiang
                     break;
                 case (int)MessageType.GetCard:
                     {
-                        int receiverId = responseMessage.Receiver;
+                        int receiverId = responseMessage.content.curPlayer;
                         int transCur = TransitionCur(cur);
                         direction[transCur].Content = new Image
                         {
@@ -287,8 +289,9 @@ namespace Majiang
                         transCur = TransitionCur(cur);
                         direction[transCur].Content = new Image
                         {
-                            Source = directionPic[transCur]
+                            Source = directionPic[transCur + 4]
                         };
+                        remained.Content = remainedText + responseMessage.content.remainCards;
                         if (receiverId == serial)
                         {
                             selfCardTransition();
@@ -297,11 +300,11 @@ namespace Majiang
                                 {
                                     Source = totalCardSelf[handCard[i].Key]
                                 };
-                            remained.Content = remainedText + responseMessage.content.remainCards;
 
-                            int getCard = 0;
+                            int getCard = responseMessage.content.getCard;
 
-
+                            game.player[0].CurNum++;
+                            game.player[0].OwnCard.Add(getCard);
                             handCard.Add(new KeyValuePair<int, int>(Transition(getCard), getCard));
                             selfCardButton[selfCardButton.Count - 1].Content = new Image
                             {
@@ -410,7 +413,7 @@ namespace Majiang
                                     Source = totalCardSelf[handCard[i].Key]
                                 };
 
-                            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, name, "", 0);
+                            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, name, "", discardThisRound.Value);
                             await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
                         }
                         else
@@ -421,7 +424,7 @@ namespace Majiang
                     break;
                 case (int)MessageType.Discard:
                     {
-                        if (responseMessage.Sender == serial)
+                        if (responseMessage.content.curPlayer == serial)
                         {
                             ChatMessage chatMessage = new ChatMessage((int)MessageType.Pass, name, "", 0);
                             await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
@@ -436,8 +439,15 @@ namespace Majiang
                             discarded[transCur][discardedNowIndex[transCur]].Source = totalDiscardedCard[(transCur - 1) % 2][Transition(discardThisRound)];
                             discarded[transCur][discardedNowIndex[transCur]].RenderTransform = new RotateTransform(transCur / 2 * (-180));
                             discarded[transCur][discardedNowIndex[transCur]].RenderTransformOrigin = new Point(0.5, 0.5);
-                            
+
                             discardedNowIndex[transCur]++;
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
 
                             guoChiPengGangHu.Clear();
                             guoChiPengGangHu.Add(0);
@@ -523,8 +533,8 @@ namespace Majiang
                                         typeHu = 1;
                                         statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[0].GetName();
 
-                                        ChatMessage chatMessage = new ChatMessage((int)MessageType.Win_DianPao,name,"",0);
-                                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Win_DianPao, name, "", 0);
+                                        await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                         return;
                                     }
                                     else if (guoChiPengGangHuChoice == 3)
@@ -535,8 +545,8 @@ namespace Majiang
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
-                                        ChatMessage chatMessage = new ChatMessage((int)MessageType.Gang_FromOthers, name, "", 0);
-                                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_FromOthers, name, "", 0);
+                                        await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else if (guoChiPengGangHuChoice == 2)
                                     {
@@ -546,8 +556,8 @@ namespace Majiang
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
-                                        ChatMessage chatMessage = new ChatMessage((int)MessageType.Peng, name, "", 0);
-                                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Peng, name, "", 0);
+                                        await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else if (guoChiPengGangHuChoice == 1)//吃
                                     {
@@ -577,8 +587,8 @@ namespace Majiang
                                         //discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
-                                        ChatMessage chatMessage = new ChatMessage((int)MessageType.Chi, name, "", 0);
-                                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Chi, name, "", 0);
+                                        await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else if (guoChiPengGangHuChoice == 0)
                                     {
@@ -595,221 +605,224 @@ namespace Majiang
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
-                                        ChatMessage chatMessage = new ChatMessage((int)MessageType.Pass, name, "", 0);
-                                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Pass, name, "", 0);
+                                        await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
+                                    return;
                                 }
                             }
+                            ChatMessage chatMessage = new ChatMessage((int)MessageType.Pass, name, "", 0);
+                            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
                         }
                     }
                     break;
-                //case (int)MessageType.Chi:
-                //    {
-                //        int receiverId = responseMessage.Receiver;
-                //        int transCur = TransitionCur(cur);
-                //        direction[transCur].Content = new Image
-                //        {
-                //            Source = directionPic[transCur]
-                //        };
-                //        cur = receiverId;
-                //        transCur = TransitionCur(cur);
-                //        direction[transCur].Content = new Image
-                //        {
-                //            Source = directionPic[transCur]
-                //        };
-                //        if (responseMessage.Sender == serial)
-                //        {
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur]
-                //            };
-                //            cur = game.cur;
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur + 4]
-                //            };
-                //            ChiSelf();
-                //            waitUserChoice = true;
-                //            if (waitUserChoice)
-                //            {
-                //                await WaitForPlayer();
-                //            }
-                //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
-                //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                //            game.player[serial].Discard(discardThisRound.Value);//出牌
+                    //case (int)MessageType.Chi:
+                    //    {
+                    //        int receiverId = responseMessage.Receiver;
+                    //        int transCur = TransitionCur(cur);
+                    //        direction[transCur].Content = new Image
+                    //        {
+                    //            Source = directionPic[transCur]
+                    //        };
+                    //        cur = receiverId;
+                    //        transCur = TransitionCur(cur);
+                    //        direction[transCur].Content = new Image
+                    //        {
+                    //            Source = directionPic[transCur]
+                    //        };
+                    //        if (responseMessage.Sender == serial)
+                    //        {
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur]
+                    //            };
+                    //            cur = game.cur;
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur + 4]
+                    //            };
+                    //            ChiSelf();
+                    //            waitUserChoice = true;
+                    //            if (waitUserChoice)
+                    //            {
+                    //                await WaitForPlayer();
+                    //            }
+                    //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
+                    //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
+                    //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
+                    //            game.player[serial].Discard(discardThisRound.Value);//出牌
 
-                //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
-                //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
-                //        }
-                //        else
-                //        {
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur]
-                //            };
-                //            cur = game.cur;
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur + 4]
-                //            };
-                //            ChiOthers();
-                //        }
-                //    }
-                //    break;
-                //case (int)MessageType.Peng:
-                //    {
-                //        if (responseMessage.Sender == serial)
-                //        {
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur]
-                //            };
-                //            cur = game.cur;
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur + 4]
-                //            };
-                //            PengGangSelf();
-                //            waitUserChoice = true;
-                //            if (waitUserChoice)
-                //            {
-                //                await WaitForPlayer();
-                //            }
-                //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
-                //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                //            game.player[serial].Discard(discardThisRound.Value);//出牌
+                    //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
+                    //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                    //        }
+                    //        else
+                    //        {
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur]
+                    //            };
+                    //            cur = game.cur;
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur + 4]
+                    //            };
+                    //            ChiOthers();
+                    //        }
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Peng:
+                    //    {
+                    //        if (responseMessage.Sender == serial)
+                    //        {
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur]
+                    //            };
+                    //            cur = game.cur;
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur + 4]
+                    //            };
+                    //            PengGangSelf();
+                    //            waitUserChoice = true;
+                    //            if (waitUserChoice)
+                    //            {
+                    //                await WaitForPlayer();
+                    //            }
+                    //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
+                    //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
+                    //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
+                    //            game.player[serial].Discard(discardThisRound.Value);//出牌
 
-                //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
-                //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
-                //        }
-                //        else
-                //        {
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur]
-                //            };
-                //            cur = game.cur;
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur + 4]
-                //            };
-                //            PengGangOthers();
-                //        }
-                //    }
-                //    break;
-                //case (int)MessageType.Gang_Zimo:
-                //    {
-                //        if (responseMessage.Sender != serial)
-                //        {
-                //            PengGangOthers();
-                //        }
-                //    }
-                //    break;
-                //case (int)MessageType.Gang_JiaGang:
-                //    {
-                //        if (responseMessage.Sender != serial)
-                //        {
-                //            AddGangOthers();
-                //        }
-                //    }
-                //    break;
-                //case (int)MessageType.Gang_FromOthers:
-                //    {
-                //        if (responseMessage.Sender == serial)
-                //        {
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur]
-                //            };
-                //            cur = game.cur;
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur + 4]
-                //            };
-                //            PengGangSelf();
-                //            waitUserChoice = true;
-                //            if (waitUserChoice)
-                //            {
-                //                await WaitForPlayer();
-                //            }
-                //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
-                //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                //            game.player[serial].Discard(discardThisRound.Value);//出牌
+                    //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
+                    //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                    //        }
+                    //        else
+                    //        {
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur]
+                    //            };
+                    //            cur = game.cur;
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur + 4]
+                    //            };
+                    //            PengGangOthers();
+                    //        }
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Gang_Zimo:
+                    //    {
+                    //        if (responseMessage.Sender != serial)
+                    //        {
+                    //            PengGangOthers();
+                    //        }
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Gang_JiaGang:
+                    //    {
+                    //        if (responseMessage.Sender != serial)
+                    //        {
+                    //            AddGangOthers();
+                    //        }
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Gang_FromOthers:
+                    //    {
+                    //        if (responseMessage.Sender == serial)
+                    //        {
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur]
+                    //            };
+                    //            cur = game.cur;
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur + 4]
+                    //            };
+                    //            PengGangSelf();
+                    //            waitUserChoice = true;
+                    //            if (waitUserChoice)
+                    //            {
+                    //                await WaitForPlayer();
+                    //            }
+                    //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
+                    //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
+                    //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
+                    //            game.player[serial].Discard(discardThisRound.Value);//出牌
 
-                //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
-                //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
-                //        }
-                //        else
-                //        {
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur]
-                //            };
-                //            cur = game.cur;
-                //            direction[cur].Content = new Image
-                //            {
-                //                Source = directionPic[cur + 4]
-                //            };
-                //            PengGangOthers();
-                //        }
-                //    }
-                //    break;
-                //case (int)MessageType.Win_Zimo:
-                //    {
-                //        if (responseMessage.Sender == serial)
-                //        {
-                //            settlementPic.Content = new Image
-                //            {
-                //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
-                //                Stretch = Stretch.Uniform
-                //            };
-                //        }
-                //        else
-                //        {
-                //            settlementPic.Content = new Image
-                //            {
-                //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
-                //                Stretch = Stretch.Uniform
-                //            };
-                //        }
-                //        ResetCheckoutUI();
-                //    }
-                //    break;
-                //case (int)MessageType.Win_DianPao:
-                //    {
-                //        if (responseMessage.Sender == serial)
-                //        {
-                //            settlementPic.Content = new Image
-                //            {
-                //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
-                //                Stretch = Stretch.Uniform
-                //            };
-                //        }
-                //        else
-                //        {
-                //            settlementPic.Content = new Image
-                //            {
-                //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
-                //                Stretch = Stretch.Uniform
-                //            };
-                //        }
-                //        ResetCheckoutUI();
-                //    }
-                //    break;
-                //case (int)MessageType.Liuju:
-                //    {
-                //        settlementPic.Content = new Image
-                //        {
-                //            Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png")),
-                //            Stretch = Stretch.Uniform
-                //        };
-                //        statement += "牌堆已空";
-                //        ResetCheckoutUI();
-                //    }
-                //    break;
+                    //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
+                    //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                    //        }
+                    //        else
+                    //        {
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur]
+                    //            };
+                    //            cur = game.cur;
+                    //            direction[cur].Content = new Image
+                    //            {
+                    //                Source = directionPic[cur + 4]
+                    //            };
+                    //            PengGangOthers();
+                    //        }
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Win_Zimo:
+                    //    {
+                    //        if (responseMessage.Sender == serial)
+                    //        {
+                    //            settlementPic.Content = new Image
+                    //            {
+                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                    //                Stretch = Stretch.Uniform
+                    //            };
+                    //        }
+                    //        else
+                    //        {
+                    //            settlementPic.Content = new Image
+                    //            {
+                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                    //                Stretch = Stretch.Uniform
+                    //            };
+                    //        }
+                    //        ResetCheckoutUI();
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Win_DianPao:
+                    //    {
+                    //        if (responseMessage.Sender == serial)
+                    //        {
+                    //            settlementPic.Content = new Image
+                    //            {
+                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                    //                Stretch = Stretch.Uniform
+                    //            };
+                    //        }
+                    //        else
+                    //        {
+                    //            settlementPic.Content = new Image
+                    //            {
+                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                    //                Stretch = Stretch.Uniform
+                    //            };
+                    //        }
+                    //        ResetCheckoutUI();
+                    //    }
+                    //    break;
+                    //case (int)MessageType.Liuju:
+                    //    {
+                    //        settlementPic.Content = new Image
+                    //        {
+                    //            Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png")),
+                    //            Stretch = Stretch.Uniform
+                    //        };
+                    //        statement += "牌堆已空";
+                    //        ResetCheckoutUI();
+                    //    }
+                    //    break;
             }
         }
 
