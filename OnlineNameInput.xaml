@@ -17,7 +17,7 @@
                 <Image Source="Resources/Images/others/back.png" Stretch="Uniform" />
             </Button.Content>
         </Button>
-        <Label Name="matchingLabel" Content="等待其他玩家加入(1/4)..." Canvas.Left="450" Canvas.Top="226"/>
+        <Label Name="matchingLabel" Content="等待其他玩家加入(1 / 4)..." Canvas.Left="450" Canvas.Top="226"/>
         <TextBlock Canvas.Left="373" TextWrapping="Wrap" Text="请输入昵称：" Canvas.Top="419" HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <TextBox Name="inputName" Canvas.Left="450" TextWrapping="Wrap" Text="" Canvas.Top="417" Width="120"/>
         <Button Name="start" Canvas.Left="467" Canvas.Top="495"

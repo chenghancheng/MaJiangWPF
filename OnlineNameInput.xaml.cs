@@ -85,7 +85,6 @@ namespace Majiang
             }
             isMatching = false;
             serial = -1;
-            inputName.Text = "";
             matchingLabel.Visibility = Visibility.Hidden;
         }
     }

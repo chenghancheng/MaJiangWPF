@@ -152,6 +152,8 @@ namespace Majiang
         private TaskCompletionSource<int> tcs = null;
         private Button backToMainPage;
 
+        TextBlock textBlock;
+
         //联机部分
         bool type;
         int serial = -1;
@@ -186,7 +188,7 @@ namespace Majiang
             //}
             discardedNowIndex = new List<int>();
             pengAlready = new List<Dictionary<int, int>>();
-
+            textBlock = new TextBlock();
 
 
             // 布局的控件
@@ -209,7 +211,7 @@ namespace Majiang
             ////ImageMethod.LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
             //ImageMethod.LoadImages(totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
             //ImageMethod.LoadImages(totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
-            InitMainFrameUI();
+            
 
             // 设置定时器
             timer = new DispatcherTimer();
@@ -219,6 +221,7 @@ namespace Majiang
             // 创建Game类的实例
             game = new Game("谭杰");
 
+            InitMainFrameUI();
             InitCardUI();
             InitDirectionUI();
             InitChiPengGangUI();
@@ -273,6 +276,7 @@ namespace Majiang
                         game.player[0].OwnCard.UnionWith(responseMessage.content.handCard[serial]);
                         Console.WriteLine(game.player[0].OwnCard);
 
+
                         selfCardTransition();
 
                         //Task.Run(() =>
@@ -289,6 +293,7 @@ namespace Majiang
                         }
                         //}).Wait();
 
+
                         for (int i = 0; i < 4; ++i)
                         {
                             game.player[i].Name = responseMessage.content.playerName[i];
@@ -296,6 +301,11 @@ namespace Majiang
                         }
                         remained.Content = remainedText + responseMessage.content.remainCards;
 
+                        textBlock.Text = $"上家：{game.player[TransitionCur(serial + 3)]}\n" +
+                                        $"下家：{game.player[TransitionCur(serial + 1)].GetName()}\n" +
+                                        $"对家：{game.player[TransitionCur(serial + 2)]}\n" +
+                                        $"本家：{game.player[TransitionCur(serial)]}\n";
+                                        
                         ChatMessage chatMessage = new ChatMessage((int)MessageType.Pass, name, "", 0);
                         await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
                     }
@@ -408,16 +418,16 @@ namespace Majiang
                                         btn.Visibility = Visibility.Hidden;
                                     if (gangType)
                                     {
-                                        game.player[transCur].Gang(getCard, 0);
-                                        PengGangSelf(false, Transition(getCard));
+                                        //game.player[transCur].Gang(getCard, 0);
+                                        //PengGangSelf(false, Transition(getCard));
 
                                         ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", getCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else
                                     {
-                                        game.player[transCur].AddGang(getCard);
-                                        AddGangSelf(Transition(getCard));
+                                        //game.player[transCur].AddGang(getCard);
+                                        //AddGangSelf(Transition(getCard));
 
                                         ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_JiaGang, name, "", getCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
@@ -1074,7 +1084,7 @@ namespace Majiang
                     break;
                 case (int)MessageType.Win:
                     {
-                        if (responseMessage.content.finishType==0)
+                        if (responseMessage.content.finishType == 0)
                         {
                             if (responseMessage.content.winner == serial)
                             {
@@ -1174,6 +1184,22 @@ namespace Majiang
             Grid.SetRowSpan(backToMainPage, 1);
             Grid.SetColumnSpan(backToMainPage, 1);
             totalCardBox.Children.Add(backToMainPage);
+
+            textBlock.Background = Brushes.LightGoldenrodYellow;
+            textBlock.FontSize = 15;
+            textBlock.FontFamily = new FontFamily("幼圆");
+            textBlock.Text = $"上家：{game.player[3].GetName()}\n" +
+                            $"下家：{game.player[1].GetName()}\n" +
+                            $"对家：{game.player[2].GetName()}\n" +
+                            $"本家：{game.player[0].GetName()}\n";
+                            
+                            
+            Grid.SetRow(textBlock, 23);
+            Grid.SetColumn(textBlock, 1);
+            Grid.SetRowSpan(textBlock, 5);
+            Grid.SetColumnSpan(textBlock, 5);
+            totalCardBox.Children.Add(textBlock);
+
 
             this.Content = totalCardBox;
         }
@@ -2887,6 +2913,7 @@ namespace Majiang
             //                                                // 跳转到主菜单
             //NavigateToMainPage();
             //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
+
             DestroyPageResources();
             GC.Collect();
             // 获取父窗口中的 Frame 控件
