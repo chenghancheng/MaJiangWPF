@@ -5,6 +5,8 @@ using System.Linq;
 using System.Media;
 using System.Windows.Resources;
 using System.Windows;
+using System.IO;
+using System.Threading.Tasks;
 
 public class Player
 {
@@ -63,15 +65,35 @@ public class Player
 
     public int Discard(int n)
     {
-        // 获取嵌入资源的 URI
-        Uri soundUri = new Uri("pack://application:,,,/Resources/Music/click.wav");
-        // 获取资源流
-        StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
-        // 使用流创建 SoundPlayer
-        SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
-        soundPlayer.Play();
-            
+        //// 获取嵌入资源的 URI
+        //Uri soundUri = new Uri("pack://application:,,,/Resources/Music/click.wav");
+        //// 获取资源流
+        //StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+        //// 使用流创建 SoundPlayer
+        //SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+        //soundPlayer.Play();
+
+        Task.Run(() =>
+        {
+            // 获取嵌入资源的 URI
+            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/click.wav");
+
+            // 获取资源流
+            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+
+            // 使用 MemoryStream 复制资源流
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                soundStreamInfo.Stream.CopyTo(memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);  // 将流位置重置到开始
+
+                // 使用独立的 MemoryStream 创建 SoundPlayer
+                SoundPlayer soundPlayer = new SoundPlayer(memoryStream);
+                soundPlayer.Play();
+            }
+        });
         
+
         CurNum--;
         int p = -1;
         foreach (var i in OwnCard)

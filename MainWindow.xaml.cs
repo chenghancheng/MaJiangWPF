@@ -1,7 +1,9 @@
 ﻿using Majiang;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Media;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -18,34 +20,47 @@ namespace MaJiangApp
         {
 
             InitializeComponent(); // 初始化控件
+
             Task.Run(() =>
             {
-                // 在UI线程中执行播放
-                Application.Current.Dispatcher.Invoke(() =>
+                // 获取嵌入资源的 URI
+                Uri soundUri = new Uri("pack://application:,,,/Resources/Music/music.wav");
+
+                // 获取资源流
+                StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+
+                // 使用 MemoryStream 复制资源流，避免原始流被占用
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    MediaPlayer player = new MediaPlayer(); // 实例化媒体播放器
-                                                            // 使用相对路径
-                    player.Open(new Uri("Resources/Music/music.mp3", UriKind.Relative));
-                    player.Volume = 0.3;
+                    // 将原始流复制到内存流
+                    soundStreamInfo.Stream.CopyTo(memoryStream);
+                    memoryStream.Seek(0, SeekOrigin.Begin);  // 重置内存流的读取位置
 
-                    // 设置循环播放
-                    player.MediaEnded += (sender, e) =>
+                    // 使用 SoundPlayer 播放音乐
+                    SoundPlayer soundPlayer = new SoundPlayer(memoryStream);
+
+                    // 循环播放音乐
+                    soundPlayer.PlayLooping();
+
+                    // 等待直到背景音乐播放完毕（注意：此线程将会保持运行，直到被手动终止）
+                    // 如果需要结束播放，可以设置一个外部取消标志
+                    while (true)
                     {
-                        // 重置播放位置为开头
-                        player.Position = TimeSpan.Zero;
-                        // 重新播放
-                        player.Play();
-                    };
-
-                    // 开始播放
-                    player.Play();
-                });
+                        // 持续等待，直到外部控制停止（这里可以加一些退出条件）
+                        Thread.Sleep(100);  // 让线程暂时休眠，避免占用 CPU
+                    }
+                }
             });
 
 
+            //// 获取嵌入资源的 URI
+            //Uri soundUri = new Uri("pack://application:,,,/Resources/Music/music.wav");
+            //// 获取资源流
+            //StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+            //// 使用流创建 SoundPlayer
+            //SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+            //soundPlayer.PlayLooping();
 
-            //Task.Run(() =>
-            //{
             GamePage.totalDiscardedCard = new List<List<BitmapImage>>();
             for (int i = 0; i < 2; ++i)
             {

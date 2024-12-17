@@ -25,6 +25,7 @@
 	  <Content Remove="Resources\Music\chi.wav" />
 	  <Content Remove="Resources\Music\click.wav" />
 	  <Content Remove="Resources\Music\gang.wav" />
+	  <Content Remove="Resources\Music\music.wav" />
 	  <Content Remove="Resources\Music\peng.wav" />
 	</ItemGroup>
 	<ItemGroup>
@@ -39,6 +40,9 @@
 	  </Resource>
 	  <Resource Include="Resources\Music\gang.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
+	  <Resource Include="Resources\Music\music.wav">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Resource>
 	  <Resource Include="Resources\Music\peng.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>

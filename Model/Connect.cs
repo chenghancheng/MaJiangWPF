@@ -9,7 +9,7 @@ using System.Threading;
 
 public class WebSocketClient
 {
-    private ClientWebSocket _webSocket;
+    public ClientWebSocket _webSocket;
     private Uri _serverUri;
     private bool isConnect;
     // 定义一个事件，用来触发消息接收
@@ -106,10 +106,15 @@ public class WebSocketClient
 public class Connect
 {
     //public string url = "ws://localhost:8088";
-    public string url="ws://10.29.61.159:8088";
+    public static string url="ws://10.29.61.159:8088";
     public static WebSocketClient ws;
 
     public Connect()
+    {
+        ws = new WebSocketClient(url);
+    }
+
+    public static void reset()
     {
         ws = new WebSocketClient(url);
     }
