@@ -23,6 +23,16 @@ public class ChatMessage
     // 额外消息，可能是文本、文件路径、图片等
     public int ExtraMessage { get; set; }
 
+    public List<int> ChiCards { get; set; }
+
+    public HashSet<int> HandCards { get; set; }
+
+    public ChatMessage()
+    {
+        ChiCards = new List<int>();
+        HandCards = new HashSet<int>();
+    }
+
     // 构造函数
     public ChatMessage(int messageType, string sender, string receiver, int extraMessage)
     {
@@ -30,6 +40,19 @@ public class ChatMessage
         Sender = sender;
         Receiver = receiver;
         ExtraMessage = extraMessage;
+        ChiCards = new List<int>();
+        HandCards = new HashSet<int>();
+    }
+
+    public ChatMessage(int messageType, string sender, string receiver, int extraMessage, List<int> chiCards)
+    {
+        MessageType = messageType;
+        Sender = sender;
+        Receiver = receiver;
+        ExtraMessage = extraMessage;
+        ChiCards = new List<int>();
+        ChiCards.AddRange(chiCards);
+        HandCards = new HashSet<int>();
     }
 
     // 转换为 JSON 字符串
@@ -55,6 +78,7 @@ public class ResponseMessage
 
     public ResponseMessage()
     {
+        content = new Content();
         Timestamp = DateTime.Now;
     }
 
@@ -91,6 +115,10 @@ public class Content
     public List<int> chiCard;
     public int remainCards;
     public int curPlayer;
+    public int chiPengGangPlayerId;
+    public int winner;
+    public int loser;
+    public int finishType;
 
 
     public Content()
@@ -130,7 +158,10 @@ public enum MessageType
     Liuju = 9,
     StartGame = 10,
     Pass = 11,
-    GetCard = 12
+    GetCard = 12,
+
+    Stop=13,
+    Win=100
 }
 
 

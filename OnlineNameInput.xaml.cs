@@ -73,6 +73,7 @@ namespace Majiang
                     mainWindow.MainFrame.Navigate(new GamePage(false,serial));
                     Reset();
                 }
+                matchingLabel.Content = $"等待其他玩家加入({responseMessage.Receiver + 1} / 4)...";
             }
         }
 

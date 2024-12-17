@@ -21,10 +21,11 @@ namespace Majiang
     using MaJiangApp;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Media;
     using System.Numerics;
     using System.Runtime.CompilerServices;
     using System.Threading;
-
+    using System.Windows.Resources;
 
     public class ButtonGroup
     {
@@ -270,11 +271,33 @@ namespace Majiang
                     {
                         game.player[0].OwnCard.Clear();
                         game.player[0].OwnCard.UnionWith(responseMessage.content.handCard[serial]);
+                        Console.WriteLine(game.player[0].OwnCard);
+
+                        selfCardTransition();
+
+                        //Task.Run(() =>
+                        //{
+                        for (int i = 0; i < handCard.Count; ++i)
+                        {
+                            //selfCardButton[i].Dispatcher.Invoke((() =>
+                            //{
+                            selfCardButton[i].Content = new Image
+                            {
+                                Source = totalCardSelf[handCard[i].Key]
+                            };
+                            //}));
+                        }
+                        //}).Wait();
+
                         for (int i = 0; i < 4; ++i)
                         {
-                            game.player[i].Name = responseMessage.content.playerName[(i + serial) % 4];
+                            game.player[i].Name = responseMessage.content.playerName[i];
+                            //game.player[i].Name = responseMessage.content.playerName[(i + serial) % 4];
                         }
                         remained.Content = remainedText + responseMessage.content.remainCards;
+
+                        ChatMessage chatMessage = new ChatMessage((int)MessageType.Pass, name, "", 0);
+                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
                     }
                     break;
                 case (int)MessageType.GetCard:
@@ -296,16 +319,31 @@ namespace Majiang
                         {
                             selfCardTransition();
                             for (int i = 0; i < handCard.Count; ++i)
+                            {
                                 selfCardButton[i].Content = new Image
                                 {
                                     Source = totalCardSelf[handCard[i].Key]
                                 };
+                                //selfCardButton[selfCardButton.Count - 1].Content = handCard[i].Value;
+                                //selfCardButton[selfCardButton.Count - 1].Background = new ImageBrush
+                                //{
+                                //    ImageSource = totalCardSelf[handCard[i].Key],
+                                //    Stretch = Stretch.Uniform
+                                //};
+                            }
+
 
                             int getCard = responseMessage.content.getCard;
 
                             game.player[0].CurNum++;
                             game.player[0].OwnCard.Add(getCard);
                             handCard.Add(new KeyValuePair<int, int>(Transition(getCard), getCard));
+                            //selfCardButton[selfCardButton.Count - 1].Content = getCard;
+                            //selfCardButton[selfCardButton.Count - 1].Background = new ImageBrush
+                            //{
+                            //    ImageSource = totalCardSelf[Transition(getCard)],
+                            //    Stretch = Stretch.Uniform
+                            //};
                             selfCardButton[selfCardButton.Count - 1].Content = new Image
                             {
                                 Source = totalCardSelf[Transition(getCard)]
@@ -373,7 +411,7 @@ namespace Majiang
                                         game.player[transCur].Gang(getCard, 0);
                                         PengGangSelf(false, Transition(getCard));
 
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", 0);
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", getCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else
@@ -381,7 +419,7 @@ namespace Majiang
                                         game.player[transCur].AddGang(getCard);
                                         AddGangSelf(Transition(getCard));
 
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_JiaGang, name, "", 0);
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_JiaGang, name, "", getCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     return;
@@ -418,6 +456,14 @@ namespace Majiang
                         }
                         else
                         {
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                            {
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+                            }
                             othersCard[transCur - 1][othersCard[transCur - 1].Count - 1].Source = othersCardImages[transCur - 1];
                         }
                     }
@@ -431,6 +477,14 @@ namespace Majiang
                         }
                         else
                         {
+                            // 获取嵌入资源的 URI
+                            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/click.wav");
+                            // 获取资源流
+                            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+                            // 使用流创建 SoundPlayer
+                            SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+                            soundPlayer.Play();
+
                             int discardThisRound = responseMessage.content.disCard;
 
                             int transCur = TransitionCur(responseMessage.content.curPlayer);
@@ -454,41 +508,43 @@ namespace Majiang
                             deal = true;
                             if (deal)
                             {
-                                multiChi = false;//当前是否有多种吃法
-                                chiTempOnline = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
-                                chiTempOnline.Sort((a, b) => Transition(a[0]).CompareTo(Transition(b[0])));
-                                if (chiTempOnline.Count > 0)//能吃牌
+                                if (transCur == 3)
                                 {
-                                    guoChiPengGangHu.Add(1);
-                                    waitUserOtherChoice = true;
-                                }
-                                if (chiTempOnline.Count > 1)//能吃牌且有多种吃法
-                                {
-                                    transitionChiOnline.Clear();
-                                    multiChi = true;
-                                    for (int i = 0; i < chiTempOnline.Count; i++)
+                                    multiChi = false;//当前是否有多种吃法
+                                    chiTempOnline = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
+                                    chiTempOnline.Sort((a, b) => Transition(a[0]).CompareTo(Transition(b[0])));
+                                    if (chiTempOnline.Count > 0)//能吃牌
                                     {
-                                        List<int> t = new List<int>();
-                                        transitionChiOnline.Add(t);
-                                        transitionChiOnline[i].AddRange(chiTempOnline[i]);
-                                        transitionChiOnline[i].Add(discardThisRound);
-                                        for (int j = 0; j < 3; j++)
+                                        guoChiPengGangHu.Add(1);
+                                        waitUserOtherChoice = true;
+                                    }
+                                    if (chiTempOnline.Count > 1)//能吃牌且有多种吃法
+                                    {
+                                        transitionChiOnline.Clear();
+                                        multiChi = true;
+                                        for (int i = 0; i < chiTempOnline.Count; i++)
                                         {
-                                            chiChoice[i][j].IsEnabled = true;//设置按钮可用
-                                            transitionChiOnline[i][j] = Transition(transitionChiOnline[i][j]);
-                                        }
-                                        transitionChiOnline[i].Sort();
-                                        for (int j = 0; j < 3; j++)
-                                        {
-                                            //设置按钮牌图片
-                                            chiChoice[i][j].Content = new Image
+                                            List<int> t = new List<int>();
+                                            transitionChiOnline.Add(t);
+                                            transitionChiOnline[i].AddRange(chiTempOnline[i]);
+                                            transitionChiOnline[i].Add(discardThisRound);
+                                            for (int j = 0; j < 3; j++)
                                             {
-                                                Source = totalDiscardedCard[1][transitionChiOnline[i][j]]
-                                            };
-                                            chiChoice[i][j].Visibility = Visibility.Visible;
+                                                chiChoice[i][j].IsEnabled = true;//设置按钮可用
+                                                transitionChiOnline[i][j] = Transition(transitionChiOnline[i][j]);
+                                            }
+                                            transitionChiOnline[i].Sort();
+                                            for (int j = 0; j < 3; j++)
+                                            {
+                                                //设置按钮牌图片
+                                                chiChoice[i][j].Content = new Image
+                                                {
+                                                    Source = totalDiscardedCard[1][transitionChiOnline[i][j]]
+                                                };
+                                                chiChoice[i][j].Visibility = Visibility.Visible;
+                                            }
                                         }
                                     }
-
                                 }
                                 if (game.player[0].CheckPeng(discardThisRound))//检查是否能碰
                                 {
@@ -533,11 +589,7 @@ namespace Majiang
                                         typeHu = 1;
                                         statement = statement + game.player[game.cur].GetName() + "点炮" + game.player[0].GetName();
 
-<<<<<<< HEAD
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Win_DianPao,name,"",0);
-=======
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Win_DianPao, name, "", 0);
->>>>>>> 12bb3fd897cfa423cac39bdec97213736e2b432f
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Win_DianPao, name, "", responseMessage.content.curPlayer);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                         return;
                                     }
@@ -549,7 +601,7 @@ namespace Majiang
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_FromOthers, name, "", 0);
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_FromOthers, name, "", discardThisRound);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else if (guoChiPengGangHuChoice == 2)
@@ -560,7 +612,7 @@ namespace Majiang
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Peng, name, "", 0);
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Peng, name, "", discardThisRound);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else if (guoChiPengGangHuChoice == 1)//吃
@@ -578,21 +630,23 @@ namespace Majiang
                                                     chiChoice[i][j].Visibility = Visibility.Hidden;
                                                 }
                                             }
+                                            ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Chi, name, "", discardThisRound, chiTempOnline[multiChiChoice]);
+                                            await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                         }
                                         else//无
                                         {
                                             //game.player[serial].Chi(chiTempOnline[0]);//更新手牌
-                                            chiTempOnline[0].Add(discardThisRound);
-                                            for (int i = 0; i < 3; i++)
-                                                chiTempOnline[0][i] = Transition(chiTempOnline[0][i]);
-                                            chiTempOnline[0].Sort();
+                                            //chiTempOnline[0].Add(discardThisRound);
+                                            //for (int i = 0; i < 3; i++)
+                                            //    chiTempOnline[0][i] = Transition(chiTempOnline[0][i]);
+                                            //chiTempOnline[0].Sort();
                                             //ChiSelf(chiTempOnline[0]);//更新UI
+                                            ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Chi, name, "", discardThisRound, chiTempOnline[0]);
+                                            await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                         }
                                         //discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Chi, name, "", 0);
-                                        await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else if (guoChiPengGangHuChoice == 0)
                                     {
@@ -620,213 +674,465 @@ namespace Majiang
                         }
                     }
                     break;
-                    //case (int)MessageType.Chi:
-                    //    {
-                    //        int receiverId = responseMessage.Receiver;
-                    //        int transCur = TransitionCur(cur);
-                    //        direction[transCur].Content = new Image
-                    //        {
-                    //            Source = directionPic[transCur]
-                    //        };
-                    //        cur = receiverId;
-                    //        transCur = TransitionCur(cur);
-                    //        direction[transCur].Content = new Image
-                    //        {
-                    //            Source = directionPic[transCur]
-                    //        };
-                    //        if (responseMessage.Sender == serial)
-                    //        {
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur]
-                    //            };
-                    //            cur = game.cur;
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur + 4]
-                    //            };
-                    //            ChiSelf();
-                    //            waitUserChoice = true;
-                    //            if (waitUserChoice)
-                    //            {
-                    //                await WaitForPlayer();
-                    //            }
-                    //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                    //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
-                    //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                    //            game.player[serial].Discard(discardThisRound.Value);//出牌
+                case (int)MessageType.Chi:
+                    {
+                        int chiPengGangPlayerId = responseMessage.content.chiPengGangPlayerId;
+                        int disCardPlayerId = TransitionCur(responseMessage.Receiver);
+                        int transCur = TransitionCur(cur);
+                        direction[transCur].Content = new Image
+                        {
+                            Source = directionPic[transCur]
+                        };
+                        cur = chiPengGangPlayerId;
+                        transCur = TransitionCur(cur);
+                        direction[transCur].Content = new Image
+                        {
+                            Source = directionPic[transCur + 4]
+                        };
 
-                    //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
-                    //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
-                    //        }
-                    //        else
-                    //        {
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur]
-                    //            };
-                    //            cur = game.cur;
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur + 4]
-                    //            };
-                    //            ChiOthers();
-                    //        }
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Peng:
-                    //    {
-                    //        if (responseMessage.Sender == serial)
-                    //        {
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur]
-                    //            };
-                    //            cur = game.cur;
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur + 4]
-                    //            };
-                    //            PengGangSelf();
-                    //            waitUserChoice = true;
-                    //            if (waitUserChoice)
-                    //            {
-                    //                await WaitForPlayer();
-                    //            }
-                    //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                    //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
-                    //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                    //            game.player[serial].Discard(discardThisRound.Value);//出牌
+                        if (chiPengGangPlayerId == serial)
+                        {
+                            //if (multiChi)//有多种情况
+                            //{
+                            //    game.player[0].Chi(chiTempOnline[multiChiChoice]);//更新手牌
+                            //    ChiSelf(transitionChiOnline[multiChiChoice]);//更新UI
+                            //}
+                            //else//无
+                            //{
+                            //    game.player[0].Chi(chiTempOnline[0]);//更新手牌
+                            //    ChiSelf(chiTempOnline[0]);//更新UI
+                            //}
 
-                    //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
-                    //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
-                    //        }
-                    //        else
-                    //        {
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur]
-                    //            };
-                    //            cur = game.cur;
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur + 4]
-                    //            };
-                    //            PengGangOthers();
-                    //        }
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Gang_Zimo:
-                    //    {
-                    //        if (responseMessage.Sender != serial)
-                    //        {
-                    //            PengGangOthers();
-                    //        }
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Gang_JiaGang:
-                    //    {
-                    //        if (responseMessage.Sender != serial)
-                    //        {
-                    //            AddGangOthers();
-                    //        }
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Gang_FromOthers:
-                    //    {
-                    //        if (responseMessage.Sender == serial)
-                    //        {
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur]
-                    //            };
-                    //            cur = game.cur;
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur + 4]
-                    //            };
-                    //            PengGangSelf();
-                    //            waitUserChoice = true;
-                    //            if (waitUserChoice)
-                    //            {
-                    //                await WaitForPlayer();
-                    //            }
-                    //            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
-                    //            if (discardIndex >= 0 && discardIndex < game.player[serial].OwnCard.Count)
-                    //                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
-                    //            game.player[serial].Discard(discardThisRound.Value);//出牌
+                            //responseMessage.content.chiCard;
 
-                    //            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, $"{serial}", " ", 0);
-                    //            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
-                    //        }
-                    //        else
-                    //        {
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur]
-                    //            };
-                    //            cur = game.cur;
-                    //            direction[cur].Content = new Image
-                    //            {
-                    //                Source = directionPic[cur + 4]
-                    //            };
-                    //            PengGangOthers();
-                    //        }
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Win_Zimo:
-                    //    {
-                    //        if (responseMessage.Sender == serial)
-                    //        {
-                    //            settlementPic.Content = new Image
-                    //            {
-                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
-                    //                Stretch = Stretch.Uniform
-                    //            };
-                    //        }
-                    //        else
-                    //        {
-                    //            settlementPic.Content = new Image
-                    //            {
-                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
-                    //                Stretch = Stretch.Uniform
-                    //            };
-                    //        }
-                    //        ResetCheckoutUI();
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Win_DianPao:
-                    //    {
-                    //        if (responseMessage.Sender == serial)
-                    //        {
-                    //            settlementPic.Content = new Image
-                    //            {
-                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
-                    //                Stretch = Stretch.Uniform
-                    //            };
-                    //        }
-                    //        else
-                    //        {
-                    //            settlementPic.Content = new Image
-                    //            {
-                    //                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
-                    //                Stretch = Stretch.Uniform
-                    //            };
-                    //        }
-                    //        ResetCheckoutUI();
-                    //    }
-                    //    break;
-                    //case (int)MessageType.Liuju:
-                    //    {
-                    //        settlementPic.Content = new Image
-                    //        {
-                    //            Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png")),
-                    //            Stretch = Stretch.Uniform
-                    //        };
-                    //        statement += "牌堆已空";
-                    //        ResetCheckoutUI();
-                    //    }
-                    //    break;
+                            game.player[0].Chi(responseMessage.content.chiCard);//更新手牌
+                            responseMessage.content.chiCard.Add(responseMessage.content.disCard);
+                            for (int i = 0; i < 3; i++)
+                                responseMessage.content.chiCard[i] = Transition(responseMessage.content.chiCard[i]);
+                            responseMessage.content.chiCard.Sort();
+                            ChiSelf(responseMessage.content.chiCard);//更新UI
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
+
+                            discarded[disCardPlayerId][--discardedNowIndex[disCardPlayerId]].Source = null;
+
+                            waitUserChoice = true;
+                            if (waitUserChoice)
+                            {
+                                await WaitForPlayer();
+                            }
+
+                            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
+                            if (discardIndex >= 0 && discardIndex < game.player[transCur].OwnCard.Count)
+                                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
+                            game.player[transCur].Discard(discardThisRound.Value);//出牌
+
+                            discarded[0][discardedNowIndex[0]].Source = totalDiscardedCard[1][discardThisRound.Key];
+
+                            selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
+
+                            discardedNowIndex[0]++;
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+
+                            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, name, "", discardThisRound.Value);
+                            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                        }
+                        else
+                        {
+                            // 获取嵌入资源的 URI
+                            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/chi.wav");
+                            // 获取资源流
+                            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+                            // 使用流创建 SoundPlayer
+                            SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+                            soundPlayer.Play();
+
+                            //int chiLeftCard = responseMessage.content.disCard;
+                            //List<int> chiCard = new List<int>();
+                            //for (int i = 0; i < 3; ++i)
+                            //{
+                            //    chiCard.Add(Transition(chiLeftCard) + i);
+                            //}
+                            //ChiOthers(transCur - 1, chiCard);
+
+                            responseMessage.content.chiCard.Add(responseMessage.content.disCard);
+                            for (int i = 0; i < 3; i++)
+                                responseMessage.content.chiCard[i] = Transition(responseMessage.content.chiCard[i]);
+                            responseMessage.content.chiCard.Sort();
+                            ChiOthers(transCur - 1, responseMessage.content.chiCard);
+                            discarded[disCardPlayerId][--discardedNowIndex[disCardPlayerId]].Source = null;
+                        }
+                    }
+                    break;
+                case (int)MessageType.Peng:
+                    {
+                        int chiPengGangPlayerId = responseMessage.content.chiPengGangPlayerId;
+                        int disCardPlayerId = TransitionCur(responseMessage.Receiver);
+                        int chiPengGangCard = responseMessage.content.disCard;
+                        int transCur = TransitionCur(cur);
+                        direction[transCur].Content = new Image
+                        {
+                            Source = directionPic[transCur]
+                        };
+                        cur = chiPengGangPlayerId;
+                        transCur = TransitionCur(cur);
+                        direction[transCur].Content = new Image
+                        {
+                            Source = directionPic[transCur + 4]
+                        };
+
+                        if (chiPengGangPlayerId == serial)
+                        {
+
+                            game.player[0].Peng(chiPengGangCard);
+                            discarded[disCardPlayerId][--discardedNowIndex[disCardPlayerId]].Source = null;
+                            PengGangSelf(true, Transition(chiPengGangCard));
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
+
+                            waitUserChoice = true;
+                            if (waitUserChoice)
+                            {
+                                await WaitForPlayer();
+                            }
+
+                            KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
+                            if (discardIndex >= 0 && discardIndex < game.player[transCur].OwnCard.Count)
+                                discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
+                            game.player[transCur].Discard(discardThisRound.Value);//出牌
+
+                            discarded[0][discardedNowIndex[0]].Source = totalDiscardedCard[1][discardThisRound.Key];
+
+                            selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
+
+                            discardedNowIndex[0]++;
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+
+                            ChatMessage chatMessage = new ChatMessage((int)MessageType.Discard, name, "", discardThisRound.Value);
+                            await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                        }
+                        else
+                        {
+                            // 获取嵌入资源的 URI
+                            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/peng.wav");
+                            // 获取资源流
+                            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+                            // 使用流创建 SoundPlayer
+                            SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+                            soundPlayer.Play();
+
+                            discarded[disCardPlayerId][--discardedNowIndex[disCardPlayerId]].Source = null;
+                            PengGangOthers(true, transCur - 1, Transition(chiPengGangCard));
+                        }
+                    }
+                    break;
+                case (int)MessageType.Gang_Zimo:
+                    {
+                        int chiPengGangPlayerId = responseMessage.content.chiPengGangPlayerId;
+                        int chiPengGangCard = responseMessage.content.disCard;
+                        cur = chiPengGangPlayerId;
+                        int transCur = TransitionCur(cur);
+
+                        if (chiPengGangPlayerId == serial)
+                        {
+
+                            game.player[0].Gang(chiPengGangCard, 0);
+                            PengGangSelf(false, Transition(chiPengGangCard));
+
+                            selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+                        }
+                        else
+                        {
+                            // 获取嵌入资源的 URI
+                            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/gang.wav");
+                            // 获取资源流
+                            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+                            // 使用流创建 SoundPlayer
+                            SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+                            soundPlayer.Play();
+
+                            PengGangOthers(false, transCur - 1, Transition(chiPengGangCard));
+                        }
+                    }
+                    break;
+                case (int)MessageType.Gang_JiaGang:
+                    {
+                        int chiPengGangPlayerId = responseMessage.content.chiPengGangPlayerId;
+                        int chiPengGangCard = responseMessage.content.disCard;
+                        cur = chiPengGangPlayerId;
+                        int transCur = TransitionCur(cur);
+
+                        if (chiPengGangPlayerId == serial)
+                        {
+
+                            game.player[0].AddGang(chiPengGangCard);
+                            AddGangSelf(Transition(chiPengGangCard));
+
+                            selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+                        }
+                        else
+                        {
+                            // 获取嵌入资源的 URI
+                            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/gang.wav");
+                            // 获取资源流
+                            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+                            // 使用流创建 SoundPlayer
+                            SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+                            soundPlayer.Play();
+
+                            AddGangOthers(transCur - 1, Transition(chiPengGangCard));
+                        }
+                    }
+                    break;
+                case (int)MessageType.Gang_FromOthers:
+                    {
+                        int chiPengGangPlayerId = responseMessage.content.chiPengGangPlayerId;
+                        int disCardPlayerId = TransitionCur(responseMessage.Receiver);
+                        int chiPengGangCard = responseMessage.content.disCard;
+                        int transCur = TransitionCur(cur);
+                        direction[transCur].Content = new Image
+                        {
+                            Source = directionPic[transCur]
+                        };
+                        cur = chiPengGangPlayerId;
+                        transCur = TransitionCur(cur);
+                        direction[transCur].Content = new Image
+                        {
+                            Source = directionPic[transCur + 4]
+                        };
+
+                        if (chiPengGangPlayerId == serial)
+                        {
+
+                            game.player[0].Gang(chiPengGangCard, 1);
+                            discarded[disCardPlayerId][--discardedNowIndex[disCardPlayerId]].Source = null;
+                            PengGangSelf(false, Transition(chiPengGangCard));
+
+                            selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
+                            selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
+
+                            selfCardTransition();
+                            for (int i = 0; i < handCard.Count; ++i)
+                                selfCardButton[i].Content = new Image
+                                {
+                                    Source = totalCardSelf[handCard[i].Key]
+                                };
+                        }
+                        else
+                        {
+                            // 获取嵌入资源的 URI
+                            Uri soundUri = new Uri("pack://application:,,,/Resources/Music/gang.wav");
+                            // 获取资源流
+                            StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+                            // 使用流创建 SoundPlayer
+                            SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+                            soundPlayer.Play();
+
+                            discarded[disCardPlayerId][--discardedNowIndex[disCardPlayerId]].Source = null;
+                            PengGangOthers(false, transCur - 1, Transition(chiPengGangCard));
+                        }
+                    }
+                    break;
+                //case (int)MessageType.Win_Zimo:
+                //    {
+                //        //if (responseMessage.content.curPlayer == serial)
+                //        //{
+                //        //    settlementPic.Content = new Image
+                //        //    {
+                //        //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                //        //        Stretch = Stretch.Uniform
+                //        //    };
+                //        //}
+                //        //else
+                //        //{
+                //        //    settlementPic.Content = new Image
+                //        //    {
+                //        //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                //        //        Stretch = Stretch.Uniform
+                //        //    };
+                //        //}
+                //        //statement = statement + game.player[responseMessage.content.curPlayer].GetName() + "自摸";
+                //        //for(int i = 0; i < 4; ++i)
+                //        //{
+                //        //    game.player[TransitionCur(i)].OwnCard.Clear();
+                //        //    game.player[TransitionCur(i)].OwnCard = responseMessage.content.handCard[i];
+                //        //}
+                //        //ResetCheckoutUI();
+
+                //        ChatMessage chatMessage = new ChatMessage();
+                //        chatMessage.MessageType = (int)MessageType.Win;
+                //        chatMessage.Sender = name;
+                //        chatMessage.HandCards.UnionWith(game.player[0].OwnCard);
+                //        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                //    }
+                //    break;
+                //case (int)MessageType.Win_DianPao:
+                //    {
+                //        //if (responseMessage.content.winner == serial)
+                //        //{
+                //        //    settlementPic.Content = new Image
+                //        //    {
+                //        //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                //        //        Stretch = Stretch.Uniform
+                //        //    };
+                //        //}
+                //        //else
+                //        //{
+                //        //    settlementPic.Content = new Image
+                //        //    {
+                //        //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                //        //        Stretch = Stretch.Uniform
+                //        //    };
+                //        //}
+                //        //for (int i = 0; i < 4; ++i)
+                //        //{
+                //        //    game.player[TransitionCur(i)].OwnCard.Clear();
+                //        //    game.player[TransitionCur(i)].OwnCard = responseMessage.content.handCard[i];
+                //        //}
+                //        //statement = statement + game.player[responseMessage.content.loser].GetName() + "点炮" + game.player[responseMessage.content.winner].GetName();
+                //        //ResetCheckoutUI();
+
+                //        ChatMessage chatMessage = new ChatMessage();
+                //        chatMessage.MessageType = (int)MessageType.Win;
+                //        chatMessage.Sender = name;
+                //        chatMessage.HandCards.UnionWith(game.player[0].OwnCard);
+                //        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                //    }
+                //    break;
+                //case (int)MessageType.Liuju:
+                //    {
+                //        //settlementPic.Content = new Image
+                //        //{
+                //        //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png")),
+                //        //    Stretch = Stretch.Uniform
+                //        //};
+                //        //for (int i = 0; i < 4; ++i)
+                //        //{
+                //        //    game.player[TransitionCur(i)].OwnCard.Clear();
+                //        //    game.player[TransitionCur(i)].OwnCard = responseMessage.content.handCard[i];
+                //        //}
+                //        //statement += "牌堆已空";
+                //        //ResetCheckoutUI();
+
+                //        ChatMessage chatMessage = new ChatMessage();
+                //        chatMessage.MessageType = (int)MessageType.Win;
+                //        chatMessage.Sender = name;
+                //        chatMessage.HandCards.UnionWith(game.player[0].OwnCard);
+                //        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                //    }
+                //    break;
+                case (int)MessageType.Stop:
+                    {
+                        ChatMessage chatMessage = new ChatMessage();
+                        chatMessage.MessageType = (int)MessageType.Stop;
+                        chatMessage.Sender = name;
+                        chatMessage.HandCards.UnionWith(game.player[0].OwnCard);
+                        await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+                    }
+                    break;
+                case (int)MessageType.Win:
+                    {
+                        if (responseMessage.content.finishType==0)
+                        {
+                            if (responseMessage.content.winner == serial)
+                            {
+                                settlementPic.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                                    Stretch = Stretch.Uniform
+                                };
+                            }
+                            else
+                            {
+                                settlementPic.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                                    Stretch = Stretch.Uniform
+                                };
+                            }
+                            statement = game.player[responseMessage.content.winner].GetName() + "自摸";
+                        }
+                        else if (responseMessage.content.finishType == 1)
+                        {
+                            if (responseMessage.content.winner == serial)
+                            {
+                                settlementPic.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/win.png")),
+                                    Stretch = Stretch.Uniform
+                                };
+                            }
+                            else
+                            {
+                                settlementPic.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/lose.png")),
+                                    Stretch = Stretch.Uniform
+                                };
+                            }
+                            statement = game.player[responseMessage.content.loser].GetName() + "点炮" + game.player[responseMessage.content.winner].GetName();
+                        }
+                        else if (responseMessage.content.finishType == 2)
+                        {
+                            settlementPic.Content = new Image
+                            {
+                                Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/dogfall.png")),
+                                Stretch = Stretch.Uniform
+                            };
+                            statement = "牌堆已空";
+                        }
+
+                        for (int i = 0; i < 4; ++i)
+                        {
+                            game.player[TransitionCur(i)].OwnCard.Clear();
+                            game.player[TransitionCur(i)].OwnCard.UnionWith(responseMessage.content.handCard[i]);
+                        }
+
+                        ResetCheckoutUI();
+                    }
+                    break;
             }
         }
 

@@ -22,42 +22,33 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Remove="Resources\Images\others\btn.png" />
-	  <Content Remove="Resources\Images\zuo_mian.png" />
 	  <Content Remove="Resources\Music\chi.wav" />
 	  <Content Remove="Resources\Music\click.wav" />
 	  <Content Remove="Resources\Music\gang.wav" />
 	  <Content Remove="Resources\Music\music.mp3" />
 	  <Content Remove="Resources\Music\peng.wav" />
 	</ItemGroup>
-	
 	<ItemGroup>
-	  <PackageReference Include="TouchSocket" Version="3.0.8" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Resource Include="Resources\Music\chi.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
+	  <Resource Include="Resources\Music\click.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
+	  <Resource Include="Resources\Music\gang.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
+	  <Resource Include="Resources\Music\music.mp3">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
+	  <Resource Include="Resources\Music\peng.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
 	</ItemGroup>
 
 	<!-- 如果您希望文件夹本身出现在项目中，可以添加以下内容 -->
-	<ItemGroup>
-	  <Resource Include="Resources\Images\others\btn.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Resource>
-	  <Resource Include="Resources\Images\zuo_mian.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Resource>
-	  <Resource Include="Resources\Music\chi.wav">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </Resource>
-	  <Resource Include="Resources\Music\click.wav">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </Resource>
-	  <Resource Include="Resources\Music\gang.wav">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </Resource>
-	  <Resource Include="Resources\Music\music.mp3">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </Resource>
-	  <Resource Include="Resources\Music\peng.wav">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </Resource>
-	</ItemGroup>
 
 </Project>
