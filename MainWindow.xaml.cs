@@ -20,19 +20,30 @@ namespace MaJiangApp
             InitializeComponent(); // 初始化控件
             Task.Run(() =>
             {
-                MediaPlayer player = new MediaPlayer();//实例化绘图媒体
-                player.Open(new Uri("pack://application:,,,/Resources/Music/music.mp3"));
-                //player.Open(new Uri("./Resources/Music/music.mp3",UriKind.Relative));
-                player.Volume = 0.3;
-                //player.MediaEnded += (sender, e) =>
-                //{
-                //    // 重置播放位置为开头
-                //    player.Position = TimeSpan.Zero;
-                //    // 重新播放
-                //    player.Play();
-                //};
-                player.Play();
+                // 在UI线程中执行播放
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MediaPlayer player = new MediaPlayer(); // 实例化媒体播放器
+                                                            // 使用相对路径
+                    player.Open(new Uri("Resources/Music/music.mp3", UriKind.Relative));
+                    player.Volume = 0.3;
+
+                    // 设置循环播放
+                    player.MediaEnded += (sender, e) =>
+                    {
+                        // 重置播放位置为开头
+                        player.Position = TimeSpan.Zero;
+                        // 重新播放
+                        player.Play();
+                    };
+
+                    // 开始播放
+                    player.Play();
+                });
             });
+
+
+
             //Task.Run(() =>
             //{
             GamePage.totalDiscardedCard = new List<List<BitmapImage>>();
