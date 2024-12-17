@@ -25,6 +25,8 @@ namespace Majiang
     using System.Numerics;
     using System.Runtime.CompilerServices;
     using System.Threading;
+    using System.Windows.Automation.Peers;
+    using System.Windows.Automation.Provider;
     using System.Windows.Resources;
 
     public class ButtonGroup
@@ -2893,10 +2895,20 @@ namespace Majiang
             //hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
             //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
             //StartGame();
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            if (type)
+            {
+                mainWindow.MainFrame.Navigate(new GamePage(true, -1));
+            }
+            else
+            {
+                mainWindow.MainFrame.Navigate(mainWindow.onlineNameInput);
+                ButtonAutomationPeer bam = new ButtonAutomationPeer(mainWindow.onlineNameInput.start);
+                IInvokeProvider iip = bam.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                iip.Invoke();
+            }
             DestroyPageResources();
             GC.Collect();
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.MainFrame.Navigate(new GamePage(true, -1));
         }
 
         // 返回菜单按钮点击事件
@@ -2914,11 +2926,12 @@ namespace Majiang
             //NavigateToMainPage();
             //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
 
-            DestroyPageResources();
-            GC.Collect();
+
             // 获取父窗口中的 Frame 控件
             var mainWindow = (MainWindow)Application.Current.MainWindow;
             mainWindow.MainFrame.Navigate(mainWindow.mainPage);
+            DestroyPageResources();
+            GC.Collect();
         }
 
         // 隐藏或显示结算界面

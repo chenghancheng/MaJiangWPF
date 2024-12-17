@@ -5,6 +5,8 @@
         ResizeMode="NoResize">
 
     <Grid>
+
+        
         <!-- 背景图片 -->
         <Image Source="pack://application:,,,/Resources/Images/zuo_mian.png" 
                Stretch="UniformToFill" 
@@ -14,10 +16,16 @@
 
         <!-- 设置 MediaElement 的大小和布局 -->
         <Grid>
-            <MediaElement x:Name="mediaElement" 
+            <!--<MediaElement x:Name="mediaElement" 
                           LoadedBehavior="Manual" 
                           UnloadedBehavior="Manual" 
-                          Width="0" Height="0" />
+                          Width="0" Height="0" />-->
+            <MediaElement x:Name="myMediaElement2"   
+                  Source="pack://application:,,,/Resources/Music/music.wav"   
+                  LoadedBehavior="Manual"   
+                  UnloadedBehavior="Stop"   
+                  Volume="0.3"   
+                  />
         </Grid>
     </Grid>
 </Window>

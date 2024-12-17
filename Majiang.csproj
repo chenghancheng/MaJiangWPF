@@ -25,6 +25,7 @@
 	  <Content Remove="Resources\Music\chi.wav" />
 	  <Content Remove="Resources\Music\click.wav" />
 	  <Content Remove="Resources\Music\gang.wav" />
+	  <Content Remove="Resources\Music\music.mp3" />
 	  <Content Remove="Resources\Music\music.wav" />
 	  <Content Remove="Resources\Music\peng.wav" />
 	</ItemGroup>
@@ -41,17 +42,15 @@
 	  <Resource Include="Resources\Music\gang.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Resource>
+	  <Resource Include="Resources\Music\music.mp3">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
 	  <Resource Include="Resources\Music\music.wav">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Resource>
 	  <Resource Include="Resources\Music\peng.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Resource>
-	</ItemGroup>
-	<ItemGroup>
-	  <Content Update="Resources\Music\music.mp3">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
 	</ItemGroup>
 
 	<!-- 如果您希望文件夹本身出现在项目中，可以添加以下内容 -->
