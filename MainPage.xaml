@@ -35,24 +35,24 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="1" Content="单人游戏" Click="startGameButton_Click">
+        <Button Grid.Row="1" Content="单机模式" Click="startGameButton_Click">
             <!-- 使用 Border 和 Image 实现按钮背景 -->
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">单人游戏</TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">单机模式</TextBlock>
                     </Grid>
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Grid.Row="3" Content="多人游戏" Click="introduceButton_Click">
+        <Button Grid.Row="3" Content="多人模式" Click="introduceButton_Click">
             <!-- 使用 Border 和 Image 实现按钮背景 -->
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">多人游戏</TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">多人模式</TextBlock>
                     </Grid>
                 </ControlTemplate>
             </Button.Template>
