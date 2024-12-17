@@ -51,8 +51,12 @@ namespace Majiang
             isMatching = true;
             matchingLabel.Visibility = Visibility.Visible;
             await Connect.ws.StartAsync();
-            ChatMessage chatMessage = new ChatMessage(0, inputName.Text, "kjj", 0);
+            ChatMessage chatMessage = new ChatMessage(0, inputName.Text, "", 0);
             await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
+
+            start.Opacity = 0.5; // 使图片变灰，模拟禁用状态
+            start.Foreground = new SolidColorBrush(Colors.Gray); // 将文本颜色改为灰色
+
             GamePage.name = inputName.Text;
             Connect.ws.MessageReceived += OnMessageReceived;
         }
@@ -70,7 +74,7 @@ namespace Majiang
                 {
                     // 获取父窗口中的 Frame 控件
                     var mainWindow = (MainWindow)Application.Current.MainWindow;
-                    mainWindow.MainFrame.Navigate(new GamePage(false,serial));
+                    mainWindow.MainFrame.Navigate(new GamePage(false, serial));
                     Reset();
                 }
                 matchingLabel.Content = $"等待其他玩家加入({responseMessage.Receiver + 1} / 4)...";
@@ -85,7 +89,9 @@ namespace Majiang
             }
             isMatching = false;
             serial = -1;
+            inputName.Text = "";
             matchingLabel.Visibility = Visibility.Hidden;
         }
     }
 }
+
