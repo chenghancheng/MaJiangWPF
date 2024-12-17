@@ -68,10 +68,10 @@ namespace Majiang
                 }
                 if (responseMessage.Receiver == 3)
                 {
-                    Reset();
                     // 获取父窗口中的 Frame 控件
                     var mainWindow = (MainWindow)Application.Current.MainWindow;
                     mainWindow.MainFrame.Navigate(new GamePage(false,serial));
+                    Reset();
                 }
             }
         }
