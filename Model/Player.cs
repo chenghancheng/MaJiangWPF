@@ -630,6 +630,13 @@ public class Player
     // C++ 版的 add_gang 方法转为 C# 版本
     public void AddGang(int n)
     {
+        //获取嵌入资源的 URI
+        Uri soundUri = new Uri("pack://application:,,,/Resources/Music/gang.wav");
+        // 获取资源流
+        StreamResourceInfo soundStreamInfo = Application.GetResourceStream(soundUri);
+        //使用流创建 SoundPlayer
+        SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
+        soundPlayer.Play();
         //music.PlayGangSound();
         DiscardChi(n);
     }

@@ -387,10 +387,12 @@ namespace Majiang
                             {
                                 for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                 {
-                                    guoChiPengGangHuBtn[i].Content = new Image
-                                    {
-                                        Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                    };
+                                    //guoChiPengGangHuBtn[i].Content = new Image
+                                    //{
+                                    //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
+                                    //};
+                                    var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
+                                    (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
                                     guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                 }
                             }
@@ -549,10 +551,12 @@ namespace Majiang
                                             for (int j = 0; j < 3; j++)
                                             {
                                                 //设置按钮牌图片
-                                                chiChoice[i][j].Content = new Image
-                                                {
-                                                    Source = totalDiscardedCard[1][transitionChiOnline[i][j]]
-                                                };
+                                                //chiChoice[i][j].Content = new Image
+                                                //{
+                                                //    Source = totalDiscardedCard[1][transitionChiOnline[i][j]]
+                                                //};
+                                                var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
+                                                (grid.FindName("ImageControl") as Image).Source = totalDiscardedCard[1][transitionChiOnline[i][j]];
                                                 chiChoice[i][j].Visibility = Visibility.Visible;
                                             }
                                         }
@@ -582,10 +586,12 @@ namespace Majiang
                                     for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                     {
                                         //设置吃碰杠胡区按钮图片
-                                        guoChiPengGangHuBtn[i].Content = new Image
-                                        {
-                                            Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                        };
+                                        //guoChiPengGangHuBtn[i].Content = new Image
+                                        //{
+                                        //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
+                                        //};
+                                        var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
+                                        (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
                                         guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                     }
 
@@ -637,7 +643,9 @@ namespace Majiang
                                             {
                                                 for (int j = 0; j < 3; j++)
                                                 {
-                                                    chiChoice[i][j].Content = null;//设置图片为空
+                                                    //chiChoice[i][j].Content = null;//设置图片为空
+                                                    var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
+                                                    (grid.FindName("ImageControl") as Image).Source = null;
                                                     chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                                     chiChoice[i][j].Visibility = Visibility.Hidden;
                                                 }
@@ -667,7 +675,9 @@ namespace Majiang
                                         {
                                             for (int j = 0; j < 3; j++)
                                             {
-                                                chiChoice[i][j].Content = null;//设置图片为空
+                                                //chiChoice[i][j].Content = null;//设置图片为空
+                                                var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
+                                                (grid.FindName("ImageControl") as Image).Source = null;
                                                 chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                                 chiChoice[i][j].Visibility = Visibility.Hidden;
                                             }
@@ -1165,21 +1175,42 @@ namespace Majiang
                 totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             }
 
-            backToMainPage = new Button
+
+            backToMainPage = new Button 
             {
-                Width = 30,
-                Height = 30,
+                Width = 28,
+                Height = 28,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                Content = new Image
-                {
-                    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
-                },
                 Background = Brushes.Transparent
             };
+            ControlTemplate buttonTemplate = new ControlTemplate(typeof(Button));// 创建按钮模板
+            FrameworkElementFactory grid = new FrameworkElementFactory(typeof(Grid)); // 创建Grid布局
+            FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));// 创建Image控件
+            image.SetValue(Image.SourceProperty, new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png")));
+            image.SetValue(Image.StretchProperty, Stretch.Uniform);
+            grid.AppendChild(image);// 将Image添加到Grid中
+            buttonTemplate.VisualTree = grid;// 将Grid添加到ControlTemplate
+            backToMainPage.Template = buttonTemplate;// 设置按钮模板
+
+            //backToMainPage = new Button
+            //{
+            //    Width = 30,
+            //    Height = 30,
+            //    HorizontalContentAlignment = HorizontalAlignment.Center,
+            //    VerticalContentAlignment = VerticalAlignment.Center,
+            //    Margin = new Thickness(0),
+            //    Padding = new Thickness(0), // 去除 Padding
+            //    BorderThickness = new Thickness(0), // 去除边框厚度
+            //    Content = new Image
+            //    {
+            //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
+            //    },
+            //    Background = Brushes.Transparent
+            //};
             backToMainPage.Click += BackToMainPageButtonClick;
             Grid.SetRow(backToMainPage, 1);
             Grid.SetColumn(backToMainPage, 1);
@@ -1871,6 +1902,18 @@ namespace Majiang
                         Padding = new Thickness(0), // 去除 Padding
                         BorderThickness = new Thickness(0), // 去除边框厚度
                     };
+                    ControlTemplate buttonTemplate = new ControlTemplate(typeof(Button));// 创建按钮模板
+                    FrameworkElementFactory grid = new FrameworkElementFactory(typeof(Grid)); // 创建Grid布局
+                    grid.Name = "ButtonGrid";  // 给Grid设置名称
+                    FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));// 创建Image控件
+                    //image.SetValue(Image.NameProperty, "ImageControl");  // 设置名称
+                    image.Name = "ImageControl";
+                    image.SetValue(Image.SourceProperty, null);
+                    image.SetValue(Image.StretchProperty, Stretch.UniformToFill);
+                    grid.AppendChild(image);// 将Image添加到Grid中
+                    buttonTemplate.VisualTree = grid;// 将Grid添加到ControlTemplate
+                    button.Template = buttonTemplate;// 设置按钮模板
+                    button.ApplyTemplate();
 
                     button.Tag = i;
 
@@ -1977,15 +2020,27 @@ namespace Majiang
             {
                 Width = 30,
                 Height = 30,
-                Content = new Image
-                {
-                    Source = new BitmapImage(), // 图像路径，可以根据需要设置具体的图片路径
-                    Stretch = Stretch.UniformToFill
-                },
+                //Content = new Image
+                //{
+                //    Source = new BitmapImage(), // 图像路径，可以根据需要设置具体的图片路径
+                //    Stretch = Stretch.UniformToFill
+                //},
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Tag = id // 将按钮的 ID 存储在 Tag 属性中
             };
+            ControlTemplate buttonTemplate = new ControlTemplate(typeof(Button));// 创建按钮模板
+            FrameworkElementFactory grid = new FrameworkElementFactory(typeof(Grid)); // 创建Grid布局
+            grid.Name = "ButtonGrid";  // 给Grid设置名称
+            FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));// 创建Image控件
+            //image.SetValue(Image.NameProperty, "ImageControl");  // 设置名称
+            image.Name = "ImageControl";
+            image.SetValue(Image.SourceProperty, null);
+            image.SetValue(Image.StretchProperty, Stretch.UniformToFill);
+            grid.AppendChild(image);// 将Image添加到Grid中
+            buttonTemplate.VisualTree = grid;// 将Grid添加到ControlTemplate
+            button.Template = buttonTemplate;// 设置按钮模板
+            button.ApplyTemplate();
 
             button.Visibility = Visibility.Hidden;
 
@@ -2755,20 +2810,44 @@ namespace Majiang
 
             continueGame = new Button
             {
-                Content = "继续游戏",
+                //Content = "继续游戏",
                 //Width = 240,
                 //Height = 50,
-                FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
-                FontSize = 10,
+                //FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
+                //FontSize = 10,
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                Background = new ImageBrush
-                {
-                    ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")),
-                    Stretch = Stretch.Uniform
-                }
+                //Background = new ImageBrush
+                //{
+                //    ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")),
+                //    Stretch = Stretch.Uniform
+                //}
             };
+            // 创建按钮模板 
+            ControlTemplate buttonTemplate = new ControlTemplate(typeof(Button));
+            // 创建Grid布局
+            FrameworkElementFactory grid = new FrameworkElementFactory(typeof(Grid));
+            // 创建Image控件
+            FrameworkElementFactory image = new FrameworkElementFactory(typeof(Image));
+            image.SetValue(Image.SourceProperty, new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")));
+            image.SetValue(Image.StretchProperty, Stretch.UniformToFill);
+            // 创建TextBlock控件
+            FrameworkElementFactory textBlock = new FrameworkElementFactory(typeof(TextBlock));
+            textBlock.SetValue(TextBlock.TextProperty, "继续游戏");
+            textBlock.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            textBlock.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+            //textBlock.SetValue(TextBlock.ForegroundProperty, Brushes.White);
+            textBlock.SetValue(TextBlock.FontSizeProperty, 10.0);
+            textBlock.SetValue(TextBlock.FontFamilyProperty, new FontFamily("KaiTi"));
+            // 将Image和TextBlock添加到Grid中
+            grid.AppendChild(image);
+            grid.AppendChild(textBlock);
+            // 将Grid添加到ControlTemplate
+            buttonTemplate.VisualTree = grid;
+            // 设置按钮模板
+            continueGame.Template = buttonTemplate;
+
             //continueGame.Style = (Style)Application.Current.Resources["ButtonStyle"]; // 设置按钮样式
             checkout.Children.Add(continueGame);
             Grid.SetRow(continueGame, 8);
@@ -2793,6 +2872,30 @@ namespace Majiang
                     Stretch = Stretch.Uniform
                 }
             };
+            // 创建按钮模板 
+            ControlTemplate buttonTemplate1 = new ControlTemplate(typeof(Button));
+            // 创建Grid布局
+            FrameworkElementFactory grid1 = new FrameworkElementFactory(typeof(Grid));
+            // 创建Image控件
+            FrameworkElementFactory image1 = new FrameworkElementFactory(typeof(Image));
+            image1.SetValue(Image.SourceProperty, new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")));
+            image1.SetValue(Image.StretchProperty, Stretch.UniformToFill);
+            // 创建TextBlock控件
+            FrameworkElementFactory textBlock1 = new FrameworkElementFactory(typeof(TextBlock));
+            textBlock1.SetValue(TextBlock.TextProperty, "返回菜单");
+            textBlock1.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            textBlock1.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+            //textBlock.SetValue(TextBlock.ForegroundProperty, Brushes.White);
+            textBlock1.SetValue(TextBlock.FontSizeProperty, 10.0);
+            textBlock1.SetValue(TextBlock.FontFamilyProperty, new FontFamily("KaiTi"));
+            // 将Image和TextBlock添加到Grid中
+            grid1.AppendChild(image1);
+            grid1.AppendChild(textBlock1);
+            // 将Grid添加到ControlTemplate
+            buttonTemplate1.VisualTree = grid1;
+            // 设置按钮模板
+            backToMainStage.Template = buttonTemplate1;
+
             //backToMainStage.Style = (Style)Application.Current.Resources["ButtonStyle"];
             checkout.Children.Add(backToMainStage);
             Grid.SetRow(backToMainStage, 8);
@@ -3056,10 +3159,12 @@ namespace Majiang
                             {
                                 for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                 {
-                                    guoChiPengGangHuBtn[i].Content = new Image
-                                    {
-                                        Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                    };
+                                    //guoChiPengGangHuBtn[i].Content = new Image
+                                    //{
+                                    //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
+                                    //};
+                                    var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
+                                    (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
                                     guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                 }
                             }
@@ -3395,6 +3500,10 @@ namespace Majiang
                             if (game.cur == 3)//轮至自己
                             {
                                 chiTemp = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
+                                for(int i = 0; i < chiTemp.Count; ++i)
+                                {
+                                    chiTemp[i].Sort((a, b) => Transition(a).CompareTo(Transition(b)));
+                                }
                                 chiTemp.Sort((a, b) => Transition(a[0]).CompareTo(Transition(b[0])));
                                 if (chiTemp.Count > 0)//能吃牌
                                 {
@@ -3419,12 +3528,14 @@ namespace Majiang
                                         for (int j = 0; j < 3; j++)
                                         {
                                             //设置按钮牌图片
-                                            chiChoice[i][j].Content = new Image
-                                            {
-                                                //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
-                                                //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
-                                                Source = totalDiscardedCard[1][transitionChi[i][j]]
-                                            };
+                                            //chiChoice[i][j].Content = new Image
+                                            //{
+                                            //    //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
+                                            //    //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
+                                            //    Source = totalDiscardedCard[1][transitionChi[i][j]]
+                                            //};
+                                            var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
+                                            (grid.FindName("ImageControl") as Image).Source = totalDiscardedCard[1][transitionChi[i][j]];
                                             chiChoice[i][j].Visibility = Visibility.Visible;
                                         }
                                     }
@@ -3454,10 +3565,12 @@ namespace Majiang
                                 for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                 {
                                     //设置吃碰杠胡区按钮图片
-                                    guoChiPengGangHuBtn[i].Content = new Image
-                                    {
-                                        Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                    };
+                                    //guoChiPengGangHuBtn[i].Content = new Image
+                                    //{
+                                    //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
+                                    //};
+                                    var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
+                                    (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
                                     guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                 }
                                 //等待玩家选择
@@ -3521,7 +3634,9 @@ namespace Majiang
                                         {
                                             for (int j = 0; j < 3; j++)
                                             {
-                                                chiChoice[i][j].Content = null;//设置图片为空
+                                                //chiChoice[i][j].Content = null;//设置图片为空
+                                                var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
+                                                (grid.FindName("ImageControl") as Image).Source = null;
                                                 chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                                 chiChoice[i][j].Visibility = Visibility.Hidden;
                                             }
@@ -3556,7 +3671,9 @@ namespace Majiang
                                     {
                                         for (int j = 0; j < 3; j++)
                                         {
-                                            chiChoice[i][j].Content = null;//设置图片为空
+                                            //chiChoice[i][j].Content = null;//设置图片为空
+                                            var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
+                                            (grid.FindName("ImageControl") as Image).Source = null;
                                             chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                             chiChoice[i][j].Visibility = Visibility.Hidden;
                                         }

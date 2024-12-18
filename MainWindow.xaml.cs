@@ -17,6 +17,7 @@ namespace MaJiangApp
     {
         public MainPage mainPage;
         public OnlineNameInput onlineNameInput;
+        MediaPlayer backgroundMusicPlayer;
         public MainWindow()
         {
 
@@ -66,16 +67,47 @@ namespace MaJiangApp
                 //    player.Load();
                 //    player.PlayLooping();
                 //});
+
                 string alarmFileName = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Resources/Music/music.wav";
                 // 初始化背景音乐播放器
-                MediaPlayer backgroundMusicPlayer = new MediaPlayer();
-                //backgroundMusicPlayer.Open(new Uri(alarmFileName, UriKind.RelativeOrAbsolute));
-                backgroundMusicPlayer.Open(new Uri("Resources/Music/music.wav", UriKind.Relative));
-                backgroundMusicPlayer.MediaEnded += (object sender, EventArgs e) => {
-                    backgroundMusicPlayer.Position = TimeSpan.Zero; // 将播放位置重置为开始
-                    backgroundMusicPlayer.Play(); // 重新播放背景音乐
+                backgroundMusicPlayer = new MediaPlayer();
+                backgroundMusicPlayer.Open(new Uri(alarmFileName, UriKind.RelativeOrAbsolute));
+                //backgroundMusicPlayer.Open(new Uri("Resources/Music/music.wav", UriKind.RelativeOrAbsolute));
+                backgroundMusicPlayer.MediaEnded += (object sender, EventArgs e) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        backgroundMusicPlayer.Position = TimeSpan.Zero; // 将播放位置重置为开始
+                        //backgroundMusicPlayer.Play(); // 重新播放背景音乐
+                    });
+
                 };
                 backgroundMusicPlayer.Play();
+
+                // 保持线程一直运行
+                while (true)
+                {
+                    // 保持后台线程不被中止
+                    Thread.Sleep(1000);
+                }
+                //string alarmFileName = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Resources/Music/music.wav";
+
+                //// 在UI线程上执行MediaElement的操作
+                //Dispatcher.Invoke(() =>
+                //{
+                //    backgroundMusicPlayer.Source = new Uri(alarmFileName, UriKind.RelativeOrAbsolute);
+                //    backgroundMusicPlayer.Play();
+                //});
+
+                //// 事件处理，确保它在UI线程上执行
+                //backgroundMusicPlayer.MediaEnded += (sender, e) =>
+                //{
+                //    Dispatcher.Invoke(() =>
+                //    {
+                //        backgroundMusicPlayer.Position = TimeSpan.Zero;
+                //        backgroundMusicPlayer.Play();
+                //    });
+                //};
             });
 
             // 添加媒体打开事件
