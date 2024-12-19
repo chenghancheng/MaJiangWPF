@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Majiang")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a78b860fc69a292b47ef7996a674b2be7f463dad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ff5192d3f84cfbc018abc0a14d59501b5fe327bc")]
 [assembly: System.Reflection.AssemblyProductAttribute("Majiang")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Majiang")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

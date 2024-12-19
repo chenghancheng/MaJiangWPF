@@ -365,7 +365,8 @@ namespace Majiang
                             guoChiPengGangHu.Clear();
                             guoChiPengGangHu.Add(0);
                             bool gangType = true;
-                            if (game.player[transCur].CheckGang() != -1)
+                            int gangCard = game.player[transCur].CheckGang();
+                            if (gangCard != -1)
                             {
                                 guoChiPengGangHu.Add(3);
                                 gangType = true;
@@ -425,7 +426,8 @@ namespace Majiang
                                         //game.player[transCur].Gang(getCard, 0);
                                         //PengGangSelf(false, Transition(getCard));
 
-                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", getCard);
+                                        //ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", getCard); 
+                                        ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", gangCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else
@@ -3137,7 +3139,8 @@ namespace Majiang
                             guoChiPengGangHu.Clear();
                             guoChiPengGangHu.Add(0);
                             bool gangType = true;
-                            if (game.player[game.cur].CheckGang() != -1)
+                            int gangCard = game.player[game.cur].CheckGang();
+                            if (gangCard != -1)
                             {
                                 guoChiPengGangHu.Add(3);
                                 gangType = true;
@@ -3195,11 +3198,16 @@ namespace Majiang
                                 {
                                     if (gangType)
                                     {
-                                        game.player[game.cur].Gang(getCard, 0);
+                                        //game.player[game.cur].Gang(getCard, 0);
+                                        ////todo
+                                        ////emit pengGangSelfSignals(false,Transition(getCard));
+                                        ////QCoreApplication::processEvents();
+                                        //PengGangSelf(false, Transition(getCard)); 
+                                        game.player[game.cur].Gang(gangCard, 0);
                                         //todo
                                         //emit pengGangSelfSignals(false,Transition(getCard));
                                         //QCoreApplication::processEvents();
-                                        PengGangSelf(false, Transition(getCard));
+                                        PengGangSelf(false, Transition(gangCard));
                                     }
                                     else
                                     {
@@ -3412,7 +3420,7 @@ namespace Majiang
                             //});
 
 
-
+                            int gangCard = game.player[game.cur].CheckGang();
                             if (game.player[game.cur].CheckWin())
                             {
                                 //todo
@@ -3425,18 +3433,23 @@ namespace Majiang
                                 statement = statement + game.player[game.cur].GetName() + "自摸";
                                 break;//结束游戏
                             }
-                            if (game.player[game.cur].CheckGang() != -1)
+                            if (gangCard != -1)
                             {
                                 //todo
                                 //timer.setSingleShot(true);
                                 //timer.start(1000);
                                 //loop.exec();
                                 await Task.Delay(1000);  // 延迟1秒（1000毫秒）
-                                game.player[game.cur].Gang(getCard, 0);
+                                //game.player[game.cur].Gang(getCard, 0);
+                                ////todo
+                                ////emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
+                                ////QCoreApplication::processEvents();
+                                //PengGangOthers(false, game.cur - 1, Transition(getCard));
+                                game.player[game.cur].Gang(gangCard, 0);
                                 //todo
                                 //emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
                                 //QCoreApplication::processEvents();
-                                PengGangOthers(false, game.cur - 1, Transition(getCard));
+                                PengGangOthers(false, game.cur - 1, Transition(gangCard));
                                 isGang = true;
                                 continue;
                             }
@@ -3466,7 +3479,7 @@ namespace Majiang
                         await Task.Delay(1000);  // 延迟1秒（1000毫秒）
 
                         int discardThisRound = game.player[game.cur].DiscardRobot();
-                        game.player[game.cur].Discard(discardThisRound);//出牌,默认出第一张牌
+                        game.player[game.cur].Discard(discardThisRound);//出牌
 
                         //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[Transition(discardThisRound)], new Size(discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth, discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight), game.cur * (-90));
                         //BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
