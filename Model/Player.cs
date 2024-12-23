@@ -655,6 +655,4 @@ public class Player
         a = b;
         b = temp;
     }
-
-
 }

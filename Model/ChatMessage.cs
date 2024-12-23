@@ -29,6 +29,8 @@ public class ChatMessage
 
     public ChatMessage()
     {
+        Sender = "";
+        Receiver = "";
         ChiCards = new List<int>();
         HandCards = new HashSet<int>();
     }

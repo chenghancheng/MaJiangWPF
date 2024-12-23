@@ -10,6 +10,7 @@ public class Game
 
     public Game(string name)
     {
+        winner = "";
         card = new Card();
         player = new List<Player>(new Player[4]);
 

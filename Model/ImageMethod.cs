@@ -124,21 +124,6 @@ public static class ImageMethod
         return transformedBitmap;
     }
 
-    //public static BitmapSource RotateBitmapImage(BitmapImage source, int angle)
-    //{
-    //    // 创建一个旋转变换
-    //    RotateTransform rotateTransform = new RotateTransform(angle);
-
-    //    // 使用 TransformedBitmap 来应用变换
-    //    TransformedBitmap transformedBitmap = new TransformedBitmap();
-    //    transformedBitmap.BeginInit();
-    //    transformedBitmap.Source = source;
-    //    transformedBitmap.Transform = rotateTransform; // 应用旋转
-    //    transformedBitmap.EndInit();
-
-    //    return transformedBitmap;
-    //}
-
     public static BitmapSource RotateBitmapImage(BitmapImage source, int angle)
     {
         // 确保BitmapImage被正确初始化
@@ -153,14 +138,8 @@ public static class ImageMethod
         // 使用 TransformedBitmap 来应用变换
         TransformedBitmap transformedBitmap = new TransformedBitmap();
 
-        // 先初始化BitmapImage，确保它已经初始化完毕
-        //source.BeginInit();
-        //source.EndInit();
-
-        //transformedBitmap.BeginInit();
         transformedBitmap.Source = source;
         transformedBitmap.Transform = rotateTransform; // 应用旋转
-                                                       //transformedBitmap.EndInit();
 
         return transformedBitmap;
     }

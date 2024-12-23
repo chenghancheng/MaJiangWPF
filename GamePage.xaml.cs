@@ -29,51 +29,6 @@ namespace Majiang
     using System.Windows.Automation.Provider;
     using System.Windows.Resources;
 
-    public class ButtonGroup
-    {
-        // 存储所有的按钮
-        public List<Button> Buttons { get; set; }
-
-        // 构造函数
-        public ButtonGroup()
-        {
-            Buttons = new List<Button>();
-        }
-
-        // 添加按钮到 ButtonGroup
-        public void AddButton(Button button, int id = -1)
-        {
-            button.Tag = id; // 使用 Tag 存储 ID
-            Buttons.Add(button);
-        }
-
-        // 清除所有按钮的选中状态
-        public void ClearSelection()
-        {
-            foreach (var button in Buttons)
-            {
-                button.IsEnabled = true; // 你可以根据需要启用/禁用按钮
-            }
-        }
-
-        // 获取选中的按钮的 ID
-        public int? GetSelectedButtonId()
-        {
-            foreach (var button in Buttons)
-            {
-                if (button.IsEnabled) // 判断按钮是否被启用，可以替换为其他标识选中状态的属性
-                {
-                    return (int)button.Tag;
-                }
-            }
-            return null;
-        }
-    }
-
-
-
-
-
     /// <summary>
     /// GamePage.xaml 的交互逻辑
     /// </summary>
@@ -89,7 +44,6 @@ namespace Majiang
         private List<Label> selfCardLabel;
         //private List<List<Label>> othersCard;
         private List<List<Image>> othersCard;
-        private ButtonGroup buttonGroup;
         private int choiceBtn = -1;
 
         public static List<BitmapImage> totalCardSelf;
@@ -101,8 +55,6 @@ namespace Majiang
         private List<Button> guoChiPengGangHuBtn;
         private List<BitmapImage> guoChiPengGangHuPic;
         private List<List<Button>> chiChoice;
-        private ButtonGroup buttonGroupChiPengPang;
-        private ButtonGroup multiChiChoiceBtn;
 
         private List<Dictionary<int, int>> pengAlready;
 
@@ -144,11 +96,7 @@ namespace Majiang
 
         private DispatcherTimer timer;
 
-        //private List<BitmapImage> total_card_self;
-        //private List<BitmapImage> total_discarded_card;
-
         private List<KeyValuePair<int, int>> handCard;
-
 
         // 用于等待用户选择的 TaskCompletionSource
         private TaskCompletionSource<int> tcs = null;
@@ -183,41 +131,18 @@ namespace Majiang
             chiChoice = new List<List<Button>>();
             othersCardImages = new List<BitmapImage>();
             guoChiPengGangHu = new List<int>();
-            //totalDiscardedCard = new List<List<BitmapImage>>();
-            //for (int i = 0; i < 2; ++i)
-            //{
-            //    totalDiscardedCard.Add(new List<BitmapImage>());
-            //}
             discardedNowIndex = new List<int>();
             pengAlready = new List<Dictionary<int, int>>();
             textBlock = new TextBlock();
 
-
-            // 布局的控件
-            //mainLayout.Children.Add(selfCardBox);
-            //mainLayout.Children.Add(totalCardBox);
-
-            //////这个不要用task
-            //this.Content = mainLayout;
-
+            totalCardSelf = new List<BitmapImage>();
+            totalDiscardedCard = new List<List<BitmapImage>>();
 
             InitializeComponent();
 
-            //totalCardSelf = new List<BitmapImage>();
-            ////totalDiscardedCard = new List<BitmapImage>();
-            //totalCardSelf.Add(new BitmapImage());
-            //totalDiscardedCard[0].Add(new BitmapImage());
-            //totalDiscardedCard[1].Add(new BitmapImage()); 
-            //ImageMethod.LoadImages(totalCardSelf, @"./Resources/Images/selfcard2", false);
-            ////LoadImages(totalDiscardedCard, @"./Resources/Images/card2", true);
-            ////ImageMethod.LoadImages(totalDiscardedCard, @"./Resources/Images/card2", false);
-            //ImageMethod.LoadImages(totalDiscardedCard[0], @"./Resources/Images/YuanShui", false);
-            //ImageMethod.LoadImages(totalDiscardedCard[1], @"./Resources/Images/YuanCard", false);
-            
-
             // 设置定时器
             timer = new DispatcherTimer();
-            timer.Tick += TimerTick;
+            //timer.Tick += TimerTick;
             timer.Interval = TimeSpan.FromSeconds(1);
 
             // 创建Game类的实例
@@ -243,15 +168,14 @@ namespace Majiang
             }
         }
 
-
-        private void TimerTick(object sender, EventArgs e)
-        {
-            // 定时器事件处理
-            if (waitUserChoice || waitUserOtherChoice)
-            {
-                // 游戏等待用户输入
-            }
-        }
+        //private void TimerTick(object sender, EventArgs e)
+        //{
+        //    // 定时器事件处理
+        //    if (waitUserChoice || waitUserOtherChoice)
+        //    {
+        //        // 游戏等待用户输入
+        //    }
+        //}
 
         int Transition(int i)
         {
@@ -264,11 +188,10 @@ namespace Majiang
         }
 
         // 自定义事件处理程序（跨文件定义）
-        private async void OnMessageReceived(object sender, string message)
+        private async void OnMessageReceived(object? sender, string message)
         {
             // 在此处理收到的消息
             Console.WriteLine("事件触发：收到消息：" + message);
-            // 你可以在这里做更多的逻辑处理，比如解析消息、更新界面等
             ResponseMessage responseMessage = ResponseMessage.FromJson(message);
             switch (responseMessage.MessageType)
             {
@@ -278,28 +201,18 @@ namespace Majiang
                         game.player[0].OwnCard.UnionWith(responseMessage.content.handCard[serial]);
                         Console.WriteLine(game.player[0].OwnCard);
 
-
                         selfCardTransition();
-
-                        //Task.Run(() =>
-                        //{
                         for (int i = 0; i < handCard.Count; ++i)
                         {
-                            //selfCardButton[i].Dispatcher.Invoke((() =>
-                            //{
                             selfCardButton[i].Content = new Image
                             {
                                 Source = totalCardSelf[handCard[i].Key]
                             };
-                            //}));
                         }
-                        //}).Wait();
-
 
                         for (int i = 0; i < 4; ++i)
                         {
                             game.player[i].Name = responseMessage.content.playerName[i];
-                            //game.player[i].Name = responseMessage.content.playerName[(i + serial) % 4];
                         }
                         remained.Content = remainedText + responseMessage.content.remainCards;
 
@@ -307,7 +220,7 @@ namespace Majiang
                                         $"下家：{game.player[TransitionCur(serial + 1)].GetName()}\n" +
                                         $"对家：{game.player[TransitionCur(serial + 2)]}\n" +
                                         $"本家：{game.player[TransitionCur(serial)]}\n";
-                                        
+
                         ChatMessage chatMessage = new ChatMessage((int)MessageType.Pass, name, "", 0);
                         await Connect.ws.SendMessagesAsyncs(chatMessage.ToJson());
                     }
@@ -336,26 +249,13 @@ namespace Majiang
                                 {
                                     Source = totalCardSelf[handCard[i].Key]
                                 };
-                                //selfCardButton[selfCardButton.Count - 1].Content = handCard[i].Value;
-                                //selfCardButton[selfCardButton.Count - 1].Background = new ImageBrush
-                                //{
-                                //    ImageSource = totalCardSelf[handCard[i].Key],
-                                //    Stretch = Stretch.Uniform
-                                //};
                             }
-
 
                             int getCard = responseMessage.content.getCard;
 
                             game.player[0].CurNum++;
                             game.player[0].OwnCard.Add(getCard);
                             handCard.Add(new KeyValuePair<int, int>(Transition(getCard), getCard));
-                            //selfCardButton[selfCardButton.Count - 1].Content = getCard;
-                            //selfCardButton[selfCardButton.Count - 1].Background = new ImageBrush
-                            //{
-                            //    ImageSource = totalCardSelf[Transition(getCard)],
-                            //    Stretch = Stretch.Uniform
-                            //};
                             selfCardButton[selfCardButton.Count - 1].Content = new Image
                             {
                                 Source = totalCardSelf[Transition(getCard)]
@@ -388,12 +288,11 @@ namespace Majiang
                             {
                                 for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                 {
-                                    //guoChiPengGangHuBtn[i].Content = new Image
-                                    //{
-                                    //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                    //};
                                     var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
-                                    (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                    if(grid!=null && grid.FindName("ImageControl") is Image image)
+                                    {
+                                        image.Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                    }          
                                     guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                 }
                             }
@@ -423,18 +322,11 @@ namespace Majiang
                                         btn.Visibility = Visibility.Hidden;
                                     if (gangType)
                                     {
-                                        //game.player[transCur].Gang(getCard, 0);
-                                        //PengGangSelf(false, Transition(getCard));
-
-                                        //ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", getCard); 
                                         ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_Zimo, name, "", gangCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
                                     else
                                     {
-                                        //game.player[transCur].AddGang(getCard);
-                                        //AddGangSelf(Transition(getCard));
-
                                         ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Gang_JiaGang, name, "", getCard);
                                         await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                     }
@@ -505,7 +397,6 @@ namespace Majiang
 
                             int transCur = TransitionCur(responseMessage.content.curPlayer);
                             othersCard[transCur - 1][othersCard[transCur - 1].Count - 1].Source = null;
-                            //discarded[transCur][discardedNowIndex[transCur]].Source = totalDiscardedCard[1][discardThisRound.Key];
                             discarded[transCur][discardedNowIndex[transCur]].Source = totalDiscardedCard[(transCur - 1) % 2][Transition(discardThisRound)];
                             discarded[transCur][discardedNowIndex[transCur]].RenderTransform = new RotateTransform(transCur / 2 * (-180));
                             discarded[transCur][discardedNowIndex[transCur]].RenderTransformOrigin = new Point(0.5, 0.5);
@@ -553,12 +444,11 @@ namespace Majiang
                                             for (int j = 0; j < 3; j++)
                                             {
                                                 //设置按钮牌图片
-                                                //chiChoice[i][j].Content = new Image
-                                                //{
-                                                //    Source = totalDiscardedCard[1][transitionChiOnline[i][j]]
-                                                //};
                                                 var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
-                                                (grid.FindName("ImageControl") as Image).Source = totalDiscardedCard[1][transitionChiOnline[i][j]];
+                                                if (grid != null && grid.FindName("ImageControl") is Image image)
+                                                {
+                                                    image.Source = totalDiscardedCard[1][transitionChiOnline[i][j]];
+                                                }
                                                 chiChoice[i][j].Visibility = Visibility.Visible;
                                             }
                                         }
@@ -588,12 +478,11 @@ namespace Majiang
                                     for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                     {
                                         //设置吃碰杠胡区按钮图片
-                                        //guoChiPengGangHuBtn[i].Content = new Image
-                                        //{
-                                        //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                        //};
                                         var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
-                                        (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                        if (grid != null && grid.FindName("ImageControl") is Image image)
+                                        {
+                                            image.Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                        }
                                         guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                     }
 
@@ -615,9 +504,6 @@ namespace Majiang
                                     }
                                     else if (guoChiPengGangHuChoice == 3)
                                     {
-                                        //game.player[serial].Gang(discardThisRound, 1);
-                                        //PengGangSelf(false, Transition(discardThisRound));
-                                        //discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
@@ -626,9 +512,6 @@ namespace Majiang
                                     }
                                     else if (guoChiPengGangHuChoice == 2)
                                     {
-                                        //game.player[serial].Peng(discardThisRound);
-                                        //PengGangSelf(true, Transition(discardThisRound));
-                                        //discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
 
@@ -639,15 +522,15 @@ namespace Majiang
                                     {
                                         if (multiChi)//有多种情况
                                         {
-                                            //game.player[serial].Chi(chiTempOnline[multiChiChoice]);//更新手牌
-                                            //ChiSelf(transitionChiOnline[multiChiChoice]);//更新UI
                                             for (int i = 0; i < chiTempOnline.Count; i++)
                                             {
                                                 for (int j = 0; j < 3; j++)
                                                 {
-                                                    //chiChoice[i][j].Content = null;//设置图片为空
                                                     var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
-                                                    (grid.FindName("ImageControl") as Image).Source = null;
+                                                    if (grid != null && grid.FindName("ImageControl") is Image image)
+                                                    {
+                                                        image.Source = null;
+                                                    }
                                                     chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                                     chiChoice[i][j].Visibility = Visibility.Hidden;
                                                 }
@@ -657,16 +540,9 @@ namespace Majiang
                                         }
                                         else//无
                                         {
-                                            //game.player[serial].Chi(chiTempOnline[0]);//更新手牌
-                                            //chiTempOnline[0].Add(discardThisRound);
-                                            //for (int i = 0; i < 3; i++)
-                                            //    chiTempOnline[0][i] = Transition(chiTempOnline[0][i]);
-                                            //chiTempOnline[0].Sort();
-                                            //ChiSelf(chiTempOnline[0]);//更新UI
                                             ChatMessage chatMessage1 = new ChatMessage((int)MessageType.Chi, name, "", discardThisRound, chiTempOnline[0]);
                                             await Connect.ws.SendMessagesAsyncs(chatMessage1.ToJson());
                                         }
-                                        //discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                         foreach (var btn in guoChiPengGangHuBtn)
                                             btn.Visibility = Visibility.Hidden;
                                     }
@@ -677,9 +553,11 @@ namespace Majiang
                                         {
                                             for (int j = 0; j < 3; j++)
                                             {
-                                                //chiChoice[i][j].Content = null;//设置图片为空
                                                 var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
-                                                (grid.FindName("ImageControl") as Image).Source = null;
+                                                if (grid != null && grid.FindName("ImageControl") is Image image)
+                                                {
+                                                    image.Source = null;
+                                                }
                                                 chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                                 chiChoice[i][j].Visibility = Visibility.Hidden;
                                             }
@@ -716,19 +594,6 @@ namespace Majiang
 
                         if (chiPengGangPlayerId == serial)
                         {
-                            //if (multiChi)//有多种情况
-                            //{
-                            //    game.player[0].Chi(chiTempOnline[multiChiChoice]);//更新手牌
-                            //    ChiSelf(transitionChiOnline[multiChiChoice]);//更新UI
-                            //}
-                            //else//无
-                            //{
-                            //    game.player[0].Chi(chiTempOnline[0]);//更新手牌
-                            //    ChiSelf(chiTempOnline[0]);//更新UI
-                            //}
-
-                            //responseMessage.content.chiCard;
-
                             game.player[0].Chi(responseMessage.content.chiCard);//更新手牌
                             responseMessage.content.chiCard.Add(responseMessage.content.disCard);
                             for (int i = 0; i < 3; i++)
@@ -783,14 +648,6 @@ namespace Majiang
                             // 使用流创建 SoundPlayer
                             SoundPlayer soundPlayer = new SoundPlayer(soundStreamInfo.Stream);
                             soundPlayer.Play();
-
-                            //int chiLeftCard = responseMessage.content.disCard;
-                            //List<int> chiCard = new List<int>();
-                            //for (int i = 0; i < 3; ++i)
-                            //{
-                            //    chiCard.Add(Transition(chiLeftCard) + i);
-                            //}
-                            //ChiOthers(transCur - 1, chiCard);
 
                             responseMessage.content.chiCard.Add(responseMessage.content.disCard);
                             for (int i = 0; i < 3; i++)
@@ -1178,7 +1035,7 @@ namespace Majiang
             }
 
 
-            backToMainPage = new Button 
+            backToMainPage = new Button
             {
                 Width = 28,
                 Height = 28,
@@ -1198,21 +1055,7 @@ namespace Majiang
             buttonTemplate.VisualTree = grid;// 将Grid添加到ControlTemplate
             backToMainPage.Template = buttonTemplate;// 设置按钮模板
 
-            //backToMainPage = new Button
-            //{
-            //    Width = 30,
-            //    Height = 30,
-            //    HorizontalContentAlignment = HorizontalAlignment.Center,
-            //    VerticalContentAlignment = VerticalAlignment.Center,
-            //    Margin = new Thickness(0),
-            //    Padding = new Thickness(0), // 去除 Padding
-            //    BorderThickness = new Thickness(0), // 去除边框厚度
-            //    Content = new Image
-            //    {
-            //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
-            //    },
-            //    Background = Brushes.Transparent
-            //};
+
             backToMainPage.Click += BackToMainPageButtonClick;
             Grid.SetRow(backToMainPage, 1);
             Grid.SetColumn(backToMainPage, 1);
@@ -1227,8 +1070,8 @@ namespace Majiang
                             $"下家：{game.player[1].GetName()}\n" +
                             $"对家：{game.player[2].GetName()}\n" +
                             $"本家：{game.player[0].GetName()}\n";
-                            
-                            
+
+
             Grid.SetRow(textBlock, 23);
             Grid.SetColumn(textBlock, 1);
             Grid.SetRowSpan(textBlock, 5);
@@ -1241,13 +1084,6 @@ namespace Majiang
 
         public void InitCardUI()
         {
-            // 创建 GridLayout 控件，并设置大小
-            //totalCardBox = new Grid
-            //{
-            //    //Width = 1035,
-            //    //Height = 618
-            //};
-
             // 初始化 othersCardBox（其他玩家卡片布局）
             othersCardBox = new List<StackPanel>
             {
@@ -1259,11 +1095,6 @@ namespace Majiang
             selfCardBox = new StackPanel { Orientation = Orientation.Horizontal };
 
             // 初始化 othersCard（其他玩家卡片的标签）
-            //othersCard = new List<List<Label>>();
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    othersCard.Add(new List<Label>());
-            //}
             othersCard = new List<List<Image>>();
             for (int i = 0; i < 3; i++)
             {
@@ -1289,43 +1120,6 @@ namespace Majiang
                 }
             }
 
-            // 设置图片显示
-            //for (int i = 0; i < othersCardImages.Count; i++)
-            //{
-            //    //var image = new Image
-            //    //{
-            //    //    Source = othersCardImages[i],
-            //    //    Stretch = Stretch.Uniform, // 确保图片按比例缩放
-            //    //    Width = 50,  // 可以调整宽度
-            //    //    Height = 50  // 可以调整高度
-            //    //};
-
-            //    //var label = new Label
-            //    //{
-            //    //    Content = image,
-            //    //    HorizontalAlignment = HorizontalAlignment.Center,
-            //    //    VerticalAlignment = VerticalAlignment.Center,
-            //    //    Width = 120,  // 设置 Label 宽度，保证空间足够
-            //    //    Height = 120  // 设置 Label 高度，保证空间足够
-            //    //};
-
-            //    Label label = new Label();
-
-            //    // 创建 Image 控件并设置图片源
-            //    Image image = new Image
-            //    {
-            //        Source = othersCardImages[i] // 设置图片路径
-            //    };
-
-            //    // 设置 Label 的 Content 为 Image 控件
-            //    label.Content = image;
-
-            //    othersCard[i % 3].Add(label); // 分别加入对应的 StackPanel
-            //}
-
-            // 初始化按钮组
-            buttonGroup = new ButtonGroup();
-
             ResetCardUI(); // 重新设置卡片 UI
 
             // 设置布局间距
@@ -1335,28 +1129,11 @@ namespace Majiang
             }
             selfCardBox.Margin = new Thickness(0);
 
-            //// 设置列和行的伸展比例
-            ////totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            //for (int i = 0; i < 38; i++)
-            //{
-            //    //totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            //    totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            //}
-            ////totalCardBox.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            ////totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            //for (int i = 0; i < 27; i++)
-            //{
-            //    //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            //    totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            //}
-            //totalCardBox.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-
             // 添加布局到 Grid
             totalCardBox.Children.Add(othersCardBox[0]);
             Grid.SetRow(othersCardBox[0], 4);
             Grid.SetColumn(othersCardBox[0], 31);
             Grid.SetRowSpan(othersCardBox[0], 19);
-            //Grid.SetColumnSpan(othersCardBox[0], 1);
             Grid.SetColumnSpan(othersCardBox[0], 2);
 
             totalCardBox.Children.Add(othersCardBox[1]);
@@ -1367,10 +1144,8 @@ namespace Majiang
 
             totalCardBox.Children.Add(othersCardBox[2]);
             Grid.SetRow(othersCardBox[2], 4);
-            //Grid.SetColumn(othersCardBox[2], 5);
             Grid.SetColumn(othersCardBox[2], 4);
             Grid.SetRowSpan(othersCardBox[2], 19);
-            //Grid.SetColumnSpan(othersCardBox[2], 1);
             Grid.SetColumnSpan(othersCardBox[2], 2);
 
             totalCardBox.Children.Add(selfCardBox);
@@ -1382,7 +1157,6 @@ namespace Majiang
             // 添加剩余牌数标签
             remained = new Label
             {
-                //Content = remainedText + "150", // 示例，实际需要动态更新
                 Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGoldenrodYellow),
                 Width = 170,
                 Height = 30,
@@ -1396,31 +1170,6 @@ namespace Majiang
             Grid.SetColumnSpan(remained, 4);
 
             totalCardBox.Children.Add(remained);
-
-            //backToMainPage = new Button
-            //{
-            //    Width = 30,
-            //    Height = 30,
-            //    HorizontalContentAlignment = HorizontalAlignment.Center,
-            //    VerticalContentAlignment = VerticalAlignment.Center,
-            //    Margin = new Thickness(0),
-            //    Padding = new Thickness(0), // 去除 Padding
-            //    BorderThickness = new Thickness(0), // 去除边框厚度
-            //    Content =new Image
-            //    {
-            //        Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/back.png"))
-            //    },
-            //    Background=Brushes.Transparent
-            //};
-            //backToMainPage.Click += BackToMainPageButtonClick;
-            //Grid.SetRow(backToMainPage, 1);
-            //Grid.SetColumn(backToMainPage, 1);
-            //Grid.SetRowSpan(backToMainPage, 1);
-            //Grid.SetColumnSpan(backToMainPage, 1);
-            //totalCardBox.Children.Add(backToMainPage);
-
-            // 将整个 UI 设置为布局
-            //this.Content = totalCardBox;
         }
 
         // 初始化方向图像
@@ -1444,23 +1193,6 @@ namespace Majiang
             // 创建4个方向标签并将图像设置为内容
             for (int i = 0; i < 4; i++)
             {
-                //var label = new Label
-                //{
-                //    HorizontalAlignment = HorizontalAlignment.Center, // 水平居中
-                //    VerticalAlignment = VerticalAlignment.Center, // 垂直居中
-                //    Width = 80,  // 设定Label的宽度
-                //    Height = 80  // 设定Label的高度
-                //};
-
-                //// 创建Image并设置Stretch属性
-                //var image = new Image
-                //{
-                //    Source = directionPic[i],  // 将BitmapImage设置为Image的Source
-                //    Stretch = Stretch.UniformToFill // 确保图像能适应Label的大小
-                //};
-
-                //label.Content = image;  // 将图像控件设置为Label的内容
-
                 Label label = new Label();
 
                 // 创建 Image 控件并设置图片源
@@ -1473,15 +1205,6 @@ namespace Majiang
                 label.Content = image;
                 direction.Add(label);
             }
-
-            //// 初始化总卡片框 (Grid 布局)
-            //totalCardBox = new Grid();
-
-            //// 设置 Grid 的行列
-            //for (int i = 0; i < 30; i++) // 设置 30 行
-            //    totalCardBox.RowDefinitions.Add(new RowDefinition());
-            //for (int i = 0; i < 30; i++) // 设置 30 列
-            //    totalCardBox.ColumnDefinitions.Add(new ColumnDefinition());
 
             // 将4个方向图片添加到网格 (与 Qt 的 QGridLayout 定位相同)
             // 下 右 上 左
@@ -1508,9 +1231,6 @@ namespace Majiang
             Grid.SetRowSpan(direction[3], 3);
             Grid.SetColumnSpan(direction[3], 1);
             totalCardBox.Children.Add(direction[3]);
-
-            // 设置 totalCardBox 为窗口内容
-            //this.Content = totalCardBox;
         }
 
 
@@ -1545,7 +1265,7 @@ namespace Majiang
         }
 
         // 创建玩家自己的卡牌
-        private async void createSelfCard(int index)
+        private void createSelfCard(int index)
         {
             // 创建 StackPanel 来代替 QVBoxLayout
             var stackPanel = new StackPanel
@@ -1559,7 +1279,6 @@ namespace Majiang
             {
                 Width = 9,
                 Height = 10,
-                //Background=Brushes.AliceBlue,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0),
@@ -1619,7 +1338,6 @@ namespace Majiang
                             Source = cardImage,
                             Stretch = Stretch.UniformToFill
                         };
-                        //(button.Content as Image).Source = cardImage;
                     }));
                 }).Wait();
 
@@ -1637,7 +1355,7 @@ namespace Majiang
             selfCardBox.Children.Add(selfCard[index]);
         }
 
-        private async void SelfCardButtonClick(object sender, RoutedEventArgs e)
+        private void SelfCardButtonClick(object sender, RoutedEventArgs e)
         {
             // 处理按钮点击事件
             // 用户点击按钮后，完成任务，程序继续
@@ -1652,13 +1370,7 @@ namespace Majiang
                     {
                         return;
                     }
-                    //await Task.Run(() =>
-                    //{
-                    //    selfCardLabel[choiceBtn].Dispatcher.Invoke(() =>
-                    //    {
                     selfCardLabel[choiceBtn].Content = null;
-                    //    });
-                    //});
                     waitUserChoice = false;
                     discardIndex = choiceBtn;
                     choiceBtn = -1;
@@ -1672,52 +1384,21 @@ namespace Majiang
                 else
                 {
                     if (choiceBtn != -1)
-                        //await Task.Run(() =>
-                        //{
-                        //    selfCardLabel[choiceBtn].Dispatcher.Invoke(() =>
-                        //    {
                         selfCardLabel[choiceBtn].Content = null;
-                    //    });
-                    //});
                     choiceBtn = (int)button.Tag;
-                    //await Task.Run(() =>
-                    //{
-                    //Dispatcher.Invoke(() =>
-                    //{
+
                     selfCardLabel[choiceBtn].Content = new Image
                     {
                         Source = biaoZhi,
                         Stretch = Stretch.Fill
                     };
-                    //    });
-                    //});
                 }
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            // 处理按钮点击事件
-        }
-
         // 创建其他玩家的卡牌
-        private void createOtherCard(int type, BitmapImage pic, int width, int height, int index)
+        private void createOtherCard(int type, BitmapImage? pic, int width, int height, int index)
         {
-            //var label = new Label
-            //{
-            //    Width = width,
-            //    Height = height,
-            //    Content = new Image { Source = pic, Stretch = Stretch.Uniform },
-            //    HorizontalAlignment = HorizontalAlignment.Center,
-            //    VerticalAlignment = VerticalAlignment.Center,
-            //    Margin = new Thickness(0),
-            //    Padding = new Thickness(0), // 去除 Padding
-            //    //BorderBrush = Brushes.Transparent, // 去除边框
-            //    BorderThickness = new Thickness(0), // 去除边框厚度
-
-            //    Background =Brushes.AliceBlue
-            //};
-
             var image = new Image
             {
                 Width = width,
@@ -1729,48 +1410,20 @@ namespace Majiang
             };
 
             // 将标签添加到其他卡片集合中
-            //othersCard[type].Add(label);
             othersCard[type].Add(image);
             othersCardBox[type].Children.Add(image);
-            //othersCardBox[type].Children.Add(label);
         }
 
 
         private void ResetCardUI()
         {
-            bool statu = true;
-
-            // 清除自己卡片的按钮和图片
-            //for (int i = selfCardButton.Count - 1; i >= 0; --i)
-            //{
-            //    selfCardPanel.Children.Remove(selfCardButtons[i]);
-            //    selfCardButtons[i].ClearValue(Button.ContentProperty);
-            //    selfCardButtons[i].ClearValue(Button.BackgroundProperty);
-            //    selfCardButtons[i] = null;
-            //    selfCardImages[i].Source = null;
-            //    selfCardPanel.Children.Remove(selfCardImages[i]);
-            //    selfCardImages[i] = null;
-            //}
-
-            //selfCardButtons.Clear();
-            //selfCardImages.Clear();
-
-            //// 清除其他玩家卡片
-            //foreach (var panel in othersCardPanels)
-            //{
-            //    panel.Children.Clear();
-            //}
-            //foreach (var cardList in othersCards)
-            //{
-            //    cardList.Clear();
-            //}
+            statu = true;
 
             // 重建自己卡片
             for (int i = 0; i < 13; ++i)
             {
                 createSelfCard(i);
             }
-            //
 
             // 在自己卡片区添加间隔
             selfCardBox.Children.Add(new Button { Content = "Space", Visibility = Visibility.Hidden, Width = 15, Height = 15 }); // 可自定义空白控件
@@ -1798,19 +1451,6 @@ namespace Majiang
 
                 // 清空原有卡片，重新布局
                 othersCardBox[i].Children.Clear();
-                //othersCardBox[i].Margin = new Thickness(0);
-
-
-                // 添加 Stretch（伸缩空间），类似于 Qt 中的 addStretch()
-                //var stretchTop = new FrameworkElement { Height = 20 };  // 使用 FrameworkElement 来模拟
-                //othersCardBox[i].Children.Add(stretchTop);
-
-                // 左边的“伸缩空间”元素
-                //othersCardBox[i].Children.Add(new FrameworkElement
-                //{
-                //    HorizontalAlignment = HorizontalAlignment.Stretch,
-                //    VerticalAlignment=VerticalAlignment.Stretch
-                //});
 
                 // 创建13张卡片并添加到对应的 StackPanel 中
                 for (int j = 0; j < 13; ++j)
@@ -1819,26 +1459,10 @@ namespace Majiang
                     createOtherCard(i, othersCardImages[i], width, length, j);
                 }
                 othersCardBox[i].Children.Add(new Button { Content = "Space", Visibility = Visibility.Hidden, Width = 15, Height = 15 }); // 可自定义空白控件
-                                                                                                                                          // 添加一个间距（Spacing），类似 Qt 中的 addSpacing
-                                                                                                                                          // var spacing = new FrameworkElement { Height = 15 };  // 设置间距为 15，可以根据需要调整
-                                                                                                                                          //othersCardBox[i].Children.Add(spacing);
 
                 // 创建一张空卡片（这可能是用于显示某种空白状态）
                 createOtherCard(i, null, width, length, 13);
-
-                // 再添加一个伸缩空间（类似于 addStretch()）
-                //var stretchEnd = new FrameworkElement { Height = 20 }; // 再添加一个伸缩空间
-                //othersCardBox[i].Children.Add(stretchEnd);
-
-                // 左边的“伸缩空间”元素
-                //othersCardBox[i].Children.Add(new FrameworkElement
-                //{
-                //    HorizontalAlignment = HorizontalAlignment.Stretch,
-                //    VerticalAlignment = VerticalAlignment.Stretch
-                //});
             }
-
-
         }
 
         public void InitChiPengGangUI()
@@ -1858,16 +1482,6 @@ namespace Majiang
                 new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/gang.png")),
                 new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/hu.png"))
             };
-
-            // 创建按钮组
-            buttonGroupChiPengPang = new ButtonGroup();
-            multiChiChoiceBtn = new ButtonGroup();
-
-            // 按钮点击事件处理
-            foreach (var button in buttonGroupChiPengPang.Buttons)
-            {
-                button.Click += ChiPengGangButtonClick;
-            }
 
             // 创建吃碰杠按钮
             for (int i = 0; i < 5; i++)
@@ -1921,15 +1535,8 @@ namespace Majiang
 
                     button.Visibility = Visibility.Hidden;
 
-                    multiChiChoiceBtn.AddButton(button, i); // 将按钮加入 ButtonGroup
                     chiChoice[i].Add(button);
                 }
-            }
-
-            // 连接多选按钮的点击事件
-            foreach (var button in multiChiChoiceBtn.Buttons)
-            {
-                button.Click += MultiChiButtonClick;
             }
 
             // 将按钮添加到布局中
@@ -1960,18 +1567,7 @@ namespace Majiang
                     chiPengGangBox.Children.Add(new UIElement()); // 空白
             }
 
-            // 使用 Grid 或 WrapPanel 来替代 StackPanel
-            // WrapPanel 可以帮助自动换行并支持间距
-            //var wrapPanel = new WrapPanel();
-            //wrapPanel.Children.Add(chiPengGangBox);
-
-            //Grid.SetRow(wrapPanel, 23);
-            //Grid.SetColumn(wrapPanel, 9);
-            //Grid.SetRowSpan(wrapPanel, 1);
-            //Grid.SetColumnSpan(wrapPanel, 20);
-
             //// 将布局添加到父布局中（假设 totalCardBox 是你的父布局）
-            //totalCardBox.Children.Add(wrapPanel);  // 使用 wrapPanel 而不是直接使用 StackPanel
             Grid.SetRow(chiPengGangBox, 22);
             Grid.SetColumn(chiPengGangBox, 9);
             Grid.SetRowSpan(chiPengGangBox, 2);
@@ -1988,7 +1584,10 @@ namespace Majiang
             if (multiChi)
             {
                 var button = sender as Button;
-                int btnId = (int)button.Tag;
+                int btnId=-1;
+                if(button!=null)
+                    btnId = (int)button.Tag;
+
                 if (waitUserOtherChoice)
                 {
                     if (btnId == 0)
@@ -2022,11 +1621,6 @@ namespace Majiang
             {
                 Width = 30,
                 Height = 30,
-                //Content = new Image
-                //{
-                //    Source = new BitmapImage(), // 图像路径，可以根据需要设置具体的图片路径
-                //    Stretch = Stretch.UniformToFill
-                //},
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Tag = id // 将按钮的 ID 存储在 Tag 属性中
@@ -2051,14 +1645,15 @@ namespace Majiang
 
             // 将 Button 添加到 StackPanel 或者其他容器中
             guoChiPengGangHuBtn.Add(button); // 将 Button 加入到按钮列表中
-            buttonGroupChiPengPang.AddButton(button, id);
         }
 
         private void ChiPengGangButtonClick(object sender, RoutedEventArgs e)
         {
             // 处理按钮点击事件
             var button = sender as Button;
-            int btnId = (int)button.Tag;
+            int btnId = -1;
+            if(button!=null)
+                btnId = (int)button.Tag;
             if (btnId < guoChiPengGangHu.Count && waitUserOtherChoice)
             {
                 if (guoChiPengGangHu[btnId] == 0)
@@ -2173,20 +1768,10 @@ namespace Majiang
 
             for (int i = 0; i < 3; ++i)
             {
-                //var label = new Label
-                //{
-                //    HorizontalContentAlignment = HorizontalAlignment.Center,
-                //    VerticalContentAlignment = VerticalAlignment.Center,
-                //    Margin = new Thickness(0),
-                //    Padding = new Thickness(0), // 去除 Padding
-                //    BorderThickness = new Thickness(0), // 去除边框厚度
-                //};
                 var image = new Image
                 {
                     Width = (type == 1) ? 27 : 30,
                     Height = (type == 1) ? 39 : 22,
-                    //Width = 27,
-                    //Height = 39,
                     Source = totalDiscardedCard[type % 2][chiCard[i]],
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
@@ -2195,41 +1780,6 @@ namespace Majiang
                     RenderTransformOrigin = new Point(0.5, 0.5),
                     Margin = new Thickness(0),
                 };
-                //if (type == 1)
-                //{
-                //    //label.Width = 27;
-                //    //label.Height = 39;
-                //    //label.Content = new Image
-                //    //{
-                //    //    Source = totalDiscardedCard[chiCard[i]],
-                //    //    Stretch = Stretch.Uniform,
-                //    //    RenderTransform = new RotateTransform((type + 1) * (-90)),
-                //    //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                //    //};
-                //    image.Width = 27;
-                //    image.Height = 39;
-                //    image.Source = totalDiscardedCard[chiCard[i]];
-                //    image.RenderTransform = new RotateTransform((type + 1) * (-90));
-                //    image.RenderTransformOrigin = new Point(0.5, 0.5);
-                //}
-                //else
-                //{
-                //    //label.Width = 30;
-                //    //label.Height = 22;
-                //    //label.Content = new Image
-                //    //{
-                //    //    Source = totalDiscardedCard[chiCard[i]],
-                //    //    Stretch = Stretch.Uniform,
-                //    //    RenderTransform = new RotateTransform((type + 1) * (-90)),
-                //    //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                //    //};
-                //    image.Width = 30;
-                //    image.Height = 22;
-                //    image.Source = totalDiscardedCard[chiCard[i]];
-                //    image.RenderTransform = new RotateTransform((type + 1) * (-90));
-                //    image.RenderTransformOrigin = new Point(0.5, 0.5);
-                //}
-                //othersCardBox[type].Children.Add(label);
                 othersCardBox[type].Children.Add(image);
             }
 
@@ -2329,20 +1879,10 @@ namespace Majiang
 
             for (int i = 0; i < num; ++i)
             {
-                //var label = new Label
-                //{
-                //    HorizontalContentAlignment = HorizontalAlignment.Center,
-                //    VerticalContentAlignment = VerticalAlignment.Center,
-                //    Margin = new Thickness(0),
-                //    Padding = new Thickness(0), // 去除 Padding
-                //    BorderThickness = new Thickness(0), // 去除边框厚度
-                //};
                 var image = new Image
                 {
                     Width = (type == 1) ? 27 : 30,
                     Height = (type == 1) ? 39 : 22,
-                    //Width = 27,
-                    //Height = 39,
                     Source = totalDiscardedCard[type % 2][pengGangCard],
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
@@ -2351,49 +1891,9 @@ namespace Majiang
                     RenderTransformOrigin = new Point(0.5, 0.5),
                     Margin = new Thickness(0),
                 };
-                //var image = new Image
-                //{
-                //    Margin = new Thickness(0),
-                //};
-                //if (type == 1)
-                //{
-                //    //label.Width = 27;
-                //    //label.Height = 39;
-                //    //label.Content = new Image
-                //    //{
-                //    //    Source = totalDiscardedCard[pengGangCard],
-                //    //    Stretch = Stretch.Uniform,
-                //    //    RenderTransform = new RotateTransform((type + 1) * (-90)),
-                //    //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                //    //};
-                //    image.Width = 27;
-                //    image.Height = 39;
-                //    image.Source = totalDiscardedCard[pengGangCard];
-                //    image.RenderTransform = new RotateTransform((type + 1) * (-90));
-                //    image.RenderTransformOrigin = new Point(0.5, 0.5);
-                //}
-                //else
-                //{
-                //    //label.Width = 30;
-                //    //label.Height = 22;
-                //    //label.Content = new Image
-                //    //{
-                //    //    Source = totalDiscardedCard[pengGangCard],
-                //    //    Stretch = Stretch.Uniform,
-                //    //    RenderTransform = new RotateTransform((type + 1) * (-90)),
-                //    //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                //    //};
-                //    image.Width = 30;
-                //    image.Height = 22;
-                //    image.Source = totalDiscardedCard[pengGangCard];
-                //    image.RenderTransform = new RotateTransform((type + 1) * (-90));
-                //    image.RenderTransformOrigin = new Point(0.5, 0.5);
-                //}
-                //othersCardBox[type].Children.Add(label);
                 othersCardBox[type].Children.Add(image);
                 if (choice && i == 1)
                 {
-                    //pengAlready[type][pengGangCard] = othersCardBox[type].Children.IndexOf(label) - othersCard[type].Count;
                     pengAlready[type][pengGangCard] = othersCardBox[type].Children.IndexOf(image) - othersCard[type].Count;
                 }
             }
@@ -2447,24 +1947,6 @@ namespace Majiang
             // 计算要插入的位置
             int index = pengAlready[type][pengGangCard] + othersCard[type].Count;
 
-            //// 创建 Image 控件，并设置其大小
-            //Label label = new Label
-            //{
-            //    Width = (type == 1) ? 27 : 30,
-            //    Height = (type == 1) ? 39 : 22,
-            //    HorizontalContentAlignment = HorizontalAlignment.Center,
-            //    VerticalContentAlignment = VerticalAlignment.Center,
-            //    Margin = new Thickness(0),
-            //    Padding = new Thickness(0), // 去除 Padding
-            //    BorderThickness = new Thickness(0), // 去除边框厚度
-            //    Content = new Image
-            //    {
-            //        Source = totalDiscardedCard[pengGangCard],
-            //        Stretch = Stretch.Uniform,
-            //        RenderTransform = new RotateTransform((type + 1) * (-90)),
-            //        RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-            //    }
-            //};
             // 创建 Image 控件，并设置其大小
             Image image = new Image
             {
@@ -2481,16 +1963,12 @@ namespace Majiang
                 RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
             };
 
-
-            //othersCardBox[type].Children.Insert(index, label);
             othersCardBox[type].Children.Insert(index, image);
             Dispatcher.Invoke(() =>
             {
                 selfCardBox.UpdateLayout();
             });
         }
-
-
 
         private void CompleteUserChoice()
         {
@@ -2505,11 +1983,6 @@ namespace Majiang
         private void InitDiscardedCardUI()
         {
             // 初始化丢弃的卡牌（方向上4个）
-            //discarded = new List<List<Label>>();
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    discarded.Add(new List<Label>());
-            //}
             discarded = new List<List<Image>>();
             for (int i = 0; i < 4; i++)
             {
@@ -2525,7 +1998,6 @@ namespace Majiang
                 {
                     Width = 22,
                     Height = 30,
-                    //Background = Brushes.Transparent,  // 使用背景色作为占位符
                     Background = Brushes.Black,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
@@ -2536,21 +2008,10 @@ namespace Majiang
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                                                        //Content = new TextBlock
-                                                        //{
-                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                                                        //    Foreground = Brushes.White
-                                                        //}
                 };
 
                 label.Content = null;
-                //label.Content = new Image
-                //{
-                //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/chi_peng_gang_hu/chi.png")),
 
-                //};
-
-                //discarded[2].Add(label);
                 Image image = new Image
                 {
                     Width = 22,
@@ -2565,10 +2026,6 @@ namespace Majiang
                 };
                 discarded[2].Add(image);
 
-                // 在 Grid 中添加控件，假设 `totalCardBox` 是一个 Grid 控件
-                //totalCardBox.Children.Add(label);
-                //Grid.SetRow(label, i);   // 设置行
-                //Grid.SetColumn(label, j); // 设置列
                 totalCardBox.Children.Add(image);
                 Grid.SetRow(image, i);   // 设置行
                 Grid.SetColumn(image, j); // 设置列
@@ -2587,21 +2044,14 @@ namespace Majiang
                 {
                     Width = 30,
                     Height = 22,
-                    //Background = Brushes.Transparent,  // 使用背景色作为占位符
                     Background = Brushes.Black,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                                                        //Content = new TextBlock
-                                                        //{
-                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                                                        //    Foreground = Brushes.White
-                                                        //}
                 };
 
-                //discarded[3].Add(label);
                 Image image = new Image
                 {
                     Width = 30,
@@ -2614,9 +2064,6 @@ namespace Majiang
                 };
                 discarded[3].Add(image);
 
-                //totalCardBox.Children.Add(label);
-                //Grid.SetRow(label, i);    // 设置行
-                //Grid.SetColumn(label, j); // 设置列
                 totalCardBox.Children.Add(image);
                 Grid.SetRow(image, i);   // 设置行
                 Grid.SetColumn(image, j); // 设置列
@@ -2635,21 +2082,14 @@ namespace Majiang
                 {
                     Width = 30,
                     Height = 22,
-                    //Background = Brushes.Transparent,  // 使用背景色作为占位符
                     Background = Brushes.Black,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                                                        //Content = new TextBlock
-                                                        //{
-                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                                                        //    Foreground = Brushes.Red
-                                                        //}
                 };
 
-                //discarded[1].Add(label);
                 Image image = new Image
                 {
                     Width = 30,
@@ -2662,9 +2102,6 @@ namespace Majiang
                 };
                 discarded[1].Add(image);
 
-                //totalCardBox.Children.Add(label);
-                //Grid.SetRow(label, i);    // 设置行
-                //Grid.SetColumn(label, j); // 设置列
                 totalCardBox.Children.Add(image);
                 Grid.SetRow(image, i);   // 设置行
                 Grid.SetColumn(image, j); // 设置列
@@ -2683,21 +2120,14 @@ namespace Majiang
                 {
                     Width = 22,
                     Height = 30,
-                    //Background = Brushes.Transparent,  // 使用背景色作为占位符
                     Background = Brushes.Black,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0),
                     Padding = new Thickness(0), // 去除 Padding
                     BorderThickness = new Thickness(0), // 去除边框厚度
-                                                        //Content = new TextBlock
-                                                        //{
-                                                        //    Text = "占位符", // 可以显示一些文本内容作为占位符
-                                                        //    Foreground = Brushes.White
-                                                        //}
                 };
 
-                //discarded[0].Add(label);
                 Image image = new Image
                 {
                     Width = 22,
@@ -2711,9 +2141,6 @@ namespace Majiang
                 };
                 discarded[0].Add(image);
 
-                //totalCardBox.Children.Add(label);
-                //Grid.SetRow(label, i);    // 设置行
-                //Grid.SetColumn(label, j); // 设置列
                 totalCardBox.Children.Add(image);
                 Grid.SetRow(image, i);   // 设置行
                 Grid.SetColumn(image, j); // 设置列
@@ -2761,18 +2188,11 @@ namespace Majiang
             // 创建并设置结算状态的 Label
             settlementPic = new Label
             {
-                //Width = 535,
-                //Height = 160,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalContentAlignment = VerticalAlignment.Stretch,
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                                                    //Content =new Image 
-                                                    //{
-                                                    //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/win.png")),
-                                                    //    Stretch=Stretch.Uniform
-                                                    //} 
             };
 
             Grid.SetRow(settlementPic, 1); // 设置它在 Grid 中的行
@@ -2799,32 +2219,11 @@ namespace Majiang
             Grid.SetColumnSpan(settlementState, 8);
             checkout.Children.Add(settlementState);
 
-            // 创建按钮布局
-            //checkoutBtn = new StackPanel
-            //{
-            //    Orientation = Orientation.Horizontal,
-            //    HorizontalAlignment = HorizontalAlignment.Center
-            //};
-            //Grid.SetRow(checkoutBtn, 2); // 设置它在 Grid 中的行
-            //Grid.SetColumn(checkoutBtn, 0); // 设置它在 Grid 中的列
-            //Grid.SetRowSpan(settlementPic, 3);
-            //Grid.SetColumnSpan(settlementPic, 8);
-
             continueGame = new Button
             {
-                //Content = "继续游戏",
-                //Width = 240,
-                //Height = 50,
-                //FontFamily = new System.Windows.Media.FontFamily("KaiTi"),
-                //FontSize = 10,
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                //Background = new ImageBrush
-                //{
-                //    ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/btn.png")),
-                //    Stretch = Stretch.Uniform
-                //}
             };
             // 创建按钮模板 
             ControlTemplate buttonTemplate = new ControlTemplate(typeof(Button));
@@ -2856,7 +2255,6 @@ namespace Majiang
             Grid.SetColumn(continueGame, 1);
             Grid.SetRowSpan(continueGame, 1);
             Grid.SetColumnSpan(continueGame, 3);
-            //checkout.Children.Add(continueGame);
 
             backToMainStage = new Button
             {
@@ -2898,13 +2296,11 @@ namespace Majiang
             // 设置按钮模板
             backToMainStage.Template = buttonTemplate1;
 
-            //backToMainStage.Style = (Style)Application.Current.Resources["ButtonStyle"];
             checkout.Children.Add(backToMainStage);
             Grid.SetRow(backToMainStage, 8);
             Grid.SetColumn(backToMainStage, 6);
             Grid.SetRowSpan(backToMainStage, 1);
             Grid.SetColumnSpan(backToMainStage, 3);
-            //checkout.Children.Add(backToMainStage);
 
             // 创建隐藏按钮
             hideCheckOut = new Button
@@ -2915,11 +2311,6 @@ namespace Majiang
                 Margin = new Thickness(0),
                 Padding = new Thickness(0), // 去除 Padding
                 BorderThickness = new Thickness(0), // 去除边框厚度
-                                                    //Content = new Image
-                                                    //{
-                                                    //    Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/others/eye.png")),
-                                                    //    Stretch = Stretch.Uniform
-                                                    //}
             };
             hideCheckOut.Click += HideCheckOut_Click;
             Grid.SetRow(hideCheckOut, 26);
@@ -2938,9 +2329,6 @@ namespace Majiang
             // 注册按钮点击事件
             continueGame.Click += ContinueGame_Click;
             backToMainStage.Click += BackToMainStage_Click;
-
-            //// 添加 checkout 到当前页面
-            //this.Content = checkout;
         }
 
         private void ResetCheckoutUI()
@@ -2970,13 +2358,6 @@ namespace Majiang
                 int j = 0;
                 foreach (var card in cardTemp)
                 {
-                    //othersCard[i][j].Content = new Image
-                    //{
-                    //    Source = totalDiscardedCard[card],
-                    //    RenderTransform = new RotateTransform((i + 1) * (-90)),
-                    //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                    //    Stretch = Stretch.Uniform
-                    //};
                     othersCard[i][j].Source = totalDiscardedCard[i % 2][card];
                     othersCard[i][j].RenderTransform = new RotateTransform((i + 1) / 2 * (-180));
                     othersCard[i][j].RenderTransformOrigin = new Point(0.5, 0.5);
@@ -2990,16 +2371,6 @@ namespace Majiang
         // 继续游戏按钮点击事件
         private void ContinueGame_Click(object sender, RoutedEventArgs e)
         {
-            //// 清除状态和重置游戏
-            //statement = "";
-            //game = new Game("谭杰");
-            //game.DistributeCards();
-            //ResetCardUI();
-            //ResetDirectionUI();
-            //ResetDiscardedUI();
-            //hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
-            //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
-            //StartGame();
             var mainWindow = (MainWindow)Application.Current.MainWindow;
             if (type)
             {
@@ -3009,8 +2380,12 @@ namespace Majiang
             {
                 mainWindow.MainFrame.Navigate(mainWindow.onlineNameInput);
                 ButtonAutomationPeer bam = new ButtonAutomationPeer(mainWindow.onlineNameInput.start);
-                IInvokeProvider iip = bam.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-                iip.Invoke();
+                IInvokeProvider iip;
+                if(bam.GetPattern(PatternInterface.Invoke) is IInvokeProvider invokeProvider)
+                {
+                    iip = invokeProvider;
+                    iip.Invoke();
+                }
             }
             DestroyPageResources();
             GC.Collect();
@@ -3019,19 +2394,6 @@ namespace Majiang
         // 返回菜单按钮点击事件
         private void BackToMainStage_Click(object sender, RoutedEventArgs e)
         {
-            // 清除状态和重置游戏
-            //statement = "";
-            //game = new Game("谭杰");
-            //game.DistributeCards();
-            //ResetCardUI();
-            //ResetDirectionUI();
-            //ResetDiscardedUI();
-            //hideCheckOut.Visibility = Visibility.Collapsed; // 隐藏按钮
-            //                                                // 跳转到主菜单
-            //NavigateToMainPage();
-            //checkout.Visibility = Visibility.Collapsed; // 隐藏结算界面
-
-
             // 获取父窗口中的 Frame 控件
             var mainWindow = (MainWindow)Application.Current.MainWindow;
             mainWindow.MainFrame.Navigate(mainWindow.mainPage);
@@ -3063,31 +2425,17 @@ namespace Majiang
         {
             try
             {
-                //Task.Run(() =>
-                //    {
-                //        Dispatcher.Invoke(() =>
-                //        {
-                //ResetCheckoutUI();
                 isFinish = false;
                 if (game.cur == 0)
                     waitUserChoice = true;
-                //cout<<"游戏开始,先手为"<<game->player[game->cur].get_name();
                 bool isGang = false;//是否杠了
                 bool isChiPeng = false;//是否吃碰
                 while (!game.card.IsEmpty())
                 {//循环直到牌被摸完
                     if (game.card.IsEmpty())
                         break;//判断是否还有牌，没牌则退出
-                    int ans = 0;//当前玩家出牌，ans为打出的牌
+                    //int ans = 0;//当前玩家出牌，ans为打出的牌
 
-
-                    //await Task.Run(() =>
-                    //{
-                    //    direction[cur].Dispatcher.Invoke(() =>
-                    //    {
-                    //(direction[cur].Content as Image).Source = directionPic[cur];
-                    //cur = game.cur;
-                    //(direction[cur].Content as Image).Source = directionPic[cur+4];
                     direction[cur].Content = new Image
                     {
                         Source = directionPic[cur]
@@ -3097,10 +2445,6 @@ namespace Majiang
                     {
                         Source = directionPic[cur + 4]
                     };
-                    //    });
-                    //});
-
-
 
                     selfCardTransition();
                     for (int i = 0; i < handCard.Count; ++i)
@@ -3132,7 +2476,6 @@ namespace Majiang
                             selfCardButton[selfCardButton.Count - 1].Content = new Image
                             {
                                 Source = totalCardSelf[Transition(getCard)]
-                                //Source = bitmapSource2
                             };
                             selfCardButton[selfCardButton.Count - 1].IsEnabled = true;
 
@@ -3162,12 +2505,11 @@ namespace Majiang
                             {
                                 for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                 {
-                                    //guoChiPengGangHuBtn[i].Content = new Image
-                                    //{
-                                    //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                    //};
                                     var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
-                                    (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                    if(grid!=null&& grid.FindName("ImageControl") is Image image)
+                                    {
+                                        image.Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                    }
                                     guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                 }
                             }
@@ -3177,11 +2519,7 @@ namespace Majiang
                             if (waitUserOtherChoice)
                             {
                                 await WaitForPlayer();
-                                //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
-                                //    loop.exec();
                             }
-
-
 
                             if (guoChiPengGangHu.Count > 1)
                             {
@@ -3198,15 +2536,7 @@ namespace Majiang
                                 {
                                     if (gangType)
                                     {
-                                        //game.player[game.cur].Gang(getCard, 0);
-                                        ////todo
-                                        ////emit pengGangSelfSignals(false,Transition(getCard));
-                                        ////QCoreApplication::processEvents();
-                                        //PengGangSelf(false, Transition(getCard)); 
                                         game.player[game.cur].Gang(gangCard, 0);
-                                        //todo
-                                        //emit pengGangSelfSignals(false,Transition(getCard));
-                                        //QCoreApplication::processEvents();
                                         PengGangSelf(false, Transition(gangCard));
                                     }
                                     else
@@ -3233,8 +2563,6 @@ namespace Majiang
                         if (waitUserChoice)
                         {
                             await WaitForPlayer();
-                            //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
-                            //    loop.exec();
                         }
 
                         KeyValuePair<int, int> discardThisRound = new KeyValuePair<int, int>();
@@ -3242,34 +2570,10 @@ namespace Majiang
                             discardThisRound = new KeyValuePair<int, int>(handCard[discardIndex].Key, handCard[discardIndex].Value);
                         game.player[game.cur].Discard(discardThisRound.Value);//出牌
 
-                        //double width = discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth;
-                        //double height = discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight;
-                        //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[discardThisRound.Key], new Size(width, height) , 0);
-                        //BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[discardThisRound.Key], 0);
-                        //discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
-                        //{
-                        //    //Source = bitmapSource
-                        //    //Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/settlement/Checkout.png"))
-                        //    Source = totalDiscardedCard[discardThisRound.Key],
-                        //    Stretch = Stretch.Uniform
-                        //};
                         discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[1][discardThisRound.Key];
-
-                        //Task.Run(() =>
-                        //{
-                        //    Dispatcher.Invoke(() =>
-                        //    {
-                        //        //discarded[game.cur][discardedNowIndex[game.cur]].Content = "123";
-                        //    });
-                        //});
-
-
 
                         selfCardButton[selfCardButton.Count - 1].Content = null;//更新按钮
                         selfCardButton[selfCardButton.Count - 1].IsEnabled = false;
-
-                        //todo
-                        //QCoreApplication::processEvents();
 
                         discardedNowIndex[game.cur]++;
 
@@ -3288,10 +2592,6 @@ namespace Majiang
                             {
                                 if (game.player[i].CheckWin(discardThisRound.Value))
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     isFinish = true;
                                     deal = false;//结束游戏
@@ -3310,18 +2610,9 @@ namespace Majiang
                             {
                                 if (game.player[i].CheckGang(discardThisRound.Value))
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     game.player[i].Gang(discardThisRound.Value, 1);
-                                    //discarded[i][--discardedNowIndex[i]]->setPixmap(QPixmap());
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
-                                    //todo
-                                    //emit pengGangOthersSignals(false,i - 1,discardThisRound.first);
-                                    //QCoreApplication::processEvents();
                                     PengGangOthers(false, i - 1, discardThisRound.Key);
                                     isGang = true;
                                     game.cur = i;
@@ -3337,17 +2628,9 @@ namespace Majiang
                             {
                                 if (game.player[i].CheckPeng(discardThisRound.Value))
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     game.player[i].Peng(discardThisRound.Value);
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
-                                    //todo
-                                    //emit pengGangOthersSignals(true,i - 1,discardThisRound.first);
-                                    //QCoreApplication::processEvents();
                                     PengGangOthers(true, i - 1, discardThisRound.Key);
                                     isChiPeng = true;
                                     game.cur = i;
@@ -3362,29 +2645,16 @@ namespace Majiang
                             List<int> temp = game.player[game.cur + 1].CheckChiRot(discardThisRound.Value);
                             if (temp.Count > 0)
                             {
-                                //todo
-                                //timer.setSingleShot(true);
-                                //timer.start(1000);
-                                //loop.exec();
                                 await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                 game.player[game.cur + 1].Chi(temp);
                                 temp.Add(discardThisRound.Value);
                                 for (int i = 0; i < 3; i++)
                                     temp[i] = Transition(temp[i]);
                                 temp.Sort();
-                                //Task.Run(() =>
-                                //{
-                                //    Dispatcher.Invoke(() =>
-                                //    {
-                                //        //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
-                                //    });
-                                //});
-                                //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                 discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
 
                                 ChiOthers(0, temp);
-                                //todo
-                                //QCoreApplication::processEvents();
+
                                 isChiPeng = true;
                                 game.cur = game.cur + 1;
                                 deal = false;
@@ -3405,28 +2675,14 @@ namespace Majiang
                             }
                             else
                                 getCard = game.player[game.cur].GetCard();//摸牌
-                                                                          //Task.Run(() =>
-                                                                          //{
-                                                                          //    Dispatcher.Invoke(() =>
-                                                                          //    {
+
                             remained.Content = remainedText + game.card.dq.Count;
-                            //othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = new Image
-                            //{
-                            //    Source = othersCardImages[game.cur - 1]
-                            //};
+
                             othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Source = othersCardImages[game.cur - 1];
-                            //});
-
-                            //});
-
 
                             int gangCard = game.player[game.cur].CheckGang();
                             if (game.player[game.cur].CheckWin())
                             {
-                                //todo
-                                //timer.setSingleShot(true);
-                                //timer.start(1000);
-                                //loop.exec();
                                 await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                 isFinish = true;
                                 typeHu = -1;
@@ -3435,30 +2691,14 @@ namespace Majiang
                             }
                             if (gangCard != -1)
                             {
-                                //todo
-                                //timer.setSingleShot(true);
-                                //timer.start(1000);
-                                //loop.exec();
                                 await Task.Delay(1000);  // 延迟1秒（1000毫秒）
-                                //game.player[game.cur].Gang(getCard, 0);
-                                ////todo
-                                ////emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
-                                ////QCoreApplication::processEvents();
-                                //PengGangOthers(false, game.cur - 1, Transition(getCard));
                                 game.player[game.cur].Gang(gangCard, 0);
-                                //todo
-                                //emit pengGangOthersSignals(false,game->cur - 1,Transition(getCard));
-                                //QCoreApplication::processEvents();
                                 PengGangOthers(false, game.cur - 1, Transition(gangCard));
                                 isGang = true;
                                 continue;
                             }
                             if (game.player[game.cur].CheckAddGang(getCard))
                             {
-                                //todo
-                                //timer.setSingleShot(true);
-                                //timer.start(1000);
-                                //loop.exec();
                                 await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                 game.player[game.cur].AddGang(getCard);
                                 AddGangOthers(game.cur - 1, Transition(getCard));
@@ -3472,33 +2712,17 @@ namespace Majiang
                             isChiPeng = false;
                         }
                         // 启动定时器，设置1秒后触发一次定时器超时事件
-                        //todo
-                        //timer.setSingleShot(true);
-                        //timer.start(1000); // 1000 毫秒 = 1 秒
-                        //loop.exec();
                         await Task.Delay(1000);  // 延迟1秒（1000毫秒）
 
                         int discardThisRound = game.player[game.cur].DiscardRobot();
                         game.player[game.cur].Discard(discardThisRound);//出牌
 
-                        //BitmapSource bitmapSource = AdaptImageSize(totalDiscardedCard[Transition(discardThisRound)], new Size(discarded[game.cur][discardedNowIndex[game.cur]].ActualWidth, discarded[game.cur][discardedNowIndex[game.cur]].ActualHeight), game.cur * (-90));
-                        //BitmapSource bitmapSource = ImageMethod.RotateBitmapImage(totalDiscardedCard[Transition(discardThisRound)], game.cur * (-90));
-                        //discarded[game.cur][discardedNowIndex[game.cur]].Content = new Image
-                        //{
-                        //    //Source = bitmapSource
-                        //    Source = totalDiscardedCard[Transition(discardThisRound)],
-                        //    RenderTransform = new RotateTransform(game.cur * (-90)),
-                        //    RenderTransformOrigin = new Point(0.5, 0.5),  // 设置旋转的中心点
-                        //    Stretch = Stretch.Uniform
-                        //};//更新已出牌区
-                        //discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[Transition(discardThisRound)];
-                        //discarded[game.cur][discardedNowIndex[game.cur]].RenderTransform = new RotateTransform(game.cur * (-90));
                         discarded[game.cur][discardedNowIndex[game.cur]].Source = totalDiscardedCard[(game.cur - 1) % 2][Transition(discardThisRound)];
                         discarded[game.cur][discardedNowIndex[game.cur]].RenderTransform = new RotateTransform(game.cur / 2 * (-180));
                         discarded[game.cur][discardedNowIndex[game.cur]].RenderTransformOrigin = new Point(0.5, 0.5);
 
 
-                        //othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Content = null;//更新按钮
+                        //更新按钮
                         othersCard[game.cur - 1][othersCard[game.cur - 1].Count - 1].Source = null;
                         discardedNowIndex[game.cur]++;
 
@@ -3513,7 +2737,7 @@ namespace Majiang
                             if (game.cur == 3)//轮至自己
                             {
                                 chiTemp = game.player[0].CheckChi(discardThisRound);//检查当前牌是否能吃
-                                for(int i = 0; i < chiTemp.Count; ++i)
+                                for (int i = 0; i < chiTemp.Count; ++i)
                                 {
                                     chiTemp[i].Sort((a, b) => Transition(a).CompareTo(Transition(b)));
                                 }
@@ -3541,14 +2765,11 @@ namespace Majiang
                                         for (int j = 0; j < 3; j++)
                                         {
                                             //设置按钮牌图片
-                                            //chiChoice[i][j].Content = new Image
-                                            //{
-                                            //    //Source = AdaptImageSize(totalDiscardedCard[transitionChi[i][j]], new Size(chiChoice[i][j].ActualWidth, chiChoice[i][j].ActualHeight), 0)
-                                            //    //Source = RotateBitmapImage(totalDiscardedCard[transitionChi[i][j]], 0)
-                                            //    Source = totalDiscardedCard[1][transitionChi[i][j]]
-                                            //};
                                             var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
-                                            (grid.FindName("ImageControl") as Image).Source = totalDiscardedCard[1][transitionChi[i][j]];
+                                            if (grid != null && grid.FindName("ImageControl") is Image image)
+                                            {
+                                                image.Source = totalDiscardedCard[1][transitionChi[i][j]];
+                                            }
                                             chiChoice[i][j].Visibility = Visibility.Visible;
                                         }
                                     }
@@ -3578,12 +2799,11 @@ namespace Majiang
                                 for (int i = 0; i < guoChiPengGangHu.Count; i++)
                                 {
                                     //设置吃碰杠胡区按钮图片
-                                    //guoChiPengGangHuBtn[i].Content = new Image
-                                    //{
-                                    //    Source = guoChiPengGangHuPic[guoChiPengGangHu[i]]
-                                    //};
                                     var grid = guoChiPengGangHuBtn[i].Template.FindName("ButtonGrid", guoChiPengGangHuBtn[i]) as Grid;
-                                    (grid.FindName("ImageControl") as Image).Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                    if (grid != null && grid.FindName("ImageControl") is Image image)
+                                    {
+                                        image.Source = guoChiPengGangHuPic[guoChiPengGangHu[i]];
+                                    }
                                     guoChiPengGangHuBtn[i].Visibility = Visibility.Visible;
                                 }
                                 //等待玩家选择
@@ -3591,8 +2811,6 @@ namespace Majiang
                                 if (waitUserOtherChoice)
                                 {
                                     await WaitForPlayer();
-                                    //    connect(this, &GameScene::resumeProgram, &loop, &QEventLoop::quit);
-                                    //    loop.exec();
                                 }
 
                                 if (guoChiPengGangHuChoice == 4)
@@ -3608,11 +2826,7 @@ namespace Majiang
                                 else if (guoChiPengGangHuChoice == 3)
                                 {
                                     game.player[0].Gang(discardThisRound, 1);
-                                    //todo
-                                    //emit pengGangSelfSignals(false,Transition(discardThisRound));
-                                    //QCoreApplication::processEvents();
                                     PengGangSelf(false, Transition(discardThisRound));
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                     deal = false;
                                     isGang = true;
@@ -3624,11 +2838,7 @@ namespace Majiang
                                 else if (guoChiPengGangHuChoice == 2)
                                 {
                                     game.player[0].Peng(discardThisRound);
-                                    //todo
-                                    //emit pengGangSelfSignals(true,Transition(discardThisRound));
-                                    //QCoreApplication::processEvents();
                                     PengGangSelf(true, Transition(discardThisRound));
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                     deal = false;
                                     isChiPeng = true;
@@ -3649,13 +2859,14 @@ namespace Majiang
                                             {
                                                 //chiChoice[i][j].Content = null;//设置图片为空
                                                 var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
-                                                (grid.FindName("ImageControl") as Image).Source = null;
+                                                if (grid != null && grid.FindName("ImageControl") is Image image)
+                                                {
+                                                    image.Source = null;
+                                                }
                                                 chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                                 chiChoice[i][j].Visibility = Visibility.Hidden;
                                             }
                                         }
-                                        //todo
-                                        //QCoreApplication::processEvents();
                                     }
                                     else//无
                                     {
@@ -3665,10 +2876,7 @@ namespace Majiang
                                             chiTemp[0][i] = Transition(chiTemp[0][i]);
                                         chiTemp[0].Sort();
                                         ChiSelf(chiTemp[0]);//更新UI
-                                                            //todo
-                                                            //QCoreApplication::processEvents();
                                     }
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                     deal = false;
                                     isChiPeng = true;
@@ -3684,9 +2892,11 @@ namespace Majiang
                                     {
                                         for (int j = 0; j < 3; j++)
                                         {
-                                            //chiChoice[i][j].Content = null;//设置图片为空
                                             var grid = chiChoice[i][j].Template.FindName("ButtonGrid", chiChoice[i][j]) as Grid;
-                                            (grid.FindName("ImageControl") as Image).Source = null;
+                                            if (grid != null && grid.FindName("ImageControl") is Image image)
+                                            {
+                                                image.Source = null;
+                                            }
                                             chiChoice[i][j].IsEnabled = false;//设置按钮不可用
                                             chiChoice[i][j].Visibility = Visibility.Hidden;
                                         }
@@ -3703,10 +2913,6 @@ namespace Majiang
                             {
                                 if (i != 0 && game.player[i].CheckWin(discardThisRound))
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     isFinish = true;//结束游戏
                                     deal = false;
@@ -3725,17 +2931,9 @@ namespace Majiang
                             {
                                 if (i != 0 && game.player[i].CheckGang(discardThisRound))
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     game.player[i].Gang(discardThisRound, 1);
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
-                                    //todo
-                                    //emit pengGangOthersSignals(false,i - 1,Transition(discardThisRound));
-                                    //QCoreApplication::processEvents();
                                     PengGangOthers(false, i - 1, Transition(discardThisRound));
                                     isGang = true;
                                     game.cur = i;
@@ -3751,17 +2949,9 @@ namespace Majiang
                             {
                                 if (i != 0 && game.player[i].CheckPeng(discardThisRound))
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     game.player[i].Peng(discardThisRound);
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
-                                    //todo
-                                    //emit pengGangOthersSignals(true,i - 1,Transition(discardThisRound));
-                                    //QCoreApplication::processEvents();
                                     PengGangOthers(true, i - 1, Transition(discardThisRound));
                                     isChiPeng = true;
                                     game.cur = i;
@@ -3778,21 +2968,14 @@ namespace Majiang
                                 List<int> temp = game.player[game.cur + 1].CheckChiRot(discardThisRound);
                                 if (temp.Count > 0)
                                 {
-                                    //todo
-                                    //timer.setSingleShot(true);
-                                    //timer.start(1000);
-                                    //loop.exec();
                                     await Task.Delay(1000);  // 延迟1秒（1000毫秒）
                                     game.player[game.cur + 1].Chi(temp);
                                     temp.Add(discardThisRound);
                                     for (int i = 0; i < 3; i++)
                                         temp[i] = Transition(temp[i]);
                                     temp.Sort();
-                                    //discarded[game.cur][--discardedNowIndex[game.cur]].Content = null;
                                     discarded[game.cur][--discardedNowIndex[game.cur]].Source = null;
                                     ChiOthers(game.cur, temp);
-                                    //todo
-                                    //QCoreApplication::processEvents();
                                     isChiPeng = true;
                                     game.cur = game.cur + 1;
                                     deal = false;
@@ -3802,9 +2985,6 @@ namespace Majiang
                         if (deal)
                             game.cur = (game.cur + 1) % 4;
                     }
-                    //todo
-                    //QCoreApplication::processEvents();
-                    //loop.processEvents(QEventLoop::AllEvents);
                 }
                 if (isFinish)
                 {
@@ -3821,8 +3001,6 @@ namespace Majiang
                             Stretch = Stretch.Uniform
                         };
                     ResetCheckoutUI();
-                    //todo
-                    //checkout->show();
                 }
                 else
                 {
@@ -3833,15 +3011,11 @@ namespace Majiang
                     };
                     statement += "牌堆已空";
                     ResetCheckoutUI();
-                    //todo
-                    //checkout->show();
                 }
-                //    });
-                //});
             }
             catch (Exception e)
             {
-
+                Console.WriteLine(e.ToString());
             }
         }
 
@@ -3865,25 +3039,25 @@ namespace Majiang
         }
         private void DestroyPageResources()
         {
-            // 1. 清理绑定
+            // 清理绑定
             BindingOperations.ClearAllBindings(this);
 
-            // 2. 解除事件绑定
-            // 如果控件绑定了事件处理程序，应该在销毁时解除绑定。
+            // 解除事件绑定
+            // 如果控件绑定了事件处理程序，在销毁时解除绑定。
             foreach (var button in selfCardButton)
             {
-                button.Click -= SelfCardButtonClick; // 示例: 解除按钮的点击事件
+                button.Click -= SelfCardButtonClick; 
             }
 
             foreach (var button in guoChiPengGangHuBtn)
             {
-                button.Click -= ChiPengGangButtonClick; // 示例: 解除按钮的点击事件
+                button.Click -= ChiPengGangButtonClick; 
             }
 
             foreach (var chiButtons in chiChoice)
             {
                 foreach (var button in chiButtons)
-                    button.Click -= MultiChiButtonClick; // 示例: 解除按钮的点击事件
+                    button.Click -= MultiChiButtonClick; 
             }
 
             continueGame.Click -= ContinueGame_Click;
@@ -3891,7 +3065,7 @@ namespace Majiang
             hideCheckOut.Click -= HideCheckOut_Click;
             backToMainPage.Click -= BackToMainPageButtonClick;
 
-            // 3. 清空控件内容（并释放 UI 元素）
+            // 清空控件内容（并释放 UI 元素）
             if (selfCardBox != null)
             {
                 selfCardBox.Children.Clear(); // 清空控件内容
@@ -3935,7 +3109,7 @@ namespace Majiang
                 checkoutBtn.Children.Clear();
             }
 
-            // 4. 清理方向牌、牌的显示等
+            // 清理方向牌、牌的显示等
             if (direction != null)
             {
                 foreach (var label in direction)
@@ -3950,7 +3124,6 @@ namespace Majiang
                 {
                     foreach (var label in discardedList)
                     {
-                        //label.Content = null; // 清空弃牌标签
                         label.Source = null;
                     }
                 }
@@ -3981,17 +3154,15 @@ namespace Majiang
                 backToMainPage.Content = null;
             }
 
-            // 5. 清理图像资源
-            //totalCardSelf?.Clear();
-            //totalDiscardedCard?.Clear();
+            // 清理图像资源
             othersCardImages?.Clear();
             biaoZhi = null; // 清除图像资源
             directionPic?.Clear();
 
-            // 6. 清理任务相关数据
+            // 清理任务相关数据
             tcs?.TrySetResult(-1); // 取消任务等待
 
-            // 7. 清理控件和游戏相关的成员变量
+            // 清理控件和游戏相关的成员变量
             selfCard.Clear();
             selfCardButton.Clear();
             selfCardLabel.Clear();
@@ -4000,18 +3171,18 @@ namespace Majiang
             pengAlready.Clear();
             discardedNowIndex.Clear();
 
-            // 8. 清理游戏状态
+            // 清理游戏状态
             game = null;
             gameName = null;
 
-            // 9. 停止定时器（如果有定时器）
+            // 停止定时器（如果有定时器）
             if (timer != null)
             {
                 timer.Stop();
                 timer = null;
             }
 
-            // 10. 清空其他状态变量
+            // 清空其他状态变量
             choiceBtn = -1;
             guoChiPengGangHuChoice = 0;
             multiChi = false;
@@ -4020,12 +3191,12 @@ namespace Majiang
             isFinish = false;
             typeHu = 0;
 
-            // 11. 清除控件的任何其他附加状态
+            // 清除控件的任何其他附加状态
             remained.Content = null; // 清空剩余牌数标签
             settlementPic.Content = null; // 清空结算图片
             settlementState.Content = null; // 清空结算状态标签
 
-            // 12. 清理字符串和其他成员变量
+            // 清理字符串和其他成员变量
             statement = null;
             remainedText = null;
 
