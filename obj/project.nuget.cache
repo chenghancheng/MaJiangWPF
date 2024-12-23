@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "p6E6g3+XTlhA+GCe7hEPB/Mr69/4pIE5phW7F56DTGTfzqi+GBc6piv1JlPAmlgTEOkBIu3ih/Cf0juxG36AVA==",
+  "dgSpecHash": "g3KP0Oihc2xyaKcX/qj2Sd9HlBDTus8aCwNp7pvk2DoclgJRE/FQOTQ9B0m2NhctFt0HI4PMQMdnw4Us6/Hm9A==",
   "success": true,
-  "projectFilePath": "D:\\Mycode\\MaJiangWPF\\MaJiangWPF\\Majiang.csproj",
+  "projectFilePath": "D:\\Mycode\\MaJiangWPF\\MaJiangWPF_clone\\Majiang.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\xsd\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
   ],
