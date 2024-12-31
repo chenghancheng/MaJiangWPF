@@ -77,15 +77,19 @@ public class Card
         if (dq.Count == 0)
             return 0;
 
-        int[] arr = dq.ToArray();
-        int backCard = arr[arr.Length - 1];
-        dq.Dequeue();  // Removing the last card manually
+        // 获取队列中的最后一个元素
+        int backCard = dq.ToArray()[dq.Count - 1];
+
+        // 移除队列中的最后一个元素
+        dq = new Queue<int>(dq.Take(dq.Count - 1));
+
         return backCard;
     }
 
     public string GetName(int n)
     {
-        return card_name[n];
+        if (n > 0) return card_name[n];
+        else return "";
     }
 
     public bool IsEmpty()

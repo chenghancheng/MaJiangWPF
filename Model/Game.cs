@@ -10,6 +10,7 @@ public class Game
 
     public Game(string name)
     {
+        winner = "";
         card = new Card();
         player = new List<Player>(new Player[4]);
 
@@ -28,10 +29,12 @@ public class Game
 
     public void DistributeCards()
     {
-        for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 13; j++)
         {
-            for (int j = 0; j < 13; j++)
+            for (int i = 0; i < 4; i++)
+            {
                 player[i].GetCard();
+            }
         }
     }
 

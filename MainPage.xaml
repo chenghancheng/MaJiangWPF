@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Majiang"
       mc:Ignorable="d" 
-      d:DesignHeight="618" d:DesignWidth="1035"
+      d:DesignHeight="770" d:DesignWidth="1150"
       Title="MainPage">
 
     <Page.Resources>
@@ -35,24 +35,24 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="1" Content="开始游戏" Click="startGameButton_Click">
+        <Button Grid.Row="1" Content="单机模式" Click="startGameButton_Click">
             <!-- 使用 Border 和 Image 实现按钮背景 -->
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">进行游戏</TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">单机模式</TextBlock>
                     </Grid>
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Grid.Row="3" Content="创建房间" Click="introduceButton_Click">
+        <Button Grid.Row="3" Content="多人模式" Click="introduceButton_Click">
             <!-- 使用 Border 和 Image 实现按钮背景 -->
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Image Source="pack://application:,,,/Resources/Images/others/btn.png" Stretch="UniformToFill" />
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">麻将介绍</TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="20">多人模式</TextBlock>
                     </Grid>
                 </ControlTemplate>
             </Button.Template>
